@@ -1,8 +1,6 @@
 // frontend/src/App.jsx
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import UserForm from './components/UserForm';
-import ResultsView from './components/ResultsView';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AgentPortal from './components/AgentPortal';
 import OTPVerification from './components/OTPVerification';
 import OTPResults from './components/OTPResults';
@@ -12,9 +10,9 @@ function App() {
   return (
     <Router>
       <Routes>
+         <Route path="/" element={<Navigate to="/agent" replace />} />
+
          <Route path="/agent" element={<AgentPortal />} />
-        <Route path="/" element={<UserForm />} />
-        <Route path="/results" element={<ResultsView />} />
         <Route path="/verify-otp" element={<OTPVerification />} />
         <Route path="/otp-results" element={<OTPResults />} />
       </Routes>
