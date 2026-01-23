@@ -1,0 +1,254 @@
+/* ==========================================================
+   RESULTS PAGE - DARK CYBERSECURITY THEME
+   Century Gothic | Black + Green
+   ========================================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 1. PAGE BACKGROUND - Dark grid */
+.results-page {
+  min-height: 100vh;
+  background-color: #000000;
+  background-image:
+    linear-gradient(rgba(38,171,77,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(38,171,77,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
+  color: #ffffff;
+}
+
+/* 2. HEADER - Dark glass */
+.results-header {
+  background: rgba(0, 0, 0, 0.9);
+  padding: 20px 30px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.85);
+  margin-bottom: 30px;
+  border-bottom: 1px solid rgba(38,171,77,0.3);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-content h1 {
+  font-size: 30px;              /* larger for Century Gothic */
+  font-weight: 700;             /* bolder */
+  color: #ffffff;
+  margin: 0;
+}
+
+/* Event count badge - green pill */
+.event-count-badge {
+  background: rgba(38,171,77,0.15);
+  color: #26ab4d;
+  border: 1px solid #26ab4d;
+  padding: 8px 20px;
+  border-radius: 999px;
+  font-size: 13px;              /* slightly larger */
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(38,171,77,0.3);
+}
+
+/* 3. CONTAINER */
+.results-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 40px 20px;
+}
+
+/* 4. BUTTON GROUP */
+.button-group {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.button-group button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 999px;
+  font-size: 13px;              /* larger for readability */
+  font-weight: 700;             /* bolder */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+/* Copy button - green */
+.btn-copy {
+  background: linear-gradient(135deg, #26ab4d, #1d8b40);
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(38,171,77,0.5);
+  border: none;
+}
+
+.btn-copy:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(38,171,77,0.7);
+}
+
+/* Download button - green */
+.btn-download {
+  background: linear-gradient(135deg, #26ab4d, #1d8b40);
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(38,171,77,0.5);
+  border: none;
+}
+
+.btn-download:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(38,171,77,0.7);
+}
+
+/* Back button - transparent with grey */
+.btn-back {
+  background: transparent;
+  color: #656565;
+  border: 1px solid #656565;
+  box-shadow: none;
+}
+
+.btn-back:hover {
+  background: rgba(101,101,101,0.1);
+  color: #e2e8f0;
+  border-color: #e2e8f0;
+  transform: translateY(-2px);
+}
+
+/* 5. EVENTS DISPLAY */
+.events-display {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 6. EVENT CARDS - Dark glass with green accent */
+.event-card {
+  background: rgba(0,0,0,0.7);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+  border: 1px solid rgba(38,171,77,0.35);
+  border-left: 4px solid #26ab4d;
+}
+
+/* Card header */
+.event-header {
+  background: rgba(38,171,77,0.08);
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-bottom: 1px solid rgba(38,171,77,0.25);
+}
+
+/* Event number badge */
+.event-number {
+  background: #26ab4d;
+  color: #ffffff;
+  padding: 5px 14px;
+  border-radius: 12px;
+  font-size: 13px;              /* larger */
+  font-weight: 700;             /* bolder */
+}
+
+/* Event type text */
+.event-type {
+  font-weight: 700;             /* bolder */
+  font-size: 14px;              /* larger */
+  color: #e2e8f0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* 7. JSON CONTENT - Dark code block */
+.event-json {
+  padding: 20px;
+  margin: 0;
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 13px;              /* larger for readability */
+  font-weight: 500;             /* medium weight */
+  line-height: 1.6;
+  background: rgba(0,0,0,0.8);
+  color: #d0d0d0;               /* light grey for code */
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* 8. EMPTY STATE */
+.empty-state {
+  background: rgba(0,0,0,0.7);
+  border: 1px solid rgba(38,171,77,0.35);
+  padding: 60px 20px;
+  text-align: center;
+  border-radius: 14px;
+  color: #656565;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* 9. SCROLLBAR - Green accent */
+.event-json::-webkit-scrollbar {
+  height: 8px;
+}
+
+.event-json::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.5);
+  border-radius: 4px;
+}
+
+.event-json::-webkit-scrollbar-thumb {
+  background: #26ab4d;
+  border-radius: 4px;
+}
+
+.event-json::-webkit-scrollbar-thumb:hover {
+  background: #1d8b40;
+}
+
+/* 10. RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+  .results-header {
+    padding: 15px 15px;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .header-content h1 {
+    font-size: 24px;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  .button-group button {
+    width: 100%;
+  }
+
+  .results-container {
+    padding: 0 10px 20px 10px;
+  }
+
+  .event-json {
+    font-size: 12px;
+  }
+}

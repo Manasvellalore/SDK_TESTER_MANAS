@@ -1,0 +1,77 @@
+/* ==========================================
+   BARGAD.AI THEME VARIABLES
+   Dark + Green Professional Theme
+   ========================================== */
+
+:root {
+  /* Background Colors */
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #131820;
+  --bg-card: #1a1f2e;
+  --bg-card-hover: #1f2937;
+  
+  /* Accent Colors */
+  --accent-green: #00ff7f;
+  --accent-green-dark: #00d97e;
+  --accent-green-light: #5fffa8;
+  
+  /* Status Colors */
+  --color-success: #00ff7f;
+  --color-danger: #ff4757;
+  --color-warning: #ffa502;
+  --color-info: #3742fa;
+  
+  /* Text Colors */
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e0;
+  --text-muted: #718096;
+  
+  /* Border & Effects */
+  --border-color: #2d3748;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px rgba(0, 255, 127, 0.3);
+  
+  /* Spacing & Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-green);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-green-light);
+}

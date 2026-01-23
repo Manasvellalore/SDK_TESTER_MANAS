@@ -1,0 +1,346 @@
+/* ==========================================================
+   OTP RESULTS PAGE - DARK CYBERSECURITY THEME
+   Typography: Century Gothic
+   ========================================================== */
+
+/* Color tokens */
+:root {
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-green: #26ab4d;
+  --color-red:   #c42613;
+  --color-grey:  #656565;
+}
+
+/* Page background */
+.otp-results-page {
+  min-height: 100vh;
+  background-color: var(--color-black);
+  background-image:
+    linear-gradient(rgba(38, 171, 77, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(38, 171, 77, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 24px;
+  font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
+  color: var(--color-white);
+  font-weight: 1000;
+}
+
+/* Centered content wrapper */
+.otp-results-container {
+  width: 100%;
+  max-width: 1100px;
+}
+
+/* Header block */
+.otp-results-header-block {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.otp-results-header {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.otp-results-subtitle {
+  font-size: 13px;
+  color: var(--color-grey);
+  margin: 0 0 20px 0;
+}
+
+/* Session / timestamp / events chips */
+.otp-results-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.meta-pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-green);
+  color: var(--color-green);
+  background: rgba(38, 171, 77, 0.08);
+  font-size: 13px;
+  font-weight: 600; 
+}
+
+/* Action buttons row */
+.otp-results-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.btn-primary,
+.btn-secondary {
+  font-family: inherit;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: var(--color-green);
+  color: var(--color-white);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(38, 171, 77, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-green);
+  border: 1px solid var(--color-green);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover {
+  filter: brightness(1.05);
+}
+
+/* Results grid */
+.otp-results-grid {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Generic result card */
+.otp-result-card {
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 12px;
+  border: 1px solid rgba(38, 171, 77, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+/* Card header */
+.otp-result-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(38, 171, 77, 0.05);
+  border-bottom: 1px solid rgba(38, 171, 77, 0.25);
+}
+
+.otp-result-tag {
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-green);
+}
+
+.otp-result-time {
+  font-size: 11px;
+  color: var(--color-grey);
+}
+
+/* Body + JSON */
+.otp-result-body {
+  padding: 12px 14px 14px 14px;
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.otp-result-json,
+.event-json {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #e0e0e0;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+/* ============================
+   Agent-User Distance section
+   ============================ */
+
+.agent-user-distance-card {
+  /* same base card style; extra spacing tweaks if needed */
+}
+
+.distance-map-leaflet {
+  width: 100%;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.7);
+}
+
+/* Leaflet map inherits font */
+.distance-map-leaflet .leaflet-container,
+.popup-content {
+  font-family: inherit;
+}
+
+/* Popup text */
+.popup-content h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: var(--color-white);
+}
+
+.popup-content p {
+  margin: 4px 0;
+  font-size: 12px;
+  color: var(--color-grey);
+}
+
+.popup-content strong {
+  color: var(--color-white);
+}
+
+/* Zoom controls */
+.distance-map-leaflet .leaflet-control-zoom a {
+  background-color: #111111;
+  color: var(--color-white);
+  border: 1px solid #333333;
+}
+
+.distance-map-leaflet .leaflet-control-zoom a:hover {
+  background-color: #1f2933;
+}
+
+/* Distance details layout */
+.distance-details {
+  display: grid;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.location-info,
+.distance-metrics,
+.risk-analysis {
+  background: rgba(0, 0, 0, 0.65);
+  border-radius: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(38, 171, 77, 0.25);
+}
+
+.location-info h4,
+.distance-metrics h4,
+.risk-analysis h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: var(--color-white);
+}
+
+.location-info p,
+.distance-metrics p,
+.risk-analysis p {
+  margin: 4px 0;
+  font-size: 12px;
+  color: #cccccc;
+}
+
+/* Risk analysis variants */
+.risk-analysis {
+  border-left: 4px solid var(--color-green);
+}
+
+.risk-analysis.risk-critical {
+  border-left-color: var(--color-red);
+}
+
+.risk-analysis.risk-high {
+  border-left-color: #ff9800;
+}
+
+.risk-analysis.risk-medium {
+  border-left-color: #ffc107;
+}
+
+.risk-analysis.risk-low {
+  border-left-color: var(--color-green);
+}
+
+/* Risk badge */
+.risk-badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: bold;
+  font-size: 11px;
+  margin-left: 4px;
+}
+
+.risk-badge.risk-critical {
+  background: rgba(196, 38, 19, 0.15);
+  color: var(--color-red);
+}
+
+.risk-badge.risk-high {
+  background: rgba(255, 152, 0, 0.15);
+  color: #ff9800;
+}
+
+.risk-badge.risk-medium {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
+.risk-badge.risk-low {
+  background: rgba(38, 171, 77, 0.15);
+  color: var(--color-green);
+}
+
+/* Reasons list */
+.risk-reasons ul {
+  margin: 8px 0;
+  padding-left: 18px;
+}
+
+.risk-reasons li {
+  margin: 3px 0;
+  font-size: 12px;
+}
+
+/* Recommendation text */
+.recommendation {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--color-white);
+}
+
+/* Raw JSON collapsible */
+.raw-json-details {
+  margin-top: 10px;
+}
+
+.raw-json-details summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--color-green);
+}
+
+/* Status helpers */
+.status-ok {
+  color: var(--color-green);
+}
+
+.status-error {
+  color: var(--color-red);
+}
+
+.border-error {
+  border-color: var(--color-red) !important;
+}

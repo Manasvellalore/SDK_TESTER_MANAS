@@ -1,0 +1,247 @@
+/* =================================================================
+   GLOBAL FONT RESET: CENTURY GOTHIC
+   ================================================================= */
+body, html, 
+h1, h2, h3, h4, h5, h6, 
+p, span, div, a, li,
+input, button, textarea, select, label,
+.MuiTypography-root, .MuiButton-root, .MuiInputBase-input {
+    font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif !important;
+    letter-spacing: 0.5px !important; /* Slight spacing for better readability */
+}
+
+/* ==========================================
+   CYBERSECURITY DARK MODE: FINAL BUILD
+   ========================================== */
+
+/* 1. Global Background & Mesh */
+.agent-portal-container {
+  min-height: 100vh;
+  background-color: #000000;
+  /* Tech Grid Mesh Background */
+  background-image: 
+    linear-gradient(rgba(40, 170, 80, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(40, 170, 80, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 50% 0%, #0f2e1b 0%, transparent 70%);
+  background-size: 40px 40px, 40px 40px, 100% 100%;
+  color: #e0e0e0;
+  /* Redundant fallback, handled by global reset above */
+  font-family: 'Century Gothic', sans-serif; 
+  overflow-x: hidden;
+}
+
+/* 2. Header Styling (Frosted) */
+.portal-header {
+  background: rgba(10, 40, 20, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(40, 170, 80, 0.2);
+  padding: 1.5rem 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo {
+  width: 70px;
+  height: 70px;
+  filter: drop-shadow(0 0 8px rgba(40, 170, 80, 0.5));
+}
+
+.portal-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(40, 170, 80, 0.3);
+}
+
+.badge {
+  background: rgba(40, 170, 80, 0.1);
+  border: 1px solid #28aa50;
+  color: #28aa50;
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-left: auto;
+  box-shadow: 0 0 10px rgba(40, 170, 80, 0.2);
+}
+
+/* 3. Content Area */
+.portal-content {
+  padding: 3rem 2rem;
+}
+
+.content-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.intro-section {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.intro-section h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 0 25px rgba(40, 170, 80, 0.4);
+}
+
+.intro-section p {
+  color: #a0a0a0;
+  font-size: 1.2rem;
+}
+
+/* ==========================================
+   CRITICAL OVERRIDES (The "Nuclear" Option)
+   ========================================== */
+
+/* 1. GLASSMORPHISM CARD */
+.agent-portal-container form,
+.agent-portal-container [class*="card"], 
+.agent-portal-container [class*="paper"],
+.agent-portal-container [class*="box"] {
+  background: rgba(10, 40, 20, 0.85) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(40, 170, 80, 0.3) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5) !important;
+  border-radius: 12px !important;
+  padding: 2rem !important;
+}
+
+/* 2. TEXT VISIBILITY */
+.agent-portal-container form label,
+.agent-portal-container form h6,
+.agent-portal-container form h5,
+.agent-portal-container form p,
+.agent-portal-container form span,
+.agent-portal-container form div:not(.badge):not(.btn) {
+    color: #e2e8f0 !important;
+}
+
+.agent-portal-container form label {
+    color: #ffffff !important;
+}
+
+.agent-portal-container form p,
+.agent-portal-container form span {
+    color: #e2e8f0 !important;
+}
+
+
+/* 3. DARK INPUTS */
+.agent-portal-container input,
+.agent-portal-container textarea,
+.agent-portal-container select,
+.agent-portal-container .form-control {
+    background-color: #031005 !important;
+    color: #ffffff !important;
+    border: 1px solid #1a3d24 !important;
+    border-radius: 6px !important;
+    padding: 12px 16px !important;
+}
+
+/* 4. INPUT FOCUS */
+.agent-portal-container input:focus,
+.agent-portal-container textarea:focus,
+.agent-portal-container select:focus {
+    border-color: #28aa50 !important;
+    box-shadow: 0 0 10px rgba(40, 170, 80, 0.3) !important;
+    outline: none !important;
+    background-color: #000000 !important;
+}
+
+/* 5. PLACEHOLDER VISIBILITY */
+.agent-portal-container input::placeholder {
+    color: #88a090 !important;
+    opacity: 1 !important;
+}
+
+/* 6. BUTTONS */
+.agent-portal-container button,
+.agent-portal-container input[type="submit"] {
+    background: linear-gradient(135deg, #28aa50 0%, #1e8a40 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    border: none !important;
+    box-shadow: 0 0 15px rgba(40, 170, 80, 0.4) !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 14px 24px !important;
+    border-radius: 6px !important;
+    cursor: pointer;
+}
+
+.agent-portal-container button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(40, 170, 80, 0.6) !important;
+}
+
+/* =================================================================
+   MATERIAL UI OVERRIDES (THE PURPLE KILLER)
+   ================================================================= */
+
+/* 1. FORCE STEPPER CIRCLES TO BE GREEN */
+.MuiStepIcon-root {
+    color: #1a3d24 !important; /* Inactive steps are Dark Green */
+}
+
+.MuiStepIcon-root svg {
+  color: #28aa50 !important;
+  fill: #28aa50 !important;
+}
+
+
+.MuiStepIcon-root.Mui-active,
+.MuiStepIcon-root.Mui-completed {
+    color: #28aa50 !important; /* NEON EMERALD */
+    filter: drop-shadow(0 0 6px rgba(40, 170, 80, 0.6)) !important;
+}
+
+.MuiStepIcon-text {
+    fill: #ffffff !important; 
+    font-family: 'Century Gothic', sans-serif !important; /* Ensure numbers use font */
+    font-weight: 900 !important;
+}
+
+/* 2. FIX THE DARK LABELS */
+.MuiFormLabel-root,
+.MuiInputLabel-root,
+.MuiInputLabel-formControl {
+    color: #cccccc !important;
+    font-weight: 500 !important;
+}
+
+.MuiFormLabel-root.Mui-focused,
+.MuiInputLabel-root.Mui-focused {
+    color: #28aa50 !important;
+}
+
+/* 3. FIX THE CONNECTING LINE */
+.MuiStepConnector-line {
+    border-color: #1a3d24 !important;
+}
+
+.MuiStepConnector-root.Mui-active .MuiStepConnector-line,
+.MuiStepConnector-root.Mui-completed .MuiStepConnector-line {
+    border-color: #28aa50 !important;
+}
+
+/* 4. FIX REMAINING TEXT */
+.MuiTypography-colorPrimary,
+.MuiButton-textPrimary {
+    color: #28aa50 !important;
+}
