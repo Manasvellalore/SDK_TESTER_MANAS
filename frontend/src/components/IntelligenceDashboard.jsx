@@ -58,6 +58,7 @@ const IntelligenceDashboard = ({ intelligence, customerData }) => {
     { id: 'phone', icon: '📱', label: 'Phone Intelligence', count: 19 },
     { id: 'ip', icon: '🌐', label: 'IP Intelligence', count: 22 },
     { id: 'darknet', icon: '🕵️', label: 'Darknet & Data Leaks', count: null },
+    { id: 'sdk', icon: '📲', label: 'SDK Data', count: null }, // NEW!
     { id: 'overview', icon: '📊', label: 'Risk Overview', count: null }
   ];
 
@@ -72,6 +73,8 @@ const IntelligenceDashboard = ({ intelligence, customerData }) => {
         return renderIPIntelligence();
       case 'darknet':
         return renderDarknetIntelligence();
+      case 'sdk':
+        return renderSDKData(); // NEW!
       case 'overview':
         return renderOverview();
       default:
@@ -584,6 +587,295 @@ const IntelligenceDashboard = ({ intelligence, customerData }) => {
     </div>
   );
 
+  // ========================================
+  // NEW: SDK DATA RENDER FUNCTION
+  // ========================================
+  const renderSDKData = () => {
+    // Get SDK data from intelligence object
+    const sdkData = intelligence.sdkData || customerData?.sdkData || [];
+
+    // Find specific event types
+    const deviceLocation = sdkData.find(e => e.type === 'DEVICE_LOCATION')?.payload;
+    const distanceData = sdkData.find(e => e.type === 'BANK_DISTANCE')?.payload;
+    const deviceId = sdkData.find(e => e.type === 'DEVICE_ID')?.payload;
+    const otpAttempt = sdkData.find(e => e.type === 'OTP_ATTEMPT')?.payload;
+    const displaySettings = sdkData.find(e => e.type === 'DISPLAY_SETTINGS')?.payload;
+    const touchBiometrics = sdkData.find(e => e.type === 'TOUCH_BIOMETRICS')?.payload;
+    const keypress = sdkData.find(e => e.type === 'KEYPRESS')?.payload;
+
+    return (
+      <div className="content-section">
+        <h2 className="content-title">📲 SDK Data & Behavior Analytics</h2>
+        
+        <div className="content-grid">
+          {/* Distance Analysis */}
+          {distanceData && (
+            <div className="content-card sdk-highlight">
+              <h3 className="card-header">📍 Location & Distance Analysis</h3>
+              <div className="card-rows">
+                <div className="data-row">
+                  <span className="label">User Location</span>
+                  <span className="value-default">{distanceData.userLocation?.address || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Agent Location</span>
+                  <span className="value-default">{distanceData.bankLocation?.address || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Distance (KM)</span>
+                  <span className="value-count">{distanceData.distance?.km?.toFixed(2) || 'N/A'} km</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Distance (Meters)</span>
+                  <span className="value-count">{distanceData.distance?.meters || 'N/A'} m</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Estimated Travel Time</span>
+                  <span className="value-default">{distanceData.duration?.formatted || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Risk Level</span>
+                  <span className={`badge ${
+                    distanceData.riskAnalysis?.riskLevel === 'MINIMAL' ? 'badge-success' :
+                    distanceData.riskAnalysis?.riskLevel === 'LOW' ? 'badge-success' :
+                    distanceData.riskAnalysis?.riskLevel === 'MEDIUM' ? 'badge-warning' : 'badge-danger'
+                  }`}>
+                    {distanceData.riskAnalysis?.riskLevel || 'N/A'}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Recommendation</span>
+                  <span className="value-default">{distanceData.riskAnalysis?.recommendation || 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Device Location */}
+          {deviceLocation && (
+            <div className="content-card">
+              <h3 className="card-header">📍 Device GPS Location</h3>
+              <div className="card-rows">
+                <div className="data-row">
+                  <span className="label">Latitude</span>
+                  <span className="value-default">{deviceLocation.latitude || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Longitude</span>
+                  <span className="value-default">{deviceLocation.longitude || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Accuracy (meters)</span>
+                  <span className="value-count">{deviceLocation.accuracy || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Full Address</span>
+                  <span className="value-default">{deviceLocation.address?.formattedAddress || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">City</span>
+                  <span className="value-default">{deviceLocation.address?.city || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">State</span>
+                  <span className="value-default">{deviceLocation.address?.state || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Pincode</span>
+                  <span className="value-default">{deviceLocation.address?.pincode || 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* OTP Attempt Analysis */}
+          {otpAttempt && (
+            <div className="content-card">
+              <h3 className="card-header">🔐 OTP Verification Analysis</h3>
+              <div className="card-rows">
+                <div className="data-row">
+                  <span className="label">Total Attempts</span>
+                  <span className="value-count">{otpAttempt.verificationAttempts || 0}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Fraud Score</span>
+                  {renderValue(otpAttempt.fraudScore?.score, 'score')}
+                </div>
+                <div className="data-row">
+                  <span className="label">Risk Level</span>
+                  <span className={`badge ${
+                    otpAttempt.fraudScore?.level === 'LOW_RISK' ? 'badge-success' :
+                    otpAttempt.fraudScore?.level === 'MEDIUM_RISK' ? 'badge-warning' : 'badge-danger'
+                  }`}>
+                    {otpAttempt.fraudScore?.level || 'N/A'}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Typing Pattern</span>
+                  <span className="value-default">{otpAttempt.typingCadence?.cadenceType || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Paste Detected</span>
+                  {renderBoolean(otpAttempt.pasteDetection?.pasteDetected)}
+                </div>
+                <div className="data-row">
+                  <span className="label">Context Switches</span>
+                  <span className="value-count">{otpAttempt.contextSwitching?.focusLosses || 0}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Backspace Count</span>
+                  <span className="value-count">{otpAttempt.correctionBehavior?.totalBackspaces || 0}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Device Fingerprint */}
+          {deviceId && (
+            <div className="content-card">
+              <h3 className="card-header">🆔 Device Fingerprint</h3>
+              <div className="card-rows">
+                <div className="data-row">
+                  <span className="label">Device ID</span>
+                  <span className="value-default">{deviceId.deviceID || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Session ID</span>
+                  <span className="value-default">{deviceId.sessionID || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Risk Score</span>
+                  {renderValue(deviceId.riskScore, 'score')}
+                </div>
+                <div className="data-row">
+                  <span className="label">Risk Level</span>
+                  <span className={`badge ${
+                    deviceId.riskLevel === 'LOW' ? 'badge-success' :
+                    deviceId.riskLevel === 'MEDIUM' ? 'badge-warning' : 'badge-danger'
+                  }`}>
+                    {deviceId.riskLevel || 'N/A'}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Device Category</span>
+                  <span className="value-default">{deviceId.deviceCategory || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Platform Type</span>
+                  <span className="value-default">{deviceId.platformType || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Fingerprint Stability</span>
+                  <span className="value-count">{deviceId.fingerprintStability || 0}%</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Session Count</span>
+                  <span className="value-count">{deviceId.sessionCount || 0}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Display Settings */}
+          {displaySettings && (
+            <div className="content-card">
+              <h3 className="card-header">🖥️ Display & Screen Info</h3>
+              <div className="card-rows">
+                <div className="data-row">
+                  <span className="label">Screen Resolution</span>
+                  <span className="value-default">{displaySettings.screenWidth} x {displaySettings.screenHeight}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Device Category</span>
+                  <span className="value-default">{displaySettings.deviceCategory || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Orientation</span>
+                  <span className="value-default">{displaySettings.orientationType || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Pixel Ratio</span>
+                  <span className="value-default">{displaySettings.devicePixelRatio || 'N/A'}</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Screen Size (inches)</span>
+                  <span className="value-default">{displaySettings.estimatedScreenSizeInches || 'N/A'}"</span>
+                </div>
+                <div className="data-row">
+                  <span className="label">Touch Support</span>
+                  {renderBoolean(displaySettings.touchSupport?.hasTouchScreen)}
+                </div>
+                <div className="data-row">
+                  <span className="label">Fullscreen</span>
+                  {renderBoolean(displaySettings.isFullscreen)}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Behavior Analytics */}
+          {(touchBiometrics || keypress) && (
+            <div className="content-card">
+              <h3 className="card-header">🖱️ User Behavior Patterns</h3>
+              <div className="card-rows">
+                {touchBiometrics && (
+                  <>
+                    <div className="data-row">
+                      <span className="label">Total Taps</span>
+                      <span className="value-count">{touchBiometrics.totalTaps || 0}</span>
+                    </div>
+                    <div className="data-row">
+                      <span className="label">Total Swipes</span>
+                      <span className="value-count">{touchBiometrics.totalSwipes || 0}</span>
+                    </div>
+                    <div className="data-row">
+                      <span className="label">Bot Probability</span>
+                      <span className="value-count">{touchBiometrics.botProbability || 0}%</span>
+                    </div>
+                    <div className="data-row">
+                      <span className="label">Human-like Behavior</span>
+                      {renderBoolean(touchBiometrics.isHumanLike)}
+                    </div>
+                  </>
+                )}
+                {keypress && (
+                  <>
+                    <div className="data-row">
+                      <span className="label">Total Keypresses</span>
+                      <span className="value-count">{keypress.totalKeypresses || 0}</span>
+                    </div>
+                    <div className="data-row">
+                      <span className="label">Backspace Count</span>
+                      <span className="value-count">{keypress.backspaceCount || 0}</span>
+                    </div>
+                    <div className="data-row">
+                      <span className="label">Numeric Keys</span>
+                      <span className="value-count">{keypress.numericKeypressCount || 0}</span>
+                    </div>
+                    <div className="data-row">
+                      <span className="label">Alphabetic Keys</span>
+                      <span className="value-count">{keypress.alphabeticKeypressCount || 0}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Raw SDK Events - Expandable JSON Viewer */}
+          <div className="content-card sdk-json-card">
+            <h3 className="card-header">📋 All SDK Events (JSON)</h3>
+            <div className="sdk-json-container">
+              <pre className="sdk-json">
+                {JSON.stringify(sdkData, null, 2)}
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Overview Content
   const renderOverview = () => (
     <div className="content-section">
@@ -593,15 +885,15 @@ const IntelligenceDashboard = ({ intelligence, customerData }) => {
         <div className="overview-card score-card">
           <h3>Overall Score</h3>
           <div className="score-circle-large">
-            <svg className="score-ring" width="160" height="160">
-              <circle className="score-ring-bg" cx="80" cy="80" r="70" />
+            <svg className="score-ring" width="150" height="150">
+              <circle className="score-ring-bg" cx="75" cy="75" r="65" />
               <circle 
                 className="score-ring-fill" 
-                cx="80" 
-                cy="80" 
-                r="70"
+                cx="75" 
+                cy="75" 
+                r="65"
                 style={{
-                  strokeDasharray: `${(intelligence.overallScore / 1000) * 440} 440`
+                  strokeDasharray: `${(intelligence.overallScore / 1000) * 408} 408`
                 }}
               />
             </svg>

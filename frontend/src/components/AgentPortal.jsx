@@ -113,38 +113,39 @@ const AgentPortal = () => {
 
   // ✅ NEW: Fetch dashboard data after verification
   const fetchDashboardData = async (sessionId, customerData, agentLocation) => {
-    try {
-      console.log('📊 [DASHBOARD] Fetching dashboard data for session:', sessionId);
+  try {
+    console.log('📊 [DASHBOARD] Fetching dashboard data for session:', sessionId);
+    
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+    
+    const response = await fetch(`${API_BASE_URL}/api/dashboard-data/${sessionId}`);
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('✅ [DASHBOARD] Data fetched successfully');
+      console.log('   - Customer Data:', data.customerData?.customerName);
+      console.log('   - SDK Events:', data.intelligence?.sdkData?.length || 0);
+      console.log('   - Has Distance:', data.intelligence?.sdkData?.some(e => e.type === 'AGENT_USER_DISTANCE') || false);
       
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+      // ✅ Prepare data for IntelligenceDashboard component
+      setDashboardData({
+        customerData: data.customerData || customerData, // Use backend data, fallback to form data
+        intelligence: data.intelligence // Includes sdkData, email, phone, ip, darknet, scores
+      });
       
-      const response = await fetch(`${API_BASE_URL}/api/dashboard-data/${sessionId}`);
+      setShowDashboard(true);
       
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ [DASHBOARD] Data fetched:', data);
-        
-        // Combine customer form data with SDK data
-        setDashboardData({
-          name: customerData.customerName || 'John Doe',
-          email: customerData.email,
-          phone: customerData.phoneNumber,
-          address: customerData.address,
-          agentLocation: agentLocation,
-          ...data.sdkData,
-          intelligence: data.intelligence,
-        });
-        
-        return true;
-      } else {
-        console.warn('⚠️ [DASHBOARD] Failed to fetch dashboard data');
-        return false;
-      }
-    } catch (error) {
-      console.error('❌ [DASHBOARD] Error fetching data:', error);
+      return true;
+    } else {
+      console.warn('⚠️ [DASHBOARD] Failed to fetch dashboard data:', response.status);
       return false;
     }
-  };
+  } catch (error) {
+    console.error('❌ [DASHBOARD] Error fetching data:', error);
+    return false;
+  }
+};
+
 
   // ==========================================
   // HANDLE GENERATE OTP WITH LOCATION
@@ -287,7 +288,7 @@ try {
   return (
     <IntelligenceDashboard 
       intelligence={dashboardData.intelligence} 
-      customerData={sessionData.customerData}
+      customerData={dashboardData.customerData}
     />
   );
 }

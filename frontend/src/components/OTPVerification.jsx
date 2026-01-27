@@ -240,6 +240,50 @@ function OTPVerification() {
     if (otp === CORRECT_OTP) {
       // ✅ CORRECT OTP
       setIsVerified(true);
+
+      // ✅✅✅ NEW: WAIT FOR ALL SDK EVENTS TO COMPLETE ✅✅✅
+  console.log('⏳ [SDK] Waiting for all events to collect (8 seconds)...');
+  await new Promise(resolve => setTimeout(resolve, 8000));
+  
+  // Force emit all SDK events
+  if (bargadInstance) {
+    console.log('📤 [SDK] Forcing emission of all events...');
+    try {
+      if (bargadInstance.emitKeypressData) bargadInstance.emitKeypressData();
+      if (bargadInstance.emitClipboardData) bargadInstance.emitClipboardData();
+      if (bargadInstance.emitLongPressData) bargadInstance.emitLongPressData();
+      if (bargadInstance.emitTapData) bargadInstance.emitTapData();
+      if (bargadInstance.emitSwipeData) bargadInstance.emitSwipeData();
+      if (bargadInstance.emitScreenOrientationData) bargadInstance.emitScreenOrientationData();
+      if (bargadInstance.emitDisplaySettingsData) bargadInstance.emitDisplaySettingsData();
+      if (bargadInstance.emitPinchData) bargadInstance.emitPinchData();
+      if (bargadInstance.emitAmbientLightData) bargadInstance.emitAmbientLightData();
+      if (bargadInstance.emitDeviceLocationData) bargadInstance.emitDeviceLocationData();
+      if (bargadInstance.emitGyroscopeData) bargadInstance.emitGyroscopeData();
+      if (bargadInstance.emitProximityData) bargadInstance.emitProximityData();
+      if (bargadInstance.emitMotionData) bargadInstance.emitMotionData();
+      if (bargadInstance.emitAccelerometerData) bargadInstance.emitAccelerometerData();
+      if (bargadInstance.emitDeviceScreenSize) bargadInstance.emitDeviceScreenSize();
+      if (bargadInstance.emitDeviceID) bargadInstance.emitDeviceID();
+      if (bargadInstance.emitIMEI) bargadInstance.emitIMEI();
+      if (bargadInstance.emitBluetoothDevices) bargadInstance.emitBluetoothDevices();
+      if (bargadInstance.emitCPUCoresData) bargadInstance.emitCPUCoresData();
+      if (bargadInstance.emitTouchBiometricsData) bargadInstance.emitTouchBiometricsData();
+      if (bargadInstance.emitFormTimeData) bargadInstance.emitFormTimeData();
+      if (bargadInstance.emitInputPatternData) bargadInstance.emitInputPatternData();
+      
+      console.log('✅ [SDK] All emissions triggered');
+      
+      // Wait 2 more seconds for emissions to register
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      console.log(`📊 [SDK] Total events now: ${bargadInstance.allEvents?.length || 0}`);
+    } catch (emitError) {
+      console.error('❌ [SDK] Emit error:', emitError);
+    }
+  }
+  // ✅✅✅ END NEW CODE ✅✅✅
+  
       
       const timeDiffs = calculateTimeDiffs(updatedAttempts);
       const wrongAttempts = updatedAttempts.filter(a => !a.isCorrect);
@@ -308,6 +352,20 @@ function OTPVerification() {
       console.log('🗺️ [AGENT-USER] Starting distance calculation...');
 
       let events = bargadInstance?.allEvents || [];
+
+      // ✅ ADD THIS DEBUG
+console.log('🔍 [DEBUG] bargadInstance exists?', !!bargadInstance);
+console.log('🔍 [DEBUG] bargadInstance.allEvents exists?', !!bargadInstance?.allEvents);
+console.log('🔍 [DEBUG] events array length:', events.length);
+console.log('🔍 [DEBUG] First 5 event types:', events.slice(0, 5).map(e => e.type));
+
+if (events.length === 0) {
+  console.error('❌ [ERROR] No events collected! bargadInstance might not be initialized!');
+  console.log('Available on window:', {
+    bargadInstance: !!window.bargadInstance,
+    Bargad: !!window.Bargad
+  });
+}
       const userLocationEvent = events.find((e) => e.type === "DEVICE_LOCATION");
 
       if (userLocationEvent && sessionId) {
@@ -411,20 +469,7 @@ function OTPVerification() {
           },
           body: JSON.stringify({
             sessionId: sessionId,
-            sdkData: {
-              allEvents: events,
-              deviceId: events.find(e => e.type === 'DEVICE_ID')?.payload,
-              location: events.find(e => e.type === 'DEVICE_LOCATION')?.payload,
-              ip: events.find(e => e.type === 'DEVICE_LOCATION')?.payload?.ip,
-              screenSize: events.find(e => e.type === 'DEVICE_SCREEN_SIZE')?.payload,
-              cpuCores: events.find(e => e.type === 'CPU_CORES')?.payload,
-              gyroscope: events.find(e => e.type === 'GYROSCOPE')?.payload,
-              accelerometer: events.find(e => e.type === 'ACCELEROMETER')?.payload,
-              orientation: events.find(e => e.type === 'SCREEN_ORIENTATION')?.payload,
-              otpVerification: otpEvent,
-              agentUserDistance: events.find(e => e.type === 'AGENT_USER_DISTANCE')?.payload,
-              totalEvents: events.length,
-            }
+            sdkData: events
           })
         });
 

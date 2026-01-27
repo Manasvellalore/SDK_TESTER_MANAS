@@ -486,6 +486,9 @@ app.post('/api/calculate-agent-user-distance', async (req, res) => {
 // ==========================================
 // ✅ NEW: SAVE SDK DATA FROM USER'S DEVICE
 // ==========================================
+// ==========================================
+// ✅ SAVE SDK DATA FROM USER'S DEVICE + CALCULATE DISTANCE
+// ==========================================
 app.post('/api/save-sdk-data', async (req, res) => {
   try {
     const { sessionId, sdkData } = req.body;
@@ -511,9 +514,70 @@ app.post('/api/save-sdk-data', async (req, res) => {
     sessions[sessionId].sdkData = sdkData;
     sessions[sessionId].updatedAt = Date.now();
 
-    console.log(`✅ [SDK] Data saved. Total events: ${sdkData?.totalEvents || 0}`);
+    console.log(`✅ [SDK] Data saved. Total events: ${sdkData?.length || 0}`);
 
-    // ✅ NEW: Submit to Scoreplex
+    // ✅ NEW: Extract user location from SDK data
+    const deviceLocationEvent = sdkData?.find(event => event.type === 'DEVICE_LOCATION');
+    const userLocation = deviceLocationEvent?.payload;
+
+    if (userLocation) {
+      console.log(`📍 [SDK] User location detected:`);
+      console.log(`   Lat: ${userLocation.latitude}, Lon: ${userLocation.longitude}`);
+      console.log(`   Address: ${userLocation.address?.formattedAddress}`);
+    }
+
+    // ✅ NEW: Calculate distance if we have both agent and user locations
+    const agentData = sessions[sessionId].agentData;
+    
+    if (userLocation && agentData?.latitude && agentData?.longitude) {
+      console.log(`📏 [DISTANCE] Calculating agent-user distance...`);
+      console.log(`   Agent: ${agentData.latitude}, ${agentData.longitude}`);
+      console.log(`   User: ${userLocation.latitude}, ${userLocation.longitude}`);
+
+      try {
+        // Call internal distance calculation endpoint
+        const distanceResponse = await axios.post(
+          `http://localhost:${PORT}/api/calculate-agent-user-distance`,
+          {
+            agentLat: agentData.latitude,
+            agentLon: agentData.longitude,
+            agentName: agentData.customerName || 'Agent',
+            agentAddress: agentData.address || 'Agent Location',
+            userLat: userLocation.latitude,
+            userLon: userLocation.longitude,
+            userName: agentData.customerName || 'User',
+            userAddress: userLocation.address?.formattedAddress || 'User Location'
+          }
+        );
+
+        if (distanceResponse.data.success) {
+          // Add distance data to SDK events
+          const distanceData = distanceResponse.data;
+          
+          sessions[sessionId].sdkData.push({
+            type: 'AGENT_USER_DISTANCE',
+            payload: distanceData,
+            timestamp: Date.now(),
+            userId: agentData.email || sessionId,
+            SDK: 'Bargad-v1.0.0'
+          });
+
+          console.log(`✅ [DISTANCE] Distance calculated: ${distanceData.distance.km} km`);
+          console.log(`   Risk Level: ${distanceData.riskAnalysis.riskLevel}`);
+          console.log(`   Recommendation: ${distanceData.riskAnalysis.recommendation}`);
+        }
+      } catch (distanceError) {
+        console.error('❌ [DISTANCE] Calculation error:', distanceError.message);
+      }
+    } else {
+      console.warn('⚠️ [DISTANCE] Cannot calculate - missing location data');
+      if (!userLocation) console.log('   Missing: User location from SDK');
+      if (!agentData) console.log('   Missing: Agent data from form');
+      if (!agentData?.latitude) console.log('   Missing: Agent latitude');
+      if (!agentData?.longitude) console.log('   Missing: Agent longitude');
+    }
+
+    // ✅ Submit to Scoreplex
     try {
       console.log('🔍 [SCOREPLEX] Submitting search...');
       
@@ -522,16 +586,15 @@ app.post('/api/save-sdk-data', async (req, res) => {
       if (!scoreplexApiKey) {
         console.warn('⚠️ [SCOREPLEX] API key not configured');
       } else {
-        // Get agent location from localStorage to extract user info
         const agentData = sessions[sessionId].agentData || {};
         
         // Prepare Scoreplex request
         const scoreplexPayload = {
           email: agentData.email || '',
-          phone: agentData.phone || '',
-          ip: sdkData?.ip || '',
-          first_name: agentData.firstName || '',
-          last_name: agentData.lastName || '',
+          phone: agentData.phoneNumber || '',
+          ip: userLocation?.address?.latitude ? `${userLocation.address.latitude},${userLocation.address.longitude}` : '',
+          first_name: agentData.customerName?.split(' ')[0] || '',
+          last_name: agentData.customerName?.split(' ').slice(1).join(' ') || '',
           verification: true
         };
 
@@ -557,13 +620,13 @@ app.post('/api/save-sdk-data', async (req, res) => {
       }
     } catch (scoreplexError) {
       console.error('❌ [SCOREPLEX] Submit error:', scoreplexError.message);
-      // Continue even if Scoreplex fails
     }
 
     res.json({
       success: true,
       message: 'SDK data saved successfully',
-      sessionId: sessionId
+      sessionId: sessionId,
+      hasDistance: sessions[sessionId].sdkData.some(e => e.type === 'AGENT_USER_DISTANCE')
     });
 
   } catch (error) {
@@ -574,6 +637,7 @@ app.post('/api/save-sdk-data', async (req, res) => {
     });
   }
 });
+
 
 // ==========================================
 // ✅ NEW: CHECK VERIFICATION STATUS (FOR POLLING)
@@ -613,6 +677,12 @@ app.get('/api/check-verification/:sessionId', (req, res) => {
 // ==========================================
 // ✅ GET DASHBOARD DATA WITH SCOREPLEX INTELLIGENCE
 // ==========================================
+// ==========================================
+// ✅ GET DASHBOARD DATA WITH SCOREPLEX INTELLIGENCE + SDK DATA
+// ==========================================
+// ==========================================
+// ✅ GET DASHBOARD DATA WITH SCOREPLEX INTELLIGENCE + SDK DATA
+// ==========================================
 app.get('/api/dashboard-data/:sessionId', async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -628,21 +698,22 @@ app.get('/api/dashboard-data/:sessionId', async (req, res) => {
       });
     }
 
-    if (!session.sdkData) {
-      return res.status(404).json({
-        success: false,
-        error: 'SDK data not yet available'
-      });
-    }
+    // ✅ DEBUG LOGS - Check what's in session
+    console.log('📊 [DASHBOARD] Session data check:');
+    console.log('   session.sdkData exists?', !!session.sdkData);
+    console.log('   session.sdkData is array?', Array.isArray(session.sdkData));
+    console.log('   session.sdkData length:', session.sdkData?.length);
+    console.log('   session.agentData exists?', !!session.agentData);
 
-    // Initialize intelligence with defaults
+    // ✅ Initialize intelligence with SDK data from session
     let intelligence = {
       email: {},
       phone: {},
       ip: {},
       darknet: {},
       overallScore: 0,
-      scoreplexData: null
+      scoreplexData: null,
+      sdkData: session.sdkData || [] // ✅ Set SDK data once here
     };
 
     // ✅ Fetch Scoreplex results if task exists
@@ -798,6 +869,9 @@ app.get('/api/dashboard-data/:sessionId', async (req, res) => {
           };
 
           intelligence.scoreplexData = report;
+          
+          // ❌ REMOVED - Don't set sdkData here again!
+          // It's already set at the beginning
         }
       } catch (scoreplexError) {
         console.error('❌ [SCOREPLEX] Fetch error:', scoreplexError.message);
@@ -806,17 +880,23 @@ app.get('/api/dashboard-data/:sessionId', async (req, res) => {
       console.warn('⚠️ [SCOREPLEX] No task ID found for this session');
     }
 
+    // ✅ Final logs before sending response
     console.log(`✅ [DASHBOARD] Data prepared for session: ${sessionId}`);
+    console.log(`   - Agent Data: ${session.agentData?.customerName || 'Not available'}`);
+    console.log(`   - SDK Events in session: ${session.sdkData?.length || 0}`);
+    console.log(`   - SDK Events in intelligence: ${intelligence.sdkData?.length || 0}`);
+    console.log(`   - Has Distance: ${intelligence.sdkData?.some(e => e.type === 'AGENT_USER_DISTANCE') || false}`);
 
     res.json({
       success: true,
-      sdkData: session.sdkData,
-      intelligence: intelligence,
+      customerData: session.agentData || {},
+      intelligence: intelligence, // ✅ Contains sdkData from session
       sessionInfo: {
         sessionId: session.sessionId,
         createdAt: session.createdAt,
         updatedAt: session.updatedAt,
-        hasScoreplex: !!session.scoreplexTaskId
+        hasScoreplex: !!session.scoreplexTaskId,
+        hasSDK: !!(session.sdkData && session.sdkData.length > 0)
       }
     });
 
@@ -828,6 +908,8 @@ app.get('/api/dashboard-data/:sessionId', async (req, res) => {
     });
   }
 });
+
+
 
 
 // ==========================================
