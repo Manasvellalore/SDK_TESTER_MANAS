@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "../styles/OTPVerification.css";
 
-
 function OTPVerification() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -11,7 +10,7 @@ function OTPVerification() {
   const CORRECT_OTP = "202666";
   const [otp, setOtp] = useState("");
   const [consent, setConsent] = useState(false);
-  const [verificationMessage, setVerificationMessage] = useState(""); // 🆕 Show message instead of disabling
+  const [verificationMessage, setVerificationMessage] = useState("");
   const [sdkReady, setSdkReady] = useState(false);
   const [bargadInstance, setBargadInstance] = useState(null);
   const [loadError, setLoadError] = useState(null);
@@ -19,8 +18,7 @@ function OTPVerification() {
   const [otpAttempts, setOtpAttempts] = useState([]);
   const [showMap, setShowMap] = useState(false); 
   const [mapInitialized, setMapInitialized] = useState(false);
-const [isVerified, setIsVerified] = useState(false);
-
+  const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -59,12 +57,8 @@ const [isVerified, setIsVerified] = useState(false);
           s.remove();
         });
 
-          // ✅ Set backend URL for SDK before loading
-window.BARGAD_API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-console.log('🌍 [REACT] Setting SDK backend URL:', window.BARGAD_API_URL);
-
-scriptElement = document.createElement("script");
-
+        window.BARGAD_API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+        console.log('🌍 [REACT] Setting SDK backend URL:', window.BARGAD_API_URL);
 
         scriptElement = document.createElement("script");
         scriptElement.src = `/sdk/bargad-bundle.js?v=${Date.now()}`;
@@ -220,8 +214,6 @@ scriptElement = document.createElement("script");
     };
   }, [sessionId]);
 
-  
-
   const handleOtpChange = (e) => {
     const value = e.target.value.replace(/\D/g, '');
     if (value.length <= 6) {
@@ -229,267 +221,259 @@ scriptElement = document.createElement("script");
     }
   };
 
-  // 🆕 Verify OTP - Just shows message, doesn't block anything
- const handleVerifyOtp = async () => {
-  console.log('🔍 [DEBUG] OTP entered:', otp);
-  console.log('🔍 [DEBUG] Correct OTP:', CORRECT_OTP);
-  console.log('🔍 [DEBUG] Match?', otp === CORRECT_OTP);
-  const attemptTimestamp = Date.now();
-  const newAttempt = {
-    otp: otp,
-    timestamp: attemptTimestamp,
-    isCorrect: otp === CORRECT_OTP
-  };
-
-  // Add to attempts array
-  const updatedAttempts = [...otpAttempts, newAttempt];
-  setOtpAttempts(updatedAttempts);
-
-  if (otp === CORRECT_OTP) {
-    // ✅ CORRECT OTP
-    setIsVerified(true);
+  // ✅ MODIFIED: Added backend SDK data submission
+  const handleVerifyOtp = async () => {
+    console.log('🔍 [DEBUG] OTP entered:', otp);
+    console.log('🔍 [DEBUG] Correct OTP:', CORRECT_OTP);
+    console.log('🔍 [DEBUG] Match?', otp === CORRECT_OTP);
     
-    // Calculate time differences between attempts
-    const timeDiffs = calculateTimeDiffs(updatedAttempts);
-    const wrongAttempts = updatedAttempts.filter(a => !a.isCorrect);
-    const totalAttempts = updatedAttempts.length;
-    
-    // Fraud score calculation
-    const fraudScore = calculateOtpRisk(totalAttempts);
-    const isRapidGuessing = timeDiffs.some(t => t < 3); // Less than 3 seconds = bot
-    
-    // Create SDK-style OTP VERIFICATION event
-    const otpEvent = {
-      type: "OTP_VERIFICATION",
-      payload: {
-        // Attempt summary (SDK style)
-        verificationAttempts: totalAttempts,
-        verificationAttemptType: totalAttempts === 1 ? "SINGLE" : "MULTIPLE",
-        
-        // Detailed attempt log
-        attempts: updatedAttempts.map(a => ({
-          otpValue: a.otp,
-          attemptTimestamp: a.timestamp,
-          isCorrect: a.isCorrect,
-          attemptNumber: updatedAttempts.indexOf(a) + 1
-        })),
-        
-        // Time analysis
-        firstAttemptTimestamp: updatedAttempts[0].timestamp,
-        lastAttemptTimestamp: attemptTimestamp,
-        timeBetweenAttempts: timeDiffs,
-        averageTimeBetweenAttempts: timeDiffs.length > 0 
-          ? (timeDiffs.reduce((a, b) => a + b, 0) / timeDiffs.length).toFixed(2)
-          : 0,
-        
-        // Fraud scoring (match SDK style)
-        fraudScore: {
-          score: fraudScore,
-          level: fraudScore > 70 ? "HIGH_RISK" : fraudScore > 40 ? "MEDIUM_RISK" : "LOW_RISK",
-          reasons: [
-            `${totalAttempts} verification ${totalAttempts === 1 ? 'attempt' : 'attempts'}`,
-            `${wrongAttempts.length} wrong OTP ${wrongAttempts.length === 1 ? 'entry' : 'entries'}`,
-            totalAttempts > 3 ? "Multiple failed attempts - suspicious" : "Normal verification behavior",
-            isRapidGuessing ? "Rapid guessing detected - bot suspected" : "Normal timing pattern"
-          ],
-          confidence: totalAttempts > 1 ? 0.8 : 0.9
-        },
-        
-        // Verification pattern analysis
-        verificationPattern: {
-          patternType: totalAttempts > 3 ? "TRIAL_AND_ERROR" : totalAttempts > 1 ? "RETRY" : "FIRST_ATTEMPT_SUCCESS",
-          suspicionLevel: totalAttempts > 3 ? "HIGH" : totalAttempts > 1 ? "MEDIUM" : "LOW",
-          isRapidGuessing: isRapidGuessing,
-          behaviorIndicator: isRapidGuessing ? "BOT_LIKE" : "HUMAN_LIKE"
-        },
-        
-        // Summary statistics
-        totalAttempts: totalAttempts,
-        wrongAttempts: wrongAttempts.length,
-        correctAttempts: updatedAttempts.filter(a => a.isCorrect).length,
-        finalStatus: "VERIFIED",
-        
-        // Risk assessment
-        riskScore: fraudScore,
-        riskLevel: fraudScore > 70 ? "HIGH" : fraudScore > 40 ? "MEDIUM" : "LOW",
-        isSuspicious: totalAttempts > 2,
-        
-        // OTP details
-        otpLength: CORRECT_OTP.length,
-        currentOtpValue: otp
-      },
-      timestamp: Date.now(),
-      userId: sessionId || "otp-user-1",
-      SDK: "Bargad-v1.0.0"
+    const attemptTimestamp = Date.now();
+    const newAttempt = {
+      otp: otp,
+      timestamp: attemptTimestamp,
+      isCorrect: otp === CORRECT_OTP
     };
 
-    // Add to SDK events
-    if (bargadInstance && bargadInstance.allEvents) {
-      bargadInstance.allEvents.push(otpEvent);
-      console.log('✅ [OTP_VERIFICATION] Event added to SDK');
-      console.log('📊 [OTP_VERIFICATION] Total attempts:', totalAttempts);
-      console.log('📊 [OTP_VERIFICATION] Fraud score:', fraudScore);
-    }
+    const updatedAttempts = [...otpAttempts, newAttempt];
+    setOtpAttempts(updatedAttempts);
 
-    // Calculate Agent-User Distance BEFORE navigating
-console.log('🗺️ [AGENT-USER] Starting distance calculation...');
-
-let events = bargadInstance?.allEvents || [];
-const userLocationEvent = events.find((e) => e.type === "DEVICE_LOCATION");
-
-if (userLocationEvent && sessionId) {
-  console.log('✅ [AGENT-USER] User location found');
-
-  const agentDataString = localStorage.getItem(`agent_location_${sessionId}`);
-  console.log('🔍 [AGENT-USER] Agent data:', agentDataString ? 'Found' : 'NOT FOUND');
-
-  if (agentDataString) {
-    const agentData = JSON.parse(agentDataString);
-    console.log('✅ [AGENT-USER] Agent location parsed');
-
-    try {
-      console.log('🗺️ [AGENT-USER] Calling MapmyIndia API...');
-
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-
-      const response = await fetch(`${API_BASE_URL}/api/calculate-distance`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+    if (otp === CORRECT_OTP) {
+      // ✅ CORRECT OTP
+      setIsVerified(true);
+      
+      const timeDiffs = calculateTimeDiffs(updatedAttempts);
+      const wrongAttempts = updatedAttempts.filter(a => !a.isCorrect);
+      const totalAttempts = updatedAttempts.length;
+      
+      const fraudScore = calculateOtpRisk(totalAttempts);
+      const isRapidGuessing = timeDiffs.some(t => t < 3);
+      
+      const otpEvent = {
+        type: "OTP_VERIFICATION",
+        payload: {
+          verificationAttempts: totalAttempts,
+          verificationAttemptType: totalAttempts === 1 ? "SINGLE" : "MULTIPLE",
+          attempts: updatedAttempts.map(a => ({
+            otpValue: a.otp,
+            attemptTimestamp: a.timestamp,
+            isCorrect: a.isCorrect,
+            attemptNumber: updatedAttempts.indexOf(a) + 1
+          })),
+          firstAttemptTimestamp: updatedAttempts[0].timestamp,
+          lastAttemptTimestamp: attemptTimestamp,
+          timeBetweenAttempts: timeDiffs,
+          averageTimeBetweenAttempts: timeDiffs.length > 0 
+            ? (timeDiffs.reduce((a, b) => a + b, 0) / timeDiffs.length).toFixed(2)
+            : 0,
+          fraudScore: {
+            score: fraudScore,
+            level: fraudScore > 70 ? "HIGH_RISK" : fraudScore > 40 ? "MEDIUM_RISK" : "LOW_RISK",
+            reasons: [
+              `${totalAttempts} verification ${totalAttempts === 1 ? 'attempt' : 'attempts'}`,
+              `${wrongAttempts.length} wrong OTP ${wrongAttempts.length === 1 ? 'entry' : 'entries'}`,
+              totalAttempts > 3 ? "Multiple failed attempts - suspicious" : "Normal verification behavior",
+              isRapidGuessing ? "Rapid guessing detected - bot suspected" : "Normal timing pattern"
+            ],
+            confidence: totalAttempts > 1 ? 0.8 : 0.9
+          },
+          verificationPattern: {
+            patternType: totalAttempts > 3 ? "TRIAL_AND_ERROR" : totalAttempts > 1 ? "RETRY" : "FIRST_ATTEMPT_SUCCESS",
+            suspicionLevel: totalAttempts > 3 ? "HIGH" : totalAttempts > 1 ? "MEDIUM" : "LOW",
+            isRapidGuessing: isRapidGuessing,
+            behaviorIndicator: isRapidGuessing ? "BOT_LIKE" : "HUMAN_LIKE"
+          },
+          totalAttempts: totalAttempts,
+          wrongAttempts: wrongAttempts.length,
+          correctAttempts: updatedAttempts.filter(a => a.isCorrect).length,
+          finalStatus: "VERIFIED",
+          riskScore: fraudScore,
+          riskLevel: fraudScore > 70 ? "HIGH" : fraudScore > 40 ? "MEDIUM" : "LOW",
+          isSuspicious: totalAttempts > 2,
+          otpLength: CORRECT_OTP.length,
+          currentOtpValue: otp
         },
-        body: JSON.stringify({
-          userLat: agentData.location.latitude,
-          userLon: agentData.location.longitude,
-          bankLat: userLocationEvent.payload.latitude,
-          bankLon: userLocationEvent.payload.longitude
-        })
-      });
+        timestamp: Date.now(),
+        userId: sessionId || "otp-user-1",
+        SDK: "Bargad-v1.0.0"
+      };
 
-      if (response.ok) {
-        const data = await response.json();
+      if (bargadInstance && bargadInstance.allEvents) {
+        bargadInstance.allEvents.push(otpEvent);
+        console.log('✅ [OTP_VERIFICATION] Event added to SDK');
+        console.log('📊 [OTP_VERIFICATION] Total attempts:', totalAttempts);
+        console.log('📊 [OTP_VERIFICATION] Fraud score:', fraudScore);
+      }
 
-        if (data.success) {
-          console.log('✅ [AGENT-USER] Distance:', data.distanceKm, 'km');
+      // Calculate Agent-User Distance
+      console.log('🗺️ [AGENT-USER] Starting distance calculation...');
 
-          const agentUserDistanceEvent = {
-            type: "AGENT_USER_DISTANCE",
-            payload: {
-              agentLocation: {
-                latitude: agentData.location.latitude,
-                longitude: agentData.location.longitude,
-                name: agentData.agentName || 'Agent',
-                address: agentData.location.address || 'Agent Location'
-              },
-              userLocation: {
-                latitude: userLocationEvent.payload.latitude,
-                longitude: userLocationEvent.payload.longitude,
-                name: 'Customer',
-                address: userLocationEvent.payload.address?.formattedAddress || 'User Location'
-              },
-              distance: {
-                km: data.distanceKm,
-                meters: Math.round(data.distanceKm * 1000),
-                miles: parseFloat((data.distanceKm * 0.621371).toFixed(2))
-              },
-              duration: {
-                minutes: data.durationMinutes,
-                formatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`
-              },
-              drivingDistance: {
-                km: data.distanceKm,
-                durationFormatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`
-              },
-              calculationMethod: "MAPPLS_DISTANCE_MATRIX_API",
-              riskAnalysis: assessAgentUserRisk(data.distanceKm)
-            },
-            timestamp: Date.now(),
-            userId: sessionId || "otp-user-1",
-            SDK: "Bargad-v1.0.0"
-          };
+      let events = bargadInstance?.allEvents || [];
+      const userLocationEvent = events.find((e) => e.type === "DEVICE_LOCATION");
 
-          events.push(agentUserDistanceEvent);
-          console.log('✅ [AGENT-USER] Event added! Total events:', events.length);
+      if (userLocationEvent && sessionId) {
+        console.log('✅ [AGENT-USER] User location found');
+
+        const agentDataString = localStorage.getItem(`agent_location_${sessionId}`);
+        console.log('🔍 [AGENT-USER] Agent data:', agentDataString ? 'Found' : 'NOT FOUND');
+
+        if (agentDataString) {
+          const agentData = JSON.parse(agentDataString);
+          console.log('✅ [AGENT-USER] Agent location parsed');
+
+          try {
+            console.log('🗺️ [AGENT-USER] Calling MapmyIndia API...');
+
+            const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+
+            const response = await fetch(`${API_BASE_URL}/api/calculate-distance`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                userLat: agentData.location.latitude,
+                userLon: agentData.location.longitude,
+                bankLat: userLocationEvent.payload.latitude,
+                bankLon: userLocationEvent.payload.longitude
+              })
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+
+              if (data.success) {
+                console.log('✅ [AGENT-USER] Distance:', data.distanceKm, 'km');
+
+                const agentUserDistanceEvent = {
+                  type: "AGENT_USER_DISTANCE",
+                  payload: {
+                    agentLocation: {
+                      latitude: agentData.location.latitude,
+                      longitude: agentData.location.longitude,
+                      name: agentData.agentName || 'Agent',
+                      address: agentData.location.address || 'Agent Location'
+                    },
+                    userLocation: {
+                      latitude: userLocationEvent.payload.latitude,
+                      longitude: userLocationEvent.payload.longitude,
+                      name: 'Customer',
+                      address: userLocationEvent.payload.address?.formattedAddress || 'User Location'
+                    },
+                    distance: {
+                      km: data.distanceKm,
+                      meters: Math.round(data.distanceKm * 1000),
+                      miles: parseFloat((data.distanceKm * 0.621371).toFixed(2))
+                    },
+                    duration: {
+                      minutes: data.durationMinutes,
+                      formatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`
+                    },
+                    drivingDistance: {
+                      km: data.distanceKm,
+                      durationFormatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`
+                    },
+                    calculationMethod: "MAPPLS_DISTANCE_MATRIX_API",
+                    riskAnalysis: assessAgentUserRisk(data.distanceKm)
+                  },
+                  timestamp: Date.now(),
+                  userId: sessionId || "otp-user-1",
+                  SDK: "Bargad-v1.0.0"
+                };
+
+                events.push(agentUserDistanceEvent);
+                console.log('✅ [AGENT-USER] Event added! Total events:', events.length);
+              } else {
+                console.error('❌ [AGENT-USER] API error:', data.error);
+              }
+            } else {
+              console.error('❌ [AGENT-USER] HTTP error:', response.status);
+            }
+          } catch (err) {
+            console.error('❌ [AGENT-USER] Fetch failed:', err);
+          }
         } else {
-          console.error('❌ [AGENT-USER] API error:', data.error);
+          console.warn('⚠️ [AGENT-USER] No agent location in localStorage');
         }
       } else {
-        console.error('❌ [AGENT-USER] HTTP error:', response.status);
+        console.warn('⚠️ [AGENT-USER] Missing user location or sessionId');
       }
-    } catch (err) {
-      console.error('❌ [AGENT-USER] Fetch failed:', err);
+
+      // ✅ NEW: Send SDK data to backend
+      console.log('💾 [BACKEND] Sending SDK data to backend...');
+      
+      try {
+        const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+        
+        const sdkDataResponse = await fetch(`${API_BASE_URL}/api/save-sdk-data`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            sessionId: sessionId,
+            sdkData: {
+              allEvents: events,
+              deviceId: events.find(e => e.type === 'DEVICE_ID')?.payload,
+              location: events.find(e => e.type === 'DEVICE_LOCATION')?.payload,
+              ip: events.find(e => e.type === 'DEVICE_LOCATION')?.payload?.ip,
+              screenSize: events.find(e => e.type === 'DEVICE_SCREEN_SIZE')?.payload,
+              cpuCores: events.find(e => e.type === 'CPU_CORES')?.payload,
+              gyroscope: events.find(e => e.type === 'GYROSCOPE')?.payload,
+              accelerometer: events.find(e => e.type === 'ACCELEROMETER')?.payload,
+              orientation: events.find(e => e.type === 'SCREEN_ORIENTATION')?.payload,
+              otpVerification: otpEvent,
+              agentUserDistance: events.find(e => e.type === 'AGENT_USER_DISTANCE')?.payload,
+              totalEvents: events.length,
+            }
+          })
+        });
+
+        if (sdkDataResponse.ok) {
+          console.log('✅ [BACKEND] SDK data saved successfully');
+        } else {
+          console.warn('⚠️ [BACKEND] Failed to save SDK data');
+        }
+      } catch (err) {
+        console.error('❌ [BACKEND] Error saving SDK data:', err);
+      }
+
+      // Mark session as verified
+      if (sessionId) {
+        console.log(`✅ [SESSION] Marking session ${sessionId} as verified`);
+        localStorage.setItem(
+          `verification_${sessionId}`,
+          JSON.stringify({
+            verified: true,
+            timestamp: new Date().toISOString(),
+            otp: otp,
+            eventCount: events.length,
+          })
+        );
+
+        window.dispatchEvent(new Event("storage"));
+        console.log('📡 [SESSION] Agent Portal notified');
+      }
+
+      // Show success message
+      setVerificationMessage("✅ OTP Verified! Redirecting...");
+
+      // ✅ CHANGED: Navigate to Thank You page instead of results
+      setTimeout(() => {
+        console.log('✅ [OTP] Navigating to Thank You page...');
+        navigate('/thank-you');
+      }, 1500);
+
+    } else {
+      // ❌ WRONG OTP
+      setVerificationMessage(`⚠️ Wrong OTP. Attempt ${updatedAttempts.length}. Try again.`);
+      
+      setTimeout(() => {
+        setVerificationMessage("");
+      }, 3000);
     }
-  } else {
-    console.warn('⚠️ [AGENT-USER] No agent location in localStorage');
-  }
-} else {
-  console.warn('⚠️ [AGENT-USER] Missing user location or sessionId');
-}
+  };
 
-// Save ALL events (including agent-user distance)
-console.log('💾 [SAVE] Saving', events.length, 'events');
-sessionStorage.setItem('otpEvents', JSON.stringify(events));
-sessionStorage.setItem('otpData', JSON.stringify({ 
-  otp, 
-  sessionId, 
-  timestamp: new Date().toISOString() 
-}));
-
-    // Show success message
-    setVerificationMessage("✅ OTP Verified! Redirecting...");
-
-    // Save all SDK events to sessionStorage before navigating
-if (bargadInstance && bargadInstance.allEvents) {
-  sessionStorage.setItem('otpEvents', JSON.stringify(bargadInstance.allEvents));
-  console.log('💾 [OTP] Saved', bargadInstance.allEvents.length, 'events to sessionStorage');
-}
-
-if (sessionId) {
-  console.log(`✅ [SESSION] Marking session ${sessionId} as verified`);
-  localStorage.setItem(
-    `verification_${sessionId}`,
-    JSON.stringify({
-      verified: true,
-      timestamp: new Date().toISOString(),
-      otp: otp,
-      eventCount: bargadInstance?.allEvents?.length || 0,
-    })
-  );
-
-  window.dispatchEvent(new Event("storage"));
-  console.log('📡 [SESSION] Agent Portal notified');
-}
-
-// Show success message
-setVerificationMessage("✅ OTP Verified! Redirecting...");
-
-// Auto-navigate to results after 1.5 seconds
-setTimeout(() => {
-  console.log('✅ [OTP] Navigating to results...');
-  navigate('/otp-results');
-}, 1500);
-
-
-    // Auto-navigate to results after 1.5 seconds
-    setTimeout(() => {
-      console.log('✅ [OTP] Navigating to results...');
-      navigate('/otp-results');
-    }, 1500);
-
-  } else {
-    // ❌ WRONG OTP
-    setVerificationMessage(`⚠️ Wrong OTP. Attempt ${updatedAttempts.length}. Try again.`);
-    
-    // Clear message after 3 seconds
-    setTimeout(() => {
-      setVerificationMessage("");
-    }, 3000);
-  }
-};
-
-
-
-
-  // Submit form
+  // Submit form - KEEPING ORIGINAL FUNCTIONALITY
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -528,91 +512,84 @@ setTimeout(() => {
           const agentDataString = localStorage.getItem(`agent_location_${sessionId}`);
 
           if (agentDataString) {
-            if (agentDataString) {
-  const agentData = JSON.parse(agentDataString);
-  console.log('✅ Agent location found');
+            const agentData = JSON.parse(agentDataString);
+            console.log('✅ Agent location found');
 
-  try {
-    console.log('🗺️ [AGENT-USER] Calling backend API with MapmyIndia...');
+            try {
+              console.log('🗺️ [AGENT-USER] Calling backend API with MapmyIndia...');
 
-    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+              const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
-    // 🆕 Use same endpoint as bank distance (calculate-distance)
-    const response = await fetch(`${API_BASE_URL}/api/calculate-distance`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        userLat: agentData.location.latitude,     // Agent is "source"
-        userLon: agentData.location.longitude,
-        bankLat: userLocationEvent.payload.latitude,   // User is "destination"
-        bankLon: userLocationEvent.payload.longitude
-      })
-    });
+              const response = await fetch(`${API_BASE_URL}/api/calculate-distance`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  userLat: agentData.location.latitude,
+                  userLon: agentData.location.longitude,
+                  bankLat: userLocationEvent.payload.latitude,
+                  bankLon: userLocationEvent.payload.longitude
+                })
+              });
 
-    if (response.ok) {
-      const data = await response.json();
+              if (response.ok) {
+                const data = await response.json();
 
-      if (data.success) {
-        console.log('✅ [AGENT-USER] Distance calculated via MapmyIndia:', data.distanceKm, 'km');
+                if (data.success) {
+                  console.log('✅ [AGENT-USER] Distance calculated via MapmyIndia:', data.distanceKm, 'km');
 
-        // Create agent-user distance event (same format as bank distance)
-        const agentUserDistanceEvent = {
-          type: "AGENT_USER_DISTANCE",
-          payload: {
-            agentLocation: {
-              latitude: agentData.location.latitude,
-              longitude: agentData.location.longitude,
-              name: agentData.agentName || 'Agent',
-              address: agentData.location.address || 'Agent Location'
-            },
-            userLocation: {
-              latitude: userLocationEvent.payload.latitude,
-              longitude: userLocationEvent.payload.longitude,
-              name: 'Customer',
-              address: userLocationEvent.payload.address?.formattedAddress || 'User Location'
-            },
-            distance: {
-              km: data.distanceKm,
-              meters: Math.round(data.distanceKm * 1000),
-              miles: parseFloat((data.distanceKm * 0.621371).toFixed(2))
-            },
-            duration: {
-              minutes: data.durationMinutes,
-              formatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`
-            },
-            drivingDistance: {
-              km: data.distanceKm,
-              durationFormatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`
-            },
-            calculationMethod: "MAPPLS_DISTANCE_MATRIX_API",
-            riskAnalysis: assessAgentUserRisk(data.distanceKm),
-            isSuspicious: data.distanceKm > 50,
-            riskLevel: data.distanceKm > 100 ? 'CRITICAL' : data.distanceKm > 50 ? 'HIGH' : 'LOW',
-            riskScore: data.distanceKm > 100 ? 90 : data.distanceKm > 50 ? 70 : 30
-          },
-          timestamp: Date.now(),
-          userId: sessionId || "otp-user-1",
-          SDK: "Bargad-v1.0.0"
-        };
+                  const agentUserDistanceEvent = {
+                    type: "AGENT_USER_DISTANCE",
+                    payload: {
+                      agentLocation: {
+                        latitude: agentData.location.latitude,
+                        longitude: agentData.location.longitude,
+                        name: agentData.agentName || 'Agent',
+                        address: agentData.location.address || 'Agent Location'
+                      },
+                      userLocation: {
+                        latitude: userLocationEvent.payload.latitude,
+                        longitude: userLocationEvent.payload.longitude,
+                        name: 'Customer',
+                        address: userLocationEvent.payload.address?.formattedAddress || 'User Location'
+                      },
+                      distance: {
+                        km: data.distanceKm,
+                        meters: Math.round(data.distanceKm * 1000),
+                        miles: parseFloat((data.distanceKm * 0.621371).toFixed(2))
+                      },
+                      duration: {
+                        minutes: data.durationMinutes,
+                        formatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`
+                      },
+                      drivingDistance: {
+                        km: data.distanceKm,
+                        durationFormatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`
+                      },
+                      calculationMethod: "MAPPLS_DISTANCE_MATRIX_API",
+                      riskAnalysis: assessAgentUserRisk(data.distanceKm),
+                      isSuspicious: data.distanceKm > 50,
+                      riskLevel: data.distanceKm > 100 ? 'CRITICAL' : data.distanceKm > 50 ? 'HIGH' : 'LOW',
+                      riskScore: data.distanceKm > 100 ? 90 : data.distanceKm > 50 ? 70 : 30
+                    },
+                    timestamp: Date.now(),
+                    userId: sessionId || "otp-user-1",
+                    SDK: "Bargad-v1.0.0"
+                  };
 
-        events.push(agentUserDistanceEvent);
-        console.log('✅ [AGENT-USER] Distance event added (MapmyIndia)');
-      } else {
-        console.error('❌ [AGENT-USER] API returned error:', data.error);
-      }
-    } else {
-      console.error('❌ [AGENT-USER] Backend returned error status:', response.status);
-    }
-  } catch (err) {
-    console.error('❌ [AGENT-USER] API call failed:', err);
-  }
-} else {
-  console.warn('⚠️ [AGENT-USER] Agent location not found in localStorage');
-}
-          }
- else {
+                  events.push(agentUserDistanceEvent);
+                  console.log('✅ [AGENT-USER] Distance event added (MapmyIndia)');
+                } else {
+                  console.error('❌ [AGENT-USER] API returned error:', data.error);
+                }
+              } else {
+                console.error('❌ [AGENT-USER] Backend returned error status:', response.status);
+              }
+            } catch (err) {
+              console.error('❌ [AGENT-USER] API call failed:', err);
+            }
+          } else {
             console.warn('⚠️ [AGENT-USER] Agent location not found in localStorage');
           }
         } else {
@@ -759,7 +736,6 @@ setTimeout(() => {
             />
           </div>
 
-          {/* 🆕 Verify button - Never disabled, just shows message */}
           <button
             type="button"
             id="otp-verify-btn"
@@ -770,29 +746,23 @@ setTimeout(() => {
             VERIFY OTP
           </button>
 
-          {/* 🆕 Show verification message */}
-          {/* 🆕 Toast Notification */}
-{verificationMessage && (
-  <div className={`toast-notification ${verificationMessage.includes('✅') ? 'toast-success' : 'toast-error'}`}>
-    <div className="toast-icon">
-      {verificationMessage.includes('✅') ? '✅' : '⚠️'}
-    </div>
-    <div className="toast-content">
-      <div className="toast-title">
-        {verificationMessage.includes('✅') ? 'Success!' : 'Error'}
-      </div>
-      <div className="toast-message">
-        {verificationMessage.replace('✅', '').replace('⚠️', '').trim()}
-      </div>
-    </div>
-  </div>
-)}
-
-
-          {/* Submit button */}
+          {verificationMessage && (
+            <div className={`toast-notification ${verificationMessage.includes('✅') ? 'toast-success' : 'toast-error'}`}>
+              <div className="toast-icon">
+                {verificationMessage.includes('✅') ? '✅' : '⚠️'}
+              </div>
+              <div className="toast-content">
+                <div className="toast-title">
+                  {verificationMessage.includes('✅') ? 'Success!' : 'Error'}
+                </div>
+                <div className="toast-message">
+                  {verificationMessage.replace('✅', '').replace('⚠️', '').trim()}
+                </div>
+              </div>
+            </div>
+          )}
         </form>
 
-        {/* 🆕 MAP SECTION - Add this before closing </div> of otp-card */}
         {showMap && (
           <div className="map-section" style={{ marginTop: '30px' }}>
             <div className="map-header">
@@ -845,30 +815,24 @@ setTimeout(() => {
     </div>
   );
 }
-    
-  
-
-
 
 const calculateTimeDiffs = (attempts) => {
   if (attempts.length < 2) return [];
   const diffs = [];
   for (let i = 1; i < attempts.length; i++) {
-    diffs.push((attempts[i].timestamp - attempts[i-1].timestamp) / 1000); // seconds
+    diffs.push((attempts[i].timestamp - attempts[i-1].timestamp) / 1000);
   }
   return diffs;
 };
 
 const calculateOtpRisk = (totalAttempts) => {
-  if (totalAttempts === 1) return 0;   // perfect
-  if (totalAttempts === 2) return 20;  // normal
-  if (totalAttempts === 3) return 40;  // suspicious
-  if (totalAttempts <= 5) return 70;   // high risk
-  return 95; // very high risk - likely bot
+  if (totalAttempts === 1) return 0;
+  if (totalAttempts === 2) return 20;
+  if (totalAttempts === 3) return 40;
+  if (totalAttempts <= 5) return 70;
+  return 95;
 };
 
-
-// Helper functions remain the same
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const toRadians = (degrees) => degrees * (Math.PI / 180);

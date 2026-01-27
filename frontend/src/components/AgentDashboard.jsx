@@ -30,7 +30,7 @@ function AgentDashboard({ userData }) {
       connectedAccounts: 6,
       dataLeaks: 1,
     },
-    profile: {
+    profileDetails: {
       birthday: 'N/A',
       age: 'N/A',
       gender: 'N/A',
@@ -310,39 +310,39 @@ function OverviewTab({ data }) {
           <div className="info-list">
             <div className="info-item">
               <span>Birthday</span>
-              <span>{data.profile.birthday}</span>
+              <span>{data.profileDetails.birthday}</span>
             </div>
             <div className="info-item">
               <span>Age</span>
-              <span>{data.profile.age}</span>
+              <span>{data.profileDetails.age}</span>
             </div>
             <div className="info-item">
               <span>Gender</span>
-              <span>{data.profile.gender}</span>
+              <span>{data.profileDetails.gender}</span>
             </div>
             <div className="info-item">
               <span>Education</span>
-              <span>{data.profile.education}</span>
+              <span>{data.profileDetails.education}</span>
             </div>
             <div className="info-item">
               <span>Position</span>
-              <span>{data.profile.position}</span>
+              <span>{data.profileDetails.position}</span>
             </div>
             <div className="info-item">
               <span>Company</span>
-              <span>{data.profile.company}</span>
+              <span>{data.profileDetails.company}</span>
             </div>
             <div className="info-item">
               <span>Employed</span>
-              <span>{data.profile.employed}</span>
+              <span>{data.profileDetails.employed}</span>
             </div>
             <div className="info-item">
               <span>Last job experience</span>
-              <span>{data.profile.lastJobExperience}</span>
+              <span>{data.profileDetails.lastJobExperience}</span>
             </div>
             <div className="info-item">
               <span>Total job experience</span>
-              <span>{data.profile.totalJobExperience}</span>
+              <span>{data.profileDetails.totalJobExperience}</span>
             </div>
           </div>
         </div>

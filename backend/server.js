@@ -5,9 +5,7 @@ const path = require('path');
 const mapRoutes = require('./routes/mapRoutes');
 require('dotenv').config();
 
-
 const app = express();
-
 
 // ==========================================
 // MIDDLEWARE
@@ -15,13 +13,10 @@ const app = express();
 app.use(cors()); // Allow frontend to call backend
 app.use(express.json()); // Parse JSON requests
 
-// NEW: Serve static files from the parent directory (where index.html is)
-// app.use(express.static(path.join(__dirname, '..')));
-
-// NEW: Explicitly serve the public folder for images and SDK
-// app.use('/public', express.static(path.join(__dirname, '../public')));
 app.use('/api/map', mapRoutes);
 
+// ✅ NEW: In-memory session storage (use database in production)
+const sessions = {};
 
 // ==========================================
 // CONFIGURATION
@@ -29,16 +24,13 @@ app.use('/api/map', mapRoutes);
 const MAPPLS_ACCESS_TOKEN = process.env.MAPPLS_ACCESS_TOKEN;
 const PORT = process.env.PORT || 3000;
 
-
 // Check if API key is loaded
 if (!MAPPLS_ACCESS_TOKEN) {
   console.warn('⚠️ WARNING: MAPPLS_ACCESS_TOKEN not found');
 }
 
-
 console.log('✅ Mappls API key loaded successfully');
 console.log('🔒 API key will remain hidden from frontend');
-
 
 // ==========================================
 // HEALTH CHECK ENDPOINT
@@ -50,11 +42,14 @@ app.get('/api', (req, res) => {
     endpoints: [
       'POST /api/reverse-geocode',
       'POST /api/geocode',
-      'POST /api/nearby-search'
+      'POST /api/nearby-search',
+      'POST /api/calculate-distance',
+      'POST /api/save-sdk-data',
+      'GET /api/check-verification/:sessionId',
+      'GET /api/dashboard-data/:sessionId'
     ]
   });
 });
-
 
 // ==========================================
 // REVERSE GEOCODING ENDPOINT
@@ -63,7 +58,6 @@ app.post('/api/reverse-geocode', async (req, res) => {
   try {
     const { latitude, longitude } = req.body;
     
-    // Validate input
     if (!latitude || !longitude) {
       return res.status(400).json({
         success: false,
@@ -73,7 +67,6 @@ app.post('/api/reverse-geocode', async (req, res) => {
     
     console.log(`🔍 Reverse geocoding: ${latitude}, ${longitude}`);
     
-    // Call Mappls Reverse Geocoding API
     const response = await axios.get(
       `https://apis.mappls.com/advancedmaps/v1/${MAPPLS_ACCESS_TOKEN}/rev_geocode`,
       {
@@ -86,7 +79,6 @@ app.post('/api/reverse-geocode', async (req, res) => {
     
     const data = response.data;
     
-    // Check if results exist
     if (!data.results || data.results.length === 0) {
       return res.json({
         success: false,
@@ -94,7 +86,6 @@ app.post('/api/reverse-geocode', async (req, res) => {
       });
     }
     
-    // Extract only address information (don't send raw API response)
     const result = data.results[0];
     const addressInfo = {
       formattedAddress: result.formatted_address || 'Address not found',
@@ -119,7 +110,6 @@ app.post('/api/reverse-geocode', async (req, res) => {
     
     console.log('✅ Address retrieved:', addressInfo.formattedAddress);
     
-    // Return only address info (API key never exposed)
     res.json({
       success: true,
       address: addressInfo
@@ -128,7 +118,6 @@ app.post('/api/reverse-geocode', async (req, res) => {
   } catch (error) {
     console.error('❌ Reverse geocoding error:', error.message);
     
-    // Handle API errors
     if (error.response) {
       console.error('API Response Error:', error.response.data);
       return res.status(error.response.status).json({
@@ -145,9 +134,6 @@ app.post('/api/reverse-geocode', async (req, res) => {
     });
   }
 });
-
-
-
 
 // ==========================================
 // GEOCODING ENDPOINT
@@ -205,9 +191,6 @@ app.post('/api/geocode', async (req, res) => {
   }
 });
 
-
-//DISTACNE OF BANK
-
 // ==========================================
 // DISTANCE CALCULATION ENDPOINT (BANK DISTANCE)
 // ==========================================
@@ -237,7 +220,6 @@ app.post('/api/calculate-distance', async (req, res) => {
       });
     }
     
-    // ✅ FIXED: Mappls uses LONGITUDE,LATITUDE (not lat,lon)
     const url = `https://apis.mappls.com/advancedmaps/v1/${mapplsApiKey}/distance_matrix/driving/${userLon},${userLat};${bankLon},${bankLat}?sources=0&destinations=1`;
     
     console.log('📡 Calling Mappls API with format: lon,lat;lon,lat');
@@ -259,7 +241,6 @@ app.post('/api/calculate-distance', async (req, res) => {
       console.log('🔍 First distance element:', distancesArray[0]);
       console.log('🔍 Array length:', distancesArray[0].length);
       
-      // Try to get the value
       let distanceMeters = null;
       let durationSeconds = null;
       
@@ -331,12 +312,9 @@ app.post('/api/calculate-distance', async (req, res) => {
   }
 });
 
-
-
 // ==========================================
-// 🆕 CALCULATE AGENT-USER DISTANCE WITH MAP
+// CALCULATE AGENT-USER DISTANCE WITH MAP
 // ==========================================
-
 app.post('/api/calculate-agent-user-distance', async (req, res) => {
   try {
     const { agentLat, agentLon, userLat, userLon, agentName, userName, agentAddress, userAddress } = req.body;
@@ -362,7 +340,7 @@ app.post('/api/calculate-agent-user-distance', async (req, res) => {
     }
 
     // Calculate straight-line distance (Haversine)
-    const R = 6371; // Earth radius in km
+    const R = 6371;
     const toRadians = (deg) => deg * (Math.PI / 180);
     const dLat = toRadians(userLat - agentLat);
     const dLon = toRadians(userLon - agentLon);
@@ -372,7 +350,6 @@ app.post('/api/calculate-agent-user-distance', async (req, res) => {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const straightLineDistance = R * c;
 
-    // Try to get driving distance from Mappls
     let drivingDistance = null;
     let drivingDuration = null;
 
@@ -389,8 +366,8 @@ app.post('/api/calculate-agent-user-distance', async (req, res) => {
         const durationSeconds = distanceData.results?.durations?.[0]?.[1];
         
         if (distanceMeters) {
-          drivingDistance = distanceMeters / 1000; // Convert to km
-          drivingDuration = Math.round(durationSeconds / 60); // Convert to minutes
+          drivingDistance = distanceMeters / 1000;
+          drivingDuration = Math.round(durationSeconds / 60);
           console.log(`✅ [AGENT-USER] Driving distance: ${drivingDistance} km`);
         }
       }
@@ -398,17 +375,14 @@ app.post('/api/calculate-agent-user-distance', async (req, res) => {
       console.warn('⚠️ [AGENT-USER] Could not get driving distance:', err.message);
     }
 
-    // Use driving distance if available, otherwise straight-line
     const finalDistance = drivingDistance || straightLineDistance;
 
-    // Format duration
     const formatDuration = (minutes) => {
       const hours = Math.floor(minutes / 60);
       const mins = Math.round(minutes % 60);
       return hours > 0 ? `${hours}h ${mins}m` : `${mins} minutes`;
     };
 
-    // Assess risk based on distance
     const assessRisk = (distanceKm) => {
       let riskScore = 0;
       let riskLevel = "LOW";
@@ -465,7 +439,6 @@ app.post('/api/calculate-agent-user-distance', async (req, res) => {
 
     const riskAnalysis = assessRisk(finalDistance);
 
-    // Prepare response
     const response = {
       success: true,
       agentLocation: {
@@ -510,11 +483,396 @@ app.post('/api/calculate-agent-user-distance', async (req, res) => {
   }
 });
 
+// ==========================================
+// ✅ NEW: SAVE SDK DATA FROM USER'S DEVICE
+// ==========================================
+app.post('/api/save-sdk-data', async (req, res) => {
+  try {
+    const { sessionId, sdkData } = req.body;
+
+    console.log(`💾 [SDK] Saving data for session: ${sessionId}`);
+
+    if (!sessionId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Session ID is required'
+      });
+    }
+
+    // Store or update session data
+    if (!sessions[sessionId]) {
+      sessions[sessionId] = {
+        sessionId,
+        verified: true,
+        createdAt: Date.now()
+      };
+    }
+
+    sessions[sessionId].sdkData = sdkData;
+    sessions[sessionId].updatedAt = Date.now();
+
+    console.log(`✅ [SDK] Data saved. Total events: ${sdkData?.totalEvents || 0}`);
+
+    // ✅ NEW: Submit to Scoreplex
+    try {
+      console.log('🔍 [SCOREPLEX] Submitting search...');
+      
+      const scoreplexApiKey = process.env.SCOREPLEX_API_KEY;
+      
+      if (!scoreplexApiKey) {
+        console.warn('⚠️ [SCOREPLEX] API key not configured');
+      } else {
+        // Get agent location from localStorage to extract user info
+        const agentData = sessions[sessionId].agentData || {};
+        
+        // Prepare Scoreplex request
+        const scoreplexPayload = {
+          email: agentData.email || '',
+          phone: agentData.phone || '',
+          ip: sdkData?.ip || '',
+          first_name: agentData.firstName || '',
+          last_name: agentData.lastName || '',
+          verification: true
+        };
+
+        console.log('📤 [SCOREPLEX] Payload:', JSON.stringify(scoreplexPayload, null, 2));
+
+        const scoreplexResponse = await axios.post(
+          `https://api.scoreplex.io/api/v1/search`,
+          scoreplexPayload,
+          {
+            params: {
+              api_key: scoreplexApiKey
+            },
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        if (scoreplexResponse.data && scoreplexResponse.data.id) {
+          sessions[sessionId].scoreplexTaskId = scoreplexResponse.data.id;
+          console.log(`✅ [SCOREPLEX] Task created: ${scoreplexResponse.data.id}`);
+        }
+      }
+    } catch (scoreplexError) {
+      console.error('❌ [SCOREPLEX] Submit error:', scoreplexError.message);
+      // Continue even if Scoreplex fails
+    }
+
+    res.json({
+      success: true,
+      message: 'SDK data saved successfully',
+      sessionId: sessionId
+    });
+
+  } catch (error) {
+    console.error('❌ [SDK] Save error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ==========================================
+// ✅ NEW: CHECK VERIFICATION STATUS (FOR POLLING)
+// ==========================================
+app.get('/api/check-verification/:sessionId', (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    console.log(`🔍 [VERIFY] Checking session: ${sessionId}`);
+
+    const session = sessions[sessionId];
+
+    if (!session) {
+      return res.json({
+        verified: false,
+        hasSDKData: false
+      });
+    }
+
+    res.json({
+      verified: session.verified || false,
+      hasSDKData: !!session.sdkData
+    });
+
+  } catch (error) {
+    console.error('❌ [VERIFY] Check error:', error.message);
+    res.status(500).json({
+      verified: false,
+      error: error.message
+    });
+  }
+});
+
+// ==========================================
+// ✅ NEW: GET DASHBOARD DATA WITH SCOREPLEX INTELLIGENCE
+// ==========================================
+// ==========================================
+// ✅ GET DASHBOARD DATA WITH SCOREPLEX INTELLIGENCE
+// ==========================================
+app.get('/api/dashboard-data/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    console.log(`📊 [DASHBOARD] Fetching data for session: ${sessionId}`);
+
+    const session = sessions[sessionId];
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        error: 'Session not found'
+      });
+    }
+
+    if (!session.sdkData) {
+      return res.status(404).json({
+        success: false,
+        error: 'SDK data not yet available'
+      });
+    }
+
+    // Initialize intelligence with defaults
+    let intelligence = {
+      email: {},
+      phone: {},
+      ip: {},
+      darknet: {},
+      overallScore: 0,
+      scoreplexData: null
+    };
+
+    // ✅ Fetch Scoreplex results if task exists
+    if (session.scoreplexTaskId) {
+      try {
+        console.log(`🔍 [SCOREPLEX] Fetching results for task: ${session.scoreplexTaskId}`);
+        
+        const scoreplexApiKey = process.env.SCOREPLEX_API_KEY;
+        
+        const scoreplexResponse = await axios.get(
+          `https://api.scoreplex.io/api/v1/search/task/${session.scoreplexTaskId}`,
+          {
+            params: {
+              api_key: scoreplexApiKey,
+              report: true
+            }
+          }
+        );
+
+        const report = scoreplexResponse.data.report;
+
+        if (report) {
+          console.log('✅ [SCOREPLEX] Results fetched successfully');
+
+          // ==========================================
+          // EMAIL INTELLIGENCE - 32 FIELDS
+          // ==========================================
+          intelligence.email = {
+            'email_addresses_amount': report.email_addresses_amount || 0,
+            'email_disposable': report.email_disposable || false,
+            'email_first_name': report.email_first_name || 'N/A',
+            'email_phone_numbers': report.email_phone_numbers || [],
+            'email_generic': report.email_generic || false,
+            'email_common': report.email_common || false,
+            'email_user_activity': report.email_user_activity || 'N/A',
+            'email_spam_trap_score': report.email_spam_trap_score || 0,
+            'email_frequent_complainer': report.email_frequent_complainer || false,
+            'email_suspect': report.email_suspect || false,
+            'email_recent_abuse': report.email_recent_abuse || false,
+            'email_domain_age': report.email_domain_age || 'N/A',
+            'email_domain_velocity': report.email_domain_velocity || 'N/A',
+            'email_domain_trust': report.email_domain_trust || 'N/A',
+            'email_suggested_domain': report.email_suggested_domain || 'N/A',
+            'email_smtp_score': report.email_smtp_score || 0,
+            'email_overall_score': report.email_overall_score || 0,
+            'email_risky_tld': report.email_risky_tld || false,
+            'email_spf_record': report.email_spf_record || false,
+            'email_dmarc_record': report.email_dmarc_record || false,
+            'email_mx_records': report.email_mx_records || false,
+            'email_valid': report.email_valid || false,
+            'email_deliverability': report.email_deliverability || 'N/A',
+            'email_google_name_valid': report.email_google_name_valid || false,
+            'email_format_is_bad': report.email_format_is_bad || false,
+            'email_has_stop_words': report.email_has_stop_words || false,
+            'email_account_vowels_count': report.email_account_vowels_count || 0,
+            'email_account_consonants_count': report.email_account_consonants_count || 0,
+            'email_account_length': report.email_account_length || 0,
+            'email_account_digit_count': report.email_account_digit_count || 0,
+            'email_social_has_profile_picture': report.email_social_has_profile_picture || false,
+            'email_addresses': report.email_addresses || []
+          };
+
+          // ==========================================
+          // PHONE INTELLIGENCE - 19 FIELDS
+          // ==========================================
+          intelligence.phone = {
+            'phone_numbers_amount': report.phone_numbers_amount || 0,
+            'phone_valid': report.phone_valid || false,
+            'phone_associated_emails': report.phone_associated_emails || [],
+            'phone_name': report.phone_name || 'N/A',
+            'phone_line_type': report.phone_line_type || 'N/A',
+            'phone_recent_abuse': report.phone_recent_abuse || false,
+            'phone_spammer': report.phone_spammer || false,
+            'phone_voip': report.phone_voip || false,
+            'phone_prepaid': report.phone_prepaid || false,
+            'phone_risky': report.phone_risky || false,
+            'phone_active': report.phone_active || false,
+            'phone_country': report.phone_country || 'N/A',
+            'phone_city': report.phone_city || 'N/A',
+            'phone_region': report.phone_region || 'N/A',
+            'phone_zip_code': report.phone_zip_code || 'N/A',
+            'phone_timezone': report.phone_timezone || 'N/A',
+            'phone_social_has_profile_picture': report.phone_social_has_profile_picture || false,
+            'phone_carrier': report.phone_carrier || 'N/A',
+            'phone_numbers_list': report.phone_numbers_list || []
+          };
+
+          // ==========================================
+          // IP INTELLIGENCE - 22 FIELDS
+          // ==========================================
+          intelligence.ip = {
+            'ip_hostname': report.ip_hostname || report.ip || 'N/A',
+            'ip_country': report.ip_country || 'N/A',
+            'ip_city': report.ip_city || 'N/A',
+            'ip_region': report.ip_region || 'N/A',
+            'ip_time_zone': report.ip_time_zone || 'N/A',
+            'ip_connection_type': report.ip_connection_type || 'N/A',
+            'ip_latitude': report.ip_latitude || 'N/A',
+            'ip_longitude': report.ip_longitude || 'N/A',
+            'ip_isp': report.ip_isp || 'N/A',
+            'ip_organization': report.ip_organization || 'N/A',
+            'ip_asn': report.ip_asn || 'N/A',
+            'ip_proxy': report.ip_proxy || false,
+            'ip_vpn': report.ip_vpn || false,
+            'ip_tor': report.ip_tor || false,
+            'ip_recent_fraud': report.ip_recent_fraud || false,
+            'ip_bot_activity': report.ip_bot_activity || false,
+            'ip_is_crawler': report.ip_is_crawler || false,
+            'ip_frequent_fraud': report.ip_frequent_fraud || false,
+            'ip_high_risk_attacks': report.ip_high_risk_attacks || false,
+            'ip_shared_connection': report.ip_shared_connection || false,
+            'ip_dynamic_connection': report.ip_dynamic_connection || false,
+            'ip_trusted_network': report.ip_trusted_network || false
+          };
+
+          // ==========================================
+          // DARKNET / DATA LEAKS
+          // ==========================================
+          intelligence.darknet = {
+            'sl_data': {
+              'phones': report.phones || [],
+              'emails': report.emails || [],
+              'full_names': report.full_names || [],
+              'aliases': report.aliases || [],
+              'accounts': report.accounts_registered_list || [],
+              'addresses': report.addresses || [],
+              'genders': report.gender || 'N/A',
+              'birthdays': report.birthday || 'N/A'
+            },
+            'data_leaks_first_seen': report.data_leaks_first_seen || 'N/A',
+            'data_leaks_last_seen': report.data_leaks_last_seen || 'N/A',
+            'data_leaks_count': report.data_leaks_count || 0,
+            'email_data_leaks_count': report.email_data_leaks_count || 0,
+            'email_data_leaks_list': report.email_data_leaks_list || [],
+            'email_data_leaks_first_seen': report.email_data_leaks_first_seen || 'N/A',
+            'email_data_leaks_last_seen': report.email_data_leaks_last_seen || 'N/A',
+            'phone_data_leaks_count': report.phone_data_leaks_count || 0,
+            'phone_data_leaks_list': report.phone_data_leaks_list || [],
+            'phone_data_leaks_first_seen': report.phone_data_leaks_first_seen || 'N/A',
+            'phone_data_leaks_last_seen': report.phone_data_leaks_last_seen || 'N/A'
+          };
+
+          // ==========================================
+          // OVERALL SCORING
+          // ==========================================
+          intelligence.overallScore = report.overall_score || 0;
+          intelligence.scoring = {
+            overall: report.overall_score || 0,
+            email: report.email_score || 0,
+            phone: report.phone_score || 0,
+            name: report.name_score || 0,
+            ip: report.ip_score || 0
+          };
+
+          intelligence.scoreplexData = report;
+        }
+      } catch (scoreplexError) {
+        console.error('❌ [SCOREPLEX] Fetch error:', scoreplexError.message);
+      }
+    } else {
+      console.warn('⚠️ [SCOREPLEX] No task ID found for this session');
+    }
+
+    console.log(`✅ [DASHBOARD] Data prepared for session: ${sessionId}`);
+
+    res.json({
+      success: true,
+      sdkData: session.sdkData,
+      intelligence: intelligence,
+      sessionInfo: {
+        sessionId: session.sessionId,
+        createdAt: session.createdAt,
+        updatedAt: session.updatedAt,
+        hasScoreplex: !!session.scoreplexTaskId
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ [DASHBOARD] Error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
 
 
+// ==========================================
+// ✅ NEW: SAVE AGENT DATA (CUSTOMER INFO FROM FORM)
+// ==========================================
+app.post('/api/save-agent-data', (req, res) => {
+  try {
+    const { sessionId, customerData } = req.body;
 
+    console.log(`💾 [AGENT] Saving customer data for session: ${sessionId}`);
 
+    if (!sessionId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Session ID is required'
+      });
+    }
 
+    if (!sessions[sessionId]) {
+      sessions[sessionId] = {
+        sessionId,
+        verified: false,
+        createdAt: Date.now()
+      };
+    }
+
+    sessions[sessionId].agentData = customerData;
+    sessions[sessionId].updatedAt = Date.now();
+
+    console.log(`✅ [AGENT] Customer data saved`);
+
+    res.json({
+      success: true,
+      message: 'Agent data saved successfully',
+      sessionId: sessionId
+    });
+
+  } catch (error) {
+    console.error('❌ [AGENT] Save error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
 
 // ==========================================
 // START SERVER
@@ -528,14 +886,15 @@ app.listen(PORT, () => {
   console.log(`🔒 API key will NOT be exposed to frontend`);
   console.log('===========================================');
   console.log('Available endpoints:');
-  console.log(`  GET  http://localhost:${PORT}/ (serves index.html)`);
-  console.log(`  GET  http://localhost:${PORT}/result.html`);
+  console.log(`  GET  http://localhost:${PORT}/api`);
   console.log(`  POST http://localhost:${PORT}/api/reverse-geocode`);
   console.log(`  POST http://localhost:${PORT}/api/geocode`);
-  console.log(`  POST http://localhost:${PORT}/api/nearby-search`);
   console.log(`  POST http://localhost:${PORT}/api/calculate-distance`);
+  console.log(`  POST http://localhost:${PORT}/api/calculate-agent-user-distance`);
+  console.log(`  POST http://localhost:${PORT}/api/save-sdk-data`);
+  console.log(`  GET  http://localhost:${PORT}/api/check-verification/:sessionId`);
+  console.log(`  GET  http://localhost:${PORT}/api/dashboard-data/:sessionId`);
   console.log('===========================================');
 });
-
 
 module.exports = app;

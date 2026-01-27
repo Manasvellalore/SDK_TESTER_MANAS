@@ -1,0 +1,239 @@
+/* Thank You Page - Main Container */
+.thank-you-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+}
+
+/* Thank You Card */
+.thank-you-card {
+  background: white;
+  padding: 60px 40px;
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 100%;
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Success Animation */
+.success-animation {
+  margin-bottom: 30px;
+  animation: bounceIn 0.8s ease-out;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.checkmark-circle {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+}
+
+.checkmark {
+  width: 40px;
+  height: 20px;
+  border-left: 5px solid white;
+  border-bottom: 5px solid white;
+  transform: rotate(-45deg) translateY(-5px);
+  animation: drawCheckmark 0.5s ease-out 0.3s forwards;
+  opacity: 0;
+}
+
+@keyframes drawCheckmark {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Title and Messages */
+.thank-you-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  color: #1f2937;
+}
+
+.thank-you-message {
+  font-size: 18px;
+  color: #4b5563;
+  margin: 0 0 8px 0;
+  line-height: 1.6;
+}
+
+.thank-you-submessage {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 40px 0;
+  line-height: 1.5;
+}
+
+/* Details Section */
+.thank-you-details {
+  background: #f9fafb;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.detail-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.detail-text {
+  font-size: 15px;
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Footer Section */
+.thank-you-footer {
+  margin-bottom: 24px;
+}
+
+.footer-text {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 20px 0;
+}
+
+.close-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.close-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+}
+
+.close-button:active {
+  transform: translateY(0);
+}
+
+/* Powered By */
+.powered-by {
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.powered-by span {
+  margin-right: 6px;
+}
+
+.powered-by strong {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .thank-you-card {
+    padding: 40px 24px;
+  }
+
+  .thank-you-title {
+    font-size: 28px;
+  }
+
+  .thank-you-message {
+    font-size: 16px;
+  }
+
+  .checkmark-circle {
+    width: 80px;
+    height: 80px;
+  }
+
+  .checkmark {
+    width: 32px;
+    height: 16px;
+  }
+
+  .thank-you-details {
+    padding: 20px;
+  }
+
+  .close-button {
+    width: 100%;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .thank-you-page {
+    background: white;
+  }
+
+  .close-button {
+    display: none;
+  }
+}
