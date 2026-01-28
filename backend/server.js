@@ -1,9 +1,9 @@
-const express = require('express');
-const axios = require('axios');
-const cors = require('cors');
-const path = require('path');
-const mapRoutes = require('./routes/mapRoutes');
-require('dotenv').config();
+const express = require("express");
+const axios = require("axios");
+const cors = require("cors");
+const path = require("path");
+const mapRoutes = require("./routes/mapRoutes");
+require("dotenv").config();
 
 const app = express();
 
@@ -13,7 +13,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/map', mapRoutes);
+app.use("/api/map", mapRoutes);
 
 // ✅ In-memory session storage
 const sessions = {};
@@ -25,111 +25,110 @@ const MAPPLS_ACCESS_TOKEN = process.env.MAPPLS_ACCESS_TOKEN;
 const PORT = process.env.PORT || 3000;
 
 if (!MAPPLS_ACCESS_TOKEN) {
-  console.warn('⚠️ WARNING: MAPPLS_ACCESS_TOKEN not found');
+  console.warn("⚠️ WARNING: MAPPLS_ACCESS_TOKEN not found");
 }
 
-console.log('✅ Mappls API key loaded successfully');
-console.log('🔒 API key will remain hidden from frontend');
+console.log("✅ Mappls API key loaded successfully");
+console.log("🔒 API key will remain hidden from frontend");
 
 // ==========================================
 // HEALTH CHECK ENDPOINT
 // ==========================================
-app.get('/api', (req, res) => {
+app.get("/api", (req, res) => {
   res.json({
-    status: 'running',
-    message: 'Mappls Proxy Server',
+    status: "running",
+    message: "Mappls Proxy Server",
     endpoints: [
-      'POST /api/reverse-geocode',
-      'POST /api/geocode',
-      'POST /api/nearby-search',
-      'POST /api/calculate-distance',
-      'POST /api/save-sdk-data',
-      'GET /api/check-verification/:sessionId',
-      'GET /api/dashboard-data/:sessionId'
-    ]
+      "POST /api/reverse-geocode",
+      "POST /api/geocode",
+      "POST /api/nearby-search",
+      "POST /api/calculate-distance",
+      "POST /api/save-sdk-data",
+      "GET /api/check-verification/:sessionId",
+      "GET /api/dashboard-data/:sessionId",
+    ],
   });
 });
 
 // ==========================================
 // REVERSE GEOCODING ENDPOINT
 // ==========================================
-app.post('/api/reverse-geocode', async (req, res) => {
+app.post("/api/reverse-geocode", async (req, res) => {
   try {
     const { latitude, longitude } = req.body;
-    
+
     if (!latitude || !longitude) {
       return res.status(400).json({
         success: false,
-        error: 'Latitude and longitude are required'
+        error: "Latitude and longitude are required",
       });
     }
-    
+
     console.log(`🔍 Reverse geocoding: ${latitude}, ${longitude}`);
-    
+
     const response = await axios.get(
       `https://apis.mappls.com/advancedmaps/v1/${MAPPLS_ACCESS_TOKEN}/rev_geocode`,
       {
         params: {
           lat: latitude,
-          lng: longitude
-        }
-      }
+          lng: longitude,
+        },
+      },
     );
-    
+
     const data = response.data;
-    
+
     if (!data.results || data.results.length === 0) {
       return res.json({
         success: false,
-        error: 'No address found for these coordinates'
+        error: "No address found for these coordinates",
       });
     }
-    
+
     const result = data.results[0];
     const addressInfo = {
-      formattedAddress: result.formatted_address || 'Address not found',
-      houseNumber: result.house_number || '',
-      houseName: result.house_name || '',
-      poi: result.poi || '',
-      street: result.street || '',
-      subSubLocality: result.subSubLocality || '',
-      subLocality: result.subLocality || '',
-      locality: result.locality || '',
-      village: result.village || '',
-      district: result.district || '',
-      subDistrict: result.subDistrict || '',
-      city: result.city || '',
-      state: result.state || '',
-      pincode: result.pincode || '',
-      area: result.area || '',
+      formattedAddress: result.formatted_address || "Address not found",
+      houseNumber: result.house_number || "",
+      houseName: result.house_name || "",
+      poi: result.poi || "",
+      street: result.street || "",
+      subSubLocality: result.subSubLocality || "",
+      subLocality: result.subLocality || "",
+      locality: result.locality || "",
+      village: result.village || "",
+      district: result.district || "",
+      subDistrict: result.subDistrict || "",
+      city: result.city || "",
+      state: result.state || "",
+      pincode: result.pincode || "",
+      area: result.area || "",
       latitude: parseFloat(latitude),
       longitude: parseFloat(longitude),
-      capturedAt: Date.now()
+      capturedAt: Date.now(),
     };
-    
-    console.log('✅ Address retrieved:', addressInfo.formattedAddress);
-    
+
+    console.log("✅ Address retrieved:", addressInfo.formattedAddress);
+
     res.json({
       success: true,
-      address: addressInfo
+      address: addressInfo,
     });
-    
   } catch (error) {
-    console.error('❌ Reverse geocoding error:', error.message);
-    
+    console.error("❌ Reverse geocoding error:", error.message);
+
     if (error.response) {
-      console.error('API Response Error:', error.response.data);
+      console.error("API Response Error:", error.response.data);
       return res.status(error.response.status).json({
         success: false,
-        error: 'Mappls API error',
-        message: error.response.data.message || 'Failed to get address'
+        error: "Mappls API error",
+        message: error.response.data.message || "Failed to get address",
       });
     }
-    
+
     res.status(500).json({
       success: false,
-      error: 'Server error',
-      message: error.message
+      error: "Server error",
+      message: error.message,
     });
   }
 });
@@ -137,55 +136,54 @@ app.post('/api/reverse-geocode', async (req, res) => {
 // ==========================================
 // GEOCODING ENDPOINT
 // ==========================================
-app.post('/api/geocode', async (req, res) => {
+app.post("/api/geocode", async (req, res) => {
   try {
     const { address } = req.body;
-    
+
     if (!address) {
       return res.status(400).json({
         success: false,
-        error: 'Address is required'
+        error: "Address is required",
       });
     }
-    
+
     console.log(`🔍 Geocoding address: ${address}`);
-    
+
     const response = await axios.get(
       `https://atlas.mappls.com/api/places/geocode`,
       {
         params: {
-          address: address
+          address: address,
         },
         headers: {
-          'Authorization': `Bearer ${MAPPLS_ACCESS_TOKEN}`
-        }
-      }
+          Authorization: `Bearer ${MAPPLS_ACCESS_TOKEN}`,
+        },
+      },
     );
-    
+
     const data = response.data;
-    
-    console.log('✅ Geocoding results retrieved');
-    
+
+    console.log("✅ Geocoding results retrieved");
+
     res.json({
       success: true,
-      results: data.copResults || []
+      results: data.copResults || [],
     });
-    
   } catch (error) {
-    console.error('❌ Geocoding error:', error.message);
-    
+    console.error("❌ Geocoding error:", error.message);
+
     if (error.response) {
       return res.status(error.response.status).json({
         success: false,
-        error: 'Mappls API error',
-        message: error.response.data.message || 'Failed to geocode address'
+        error: "Mappls API error",
+        message: error.response.data.message || "Failed to geocode address",
       });
     }
-    
+
     res.status(500).json({
       success: false,
-      error: 'Server error',
-      message: error.message
+      error: "Server error",
+      message: error.message,
     });
   }
 });
@@ -193,120 +191,125 @@ app.post('/api/geocode', async (req, res) => {
 // ==========================================
 // DISTANCE CALCULATION ENDPOINT
 // ==========================================
-app.post('/api/calculate-distance', async (req, res) => {
+app.post("/api/calculate-distance", async (req, res) => {
   try {
     const { userLat, userLon, bankLat, bankLon } = req.body;
-    
-    console.log('🚀 === DISTANCE CALCULATION STARTED ===');
-    console.log('📍 User: lat=' + userLat + ', lon=' + userLon);
-    console.log('🏦 Bank: lat=' + bankLat + ', lon=' + bankLon);
-    
+
+    console.log("🚀 === DISTANCE CALCULATION STARTED ===");
+    console.log("📍 User: lat=" + userLat + ", lon=" + userLon);
+    console.log("🏦 Bank: lat=" + bankLat + ", lon=" + bankLon);
+
     if (!userLat || !userLon || !bankLat || !bankLon) {
-      console.log('❌ Missing coordinates');
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Missing coordinates' 
+      console.log("❌ Missing coordinates");
+      return res.status(400).json({
+        success: false,
+        error: "Missing coordinates",
       });
     }
-    
+
     const mapplsApiKey = process.env.MAPPLS_ACCESS_TOKEN;
-    
+
     if (!mapplsApiKey) {
-      console.log('❌ No API key');
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Mappls API key not configured' 
+      console.log("❌ No API key");
+      return res.status(500).json({
+        success: false,
+        error: "Mappls API key not configured",
       });
     }
-    
+
     const url = `https://apis.mappls.com/advancedmaps/v1/${mapplsApiKey}/distance_matrix/driving/${userLon},${userLat};${bankLon},${bankLat}?sources=0&destinations=1`;
-    
-    console.log('📡 Calling Mappls API with format: lon,lat;lon,lat');
-    console.log('📡 User coords: ' + userLon + ',' + userLat);
-    console.log('📡 Bank coords: ' + bankLon + ',' + bankLat);
-    
+
+    console.log("📡 Calling Mappls API with format: lon,lat;lon,lat");
+    console.log("📡 User coords: " + userLon + "," + userLat);
+    console.log("📡 Bank coords: " + bankLon + "," + bankLat);
+
     const response = await axios.get(url);
     const data = response.data;
-    
-    console.log('📦 API Response received');
-    console.log('📦 Response code:', data.responseCode);
-    console.log('📏 DISTANCES:', JSON.stringify(data.results.distances));
-    console.log('⏱️ DURATIONS:', JSON.stringify(data.results.durations));
-    
+
+    console.log("📦 API Response received");
+    console.log("📦 Response code:", data.responseCode);
+    console.log("📏 DISTANCES:", JSON.stringify(data.results.distances));
+    console.log("⏱️ DURATIONS:", JSON.stringify(data.results.durations));
+
     if (data.results?.distances && data.results?.durations) {
       const distancesArray = data.results.distances;
       const durationsArray = data.results.durations;
-      
-      console.log('🔍 First distance element:', distancesArray[0]);
-      console.log('🔍 Array length:', distancesArray[0].length);
-      
+
+      console.log("🔍 First distance element:", distancesArray[0]);
+      console.log("🔍 Array length:", distancesArray[0].length);
+
       let distanceMeters = null;
       let durationSeconds = null;
-      
+
       if (Array.isArray(distancesArray[0])) {
         if (distancesArray[0].length > 1) {
           distanceMeters = distancesArray[0][1];
           durationSeconds = durationsArray[0][1];
-          console.log('✅ Using [0][1] index');
+          console.log("✅ Using [0][1] index");
         } else if (distancesArray[0].length === 1) {
           distanceMeters = distancesArray[0][0];
           durationSeconds = durationsArray[0][0];
-          console.log('⚠️ Using [0][0] index (only one value)');
+          console.log("⚠️ Using [0][0] index (only one value)");
         }
       }
-      
-      console.log('🔢 Distance (meters):', distanceMeters);
-      console.log('🔢 Duration (seconds):', durationSeconds);
-      
-      if (distanceMeters === null || distanceMeters === undefined || distanceMeters === 0) {
-        console.log('❌ Invalid distance value');
-        console.log('📦 FULL API RESPONSE:', JSON.stringify(data, null, 2));
+
+      console.log("🔢 Distance (meters):", distanceMeters);
+      console.log("🔢 Duration (seconds):", durationSeconds);
+
+      if (
+        distanceMeters === null ||
+        distanceMeters === undefined ||
+        distanceMeters === 0
+      ) {
+        console.log("❌ Invalid distance value");
+        console.log("📦 FULL API RESPONSE:", JSON.stringify(data, null, 2));
         return res.json({
           success: false,
-          error: 'Could not parse distance',
+          error: "Could not parse distance",
           debug: {
             distances: distancesArray,
             durations: durationsArray,
-            message: 'Check if coordinates are in correct format (lon,lat)'
-          }
+            message: "Check if coordinates are in correct format (lon,lat)",
+          },
         });
       }
-      
+
       const distanceKm = parseFloat(distanceMeters) / 1000;
       const durationMinutes = parseFloat(durationSeconds) / 60;
-      
-      console.log(`✅ SUCCESS: ${distanceKm.toFixed(2)} km, ${durationMinutes.toFixed(1)} min`);
-      console.log('🚀 === CALCULATION COMPLETE ===\n');
-      
+
+      console.log(
+        `✅ SUCCESS: ${distanceKm.toFixed(2)} km, ${durationMinutes.toFixed(1)} min`,
+      );
+      console.log("🚀 === CALCULATION COMPLETE ===\n");
+
       return res.json({
         success: true,
         distanceKm: distanceKm,
         durationMinutes: durationMinutes,
-        calculationMethod: "MAPPLS_DISTANCE_MATRIX_API"
+        calculationMethod: "MAPPLS_DISTANCE_MATRIX_API",
       });
     }
-    
-    console.log('⚠️ Invalid response structure');
-    res.json({ success: false, error: 'Invalid response from Mappls' });
-    
+
+    console.log("⚠️ Invalid response structure");
+    res.json({ success: false, error: "Invalid response from Mappls" });
   } catch (error) {
-    console.error('❌ ERROR:', error.message);
-    
+    console.error("❌ ERROR:", error.message);
+
     if (error.response) {
-      console.error('❌ Mappls API Status:', error.response.status);
-      console.error('❌ Mappls API Error:', error.response.data);
+      console.error("❌ Mappls API Status:", error.response.status);
+      console.error("❌ Mappls API Error:", error.response.data);
       return res.status(error.response.status).json({
         success: false,
-        error: 'Mappls API error',
+        error: "Mappls API error",
         message: error.response.data.message || error.message,
-        details: error.response.data
+        details: error.response.data,
       });
     }
-    
-    res.status(500).json({ 
-      success: false, 
-      error: 'Server error',
-      message: error.message
+
+    res.status(500).json({
+      success: false,
+      error: "Server error",
+      message: error.message,
     });
   }
 });
@@ -314,9 +317,18 @@ app.post('/api/calculate-distance', async (req, res) => {
 // ==========================================
 // CALCULATE AGENT-USER DISTANCE
 // ==========================================
-app.post('/api/calculate-agent-user-distance', async (req, res) => {
+app.post("/api/calculate-agent-user-distance", async (req, res) => {
   try {
-    const { agentLat, agentLon, userLat, userLon, agentName, userName, agentAddress, userAddress } = req.body;
+    const {
+      agentLat,
+      agentLon,
+      userLat,
+      userLon,
+      agentName,
+      userName,
+      agentAddress,
+      userAddress,
+    } = req.body;
 
     console.log(`🗺️ [AGENT-USER] Calculating distance...`);
     console.log(`Agent: ${agentLat}, ${agentLon}`);
@@ -325,7 +337,7 @@ app.post('/api/calculate-agent-user-distance', async (req, res) => {
     if (!agentLat || !agentLon || !userLat || !userLon) {
       return res.status(400).json({
         success: false,
-        error: 'All coordinates are required'
+        error: "All coordinates are required",
       });
     }
 
@@ -334,7 +346,7 @@ app.post('/api/calculate-agent-user-distance', async (req, res) => {
     if (!mapplsToken) {
       return res.status(500).json({
         success: false,
-        error: 'Mappls API token not configured'
+        error: "Mappls API token not configured",
       });
     }
 
@@ -343,9 +355,12 @@ app.post('/api/calculate-agent-user-distance', async (req, res) => {
     const toRadians = (deg) => deg * (Math.PI / 180);
     const dLat = toRadians(userLat - agentLat);
     const dLon = toRadians(userLon - agentLon);
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(toRadians(agentLat)) * Math.cos(toRadians(userLat)) *
-              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRadians(agentLat)) *
+        Math.cos(toRadians(userLat)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const straightLineDistance = R * c;
 
@@ -354,24 +369,29 @@ app.post('/api/calculate-agent-user-distance', async (req, res) => {
 
     try {
       const distanceUrl = `https://apis.mappls.com/advancedmaps/v1/${mapplsToken}/distance_matrix/driving/${agentLon},${agentLat};${userLon},${userLat}?rtype=0&region=ind`;
-      
-      console.log('📡 [AGENT-USER] Calling Mappls Distance Matrix API...');
-      
+
+      console.log("📡 [AGENT-USER] Calling Mappls Distance Matrix API...");
+
       const distanceResponse = await fetch(distanceUrl);
-      
+
       if (distanceResponse.ok) {
         const distanceData = await distanceResponse.json();
         const distanceMeters = distanceData.results?.distances?.[0]?.[1];
         const durationSeconds = distanceData.results?.durations?.[0]?.[1];
-        
+
         if (distanceMeters) {
           drivingDistance = distanceMeters / 1000;
           drivingDuration = Math.round(durationSeconds / 60);
-          console.log(`✅ [AGENT-USER] Driving distance: ${drivingDistance} km`);
+          console.log(
+            `✅ [AGENT-USER] Driving distance: ${drivingDistance} km`,
+          );
         }
       }
     } catch (err) {
-      console.warn('⚠️ [AGENT-USER] Could not get driving distance:', err.message);
+      console.warn(
+        "⚠️ [AGENT-USER] Could not get driving distance:",
+        err.message,
+      );
     }
 
     const finalDistance = drivingDistance || straightLineDistance;
@@ -443,41 +463,44 @@ app.post('/api/calculate-agent-user-distance', async (req, res) => {
       agentLocation: {
         latitude: agentLat,
         longitude: agentLon,
-        name: agentName || 'Agent',
-        address: agentAddress || `${agentLat}, ${agentLon}`
+        name: agentName || "Agent",
+        address: agentAddress || `${agentLat}, ${agentLon}`,
       },
       userLocation: {
         latitude: userLat,
         longitude: userLon,
-        name: userName || 'User',
-        address: userAddress || `${userLat}, ${userLon}`
+        name: userName || "User",
+        address: userAddress || `${userLat}, ${userLon}`,
       },
       distance: {
         km: parseFloat(finalDistance.toFixed(2)),
         meters: Math.round(finalDistance * 1000),
-        miles: parseFloat((finalDistance * 0.621371).toFixed(2))
+        miles: parseFloat((finalDistance * 0.621371).toFixed(2)),
       },
       straightLineDistance: {
-        km: parseFloat(straightLineDistance.toFixed(2))
+        km: parseFloat(straightLineDistance.toFixed(2)),
       },
-      drivingDistance: drivingDistance ? {
-        km: parseFloat(drivingDistance.toFixed(2)),
-        durationMinutes: drivingDuration,
-        durationFormatted: formatDuration(drivingDuration)
-      } : null,
+      drivingDistance: drivingDistance
+        ? {
+            km: parseFloat(drivingDistance.toFixed(2)),
+            durationMinutes: drivingDuration,
+            durationFormatted: formatDuration(drivingDuration),
+          }
+        : null,
       riskAnalysis: riskAnalysis,
-      calculationMethod: drivingDistance ? "MAPPLS_DISTANCE_MATRIX_API" : "HAVERSINE_FORMULA"
+      calculationMethod: drivingDistance
+        ? "MAPPLS_DISTANCE_MATRIX_API"
+        : "HAVERSINE_FORMULA",
     };
 
-    console.log('✅ [AGENT-USER] Distance calculated successfully');
+    console.log("✅ [AGENT-USER] Distance calculated successfully");
 
     res.json(response);
-
   } catch (error) {
-    console.error('❌ [AGENT-USER] Error:', error.message);
+    console.error("❌ [AGENT-USER] Error:", error.message);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -485,29 +508,18 @@ app.post('/api/calculate-agent-user-distance', async (req, res) => {
 // ==========================================
 // ✅ SAVE SDK DATA + CALCULATE DISTANCE
 // ==========================================
-app.post('/api/save-sdk-data', async (req, res) => {
+app.post("/api/save-sdk-data", async (req, res) => {
   try {
     const { sessionId, sdkData } = req.body;
 
     console.log(`💾 [SDK] Saving data for session: ${sessionId}`);
 
-    // ✅✅✅ ADD THIS DEBUG BLOCK ✅✅✅
-    console.log('🐛 [DEBUG] === SDK DATA RECEIVED ===');
-    console.log('Total events:', sdkData?.length || 0);
-    
-    if (sdkData && Array.isArray(sdkData)) {
-      sdkData.forEach((event, idx) => {
-        console.log(`\n📦 Event ${idx + 1}: ${event.type}`);
-        console.log('   Payload:', JSON.stringify(event.payload, null, 2));
-      });
-    }
-    console.log('🐛 [DEBUG] === END SDK DATA ===\n');
-    // ✅✅✅ END DEBUG BLOCK ✅✅✅
+   
 
     if (!sessionId) {
       return res.status(400).json({
         success: false,
-        error: 'Session ID is required'
+        error: "Session ID is required",
       });
     }
 
@@ -515,7 +527,7 @@ app.post('/api/save-sdk-data', async (req, res) => {
       sessions[sessionId] = {
         sessionId,
         verified: true,
-        createdAt: Date.now()
+        createdAt: Date.now(),
       };
     }
 
@@ -524,21 +536,27 @@ app.post('/api/save-sdk-data', async (req, res) => {
 
     console.log(`✅ [SDK] Data saved. Total events: ${sdkData?.length || 0}`);
 
-    const deviceLocationEvent = sdkData?.find(event => event.type === 'DEVICE_LOCATION');
+    const deviceLocationEvent = sdkData?.find(
+      (event) => event.type === "DEVICE_LOCATION",
+    );
     const userLocation = deviceLocationEvent?.payload;
 
     if (userLocation) {
       console.log(`📍 [SDK] User location detected:`);
-      console.log(`   Lat: ${userLocation.latitude}, Lon: ${userLocation.longitude}`);
+      console.log(
+        `   Lat: ${userLocation.latitude}, Lon: ${userLocation.longitude}`,
+      );
       console.log(`   Address: ${userLocation.address?.formattedAddress}`);
     }
 
     const agentData = sessions[sessionId].agentData;
-    
+
     if (userLocation && agentData?.latitude && agentData?.longitude) {
       console.log(`📏 [DISTANCE] Calculating agent-user distance...`);
       console.log(`   Agent: ${agentData.latitude}, ${agentData.longitude}`);
-      console.log(`   User: ${userLocation.latitude}, ${userLocation.longitude}`);
+      console.log(
+        `   User: ${userLocation.latitude}, ${userLocation.longitude}`,
+      );
 
       try {
         const distanceResponse = await axios.post(
@@ -546,206 +564,266 @@ app.post('/api/save-sdk-data', async (req, res) => {
           {
             agentLat: agentData.latitude,
             agentLon: agentData.longitude,
-            agentName: agentData.customerName || 'Agent',
-            agentAddress: agentData.address || 'Agent Location',
+            agentName: agentData.customerName || "Agent",
+            agentAddress: agentData.address || "Agent Location",
             userLat: userLocation.latitude,
             userLon: userLocation.longitude,
-            userName: agentData.customerName || 'User',
-            userAddress: userLocation.address?.formattedAddress || 'User Location'
-          }
+            userName: agentData.customerName || "User",
+            userAddress:
+              userLocation.address?.formattedAddress || "User Location",
+          },
         );
 
         if (distanceResponse.data.success) {
           const distanceData = distanceResponse.data;
-          
+
           sessions[sessionId].sdkData.push({
-            type: 'AGENT_USER_DISTANCE',
+            type: "AGENT_USER_DISTANCE",
             payload: distanceData,
             timestamp: Date.now(),
             userId: agentData.email || sessionId,
-            SDK: 'Bargad-v1.0.0'
+            SDK: "Bargad-v1.0.0",
           });
 
-          console.log(`✅ [DISTANCE] Distance calculated: ${distanceData.distance.km} km`);
+          console.log(
+            `✅ [DISTANCE] Distance calculated: ${distanceData.distance.km} km`,
+          );
           console.log(`   Risk Level: ${distanceData.riskAnalysis.riskLevel}`);
-          console.log(`   Recommendation: ${distanceData.riskAnalysis.recommendation}`);
+          console.log(
+            `   Recommendation: ${distanceData.riskAnalysis.recommendation}`,
+          );
         }
       } catch (distanceError) {
-        console.error('❌ [DISTANCE] Calculation error:', distanceError.message);
+        console.error(
+          "❌ [DISTANCE] Calculation error:",
+          distanceError.message,
+        );
       }
     } else {
-      console.warn('⚠️ [DISTANCE] Cannot calculate - missing location data');
+      console.warn("⚠️ [DISTANCE] Cannot calculate - missing location data");
     }
 
     // ✅ Submit to Scoreplex
     try {
-      console.log('🔍 [SCOREPLEX] Submitting search...');
-      
+      console.log("🔍 [SCOREPLEX] Submitting search...");
+
       const scoreplexApiKey = process.env.SCOREPLEX_API_KEY;
-      
+
       if (!scoreplexApiKey) {
-        console.warn('⚠️ [SCOREPLEX] API key not configured');
+        console.warn("⚠️ [SCOREPLEX] API key not configured");
       } else {
         const agentData = sessions[sessionId].agentData || {};
-        
+
         // ✅ Format phone with country code
-        let formattedPhone = '';
+        let formattedPhone = "";
         if (agentData.phone) {
-          formattedPhone = agentData.phone.startsWith('+') 
-            ? agentData.phone 
+          formattedPhone = agentData.phone.startsWith("+")
+            ? agentData.phone
             : `+91${agentData.phone}`;
         }
-        
+
         // ✅✅✅ IP SELECTION LOGIC - PRIORITY: Global IP > IPv4 > IPv6 ✅✅✅
-        let selectedIP = '';
+        let selectedIP = "";
         let globalIP = null;
         let ipv4 = null;
         let ipv6 = null;
         let localIP = null;
-        
+
         // Extract all IPs from SDK data
         // ✅✅✅ FIXED: Extract IPs from SDK data (check nested fingerprint) ✅✅✅
-if (sdkData && Array.isArray(sdkData)) {
-  sdkData.forEach(event => {
-    if (event.payload) {
-      // ✅ NEW: Check if this is DEVICE_ID event with fingerprint
-      if (event.type === 'DEVICE_ID' && event.payload.fingerprint && event.payload.fingerprint.ipAddresses) {
-        const ipData = event.payload.fingerprint.ipAddresses;
-        
-        globalIP = globalIP || ipData.globalIP;
-        ipv4 = ipv4 || ipData.ipv4;
-        ipv6 = ipv6 || ipData.ipv6;
-        localIP = localIP || ipData.localIP;
-        
-        console.log('✅ [IP] Found in DEVICE_ID.fingerprint.ipAddresses');
-      }
-      
-      // ✅ ALSO: Check direct payload fields (backward compatibility)
-      if (event.payload.globalIP || event.payload.global_ip) {
-        globalIP = globalIP || event.payload.globalIP || event.payload.global_ip;
-      }
-      if (event.payload.ipv4 || event.payload.IPv4) {
-        ipv4 = ipv4 || event.payload.ipv4 || event.payload.IPv4;
-      }
-      if (event.payload.ipv6 || event.payload.IPv6) {
-        ipv6 = ipv6 || event.payload.ipv6 || event.payload.IPv6;
-      }
-      if (event.payload.localIP || event.payload.local_ip) {
-        localIP = localIP || event.payload.localIP || event.payload.local_ip;
-      }
-      
-      // Also check nested ip object
-      if (event.payload.ip) {
-        if (typeof event.payload.ip === 'string') {
-          globalIP = globalIP || event.payload.ip;
-        } else if (typeof event.payload.ip === 'object') {
-          globalIP = globalIP || event.payload.ip.global || event.payload.ip.globalIP;
-          ipv4 = ipv4 || event.payload.ip.ipv4 || event.payload.ip.IPv4;
-          ipv6 = ipv6 || event.payload.ip.ipv6 || event.payload.ip.IPv6;
-          localIP = localIP || event.payload.ip.local || event.payload.ip.localIP;
-        }
-      }
-    }
-  });
-  
-  console.log('🌐 [IP DEBUG] All IPs extracted from SDK:');
-  console.log('  Global IP:', globalIP || 'null');
-  console.log('  IPv4:', ipv4 || 'null');
-  console.log('  IPv6:', ipv6 || 'null');
-  console.log('  Local IP:', localIP || 'null');
-}
+        if (sdkData && Array.isArray(sdkData)) {
+          sdkData.forEach((event) => {
+            if (event.payload) {
+              // ✅ NEW: Check if this is DEVICE_ID event with fingerprint
+              if (
+                event.type === "DEVICE_ID" &&
+                event.payload.fingerprint &&
+                event.payload.fingerprint.ipAddresses
+              ) {
+                const ipData = event.payload.fingerprint.ipAddresses;
 
-        
+                globalIP = globalIP || ipData.globalIP;
+                ipv4 = ipv4 || ipData.ipv4;
+                ipv6 = ipv6 || ipData.ipv6;
+                localIP = localIP || ipData.localIP;
+
+                console.log(
+                  "✅ [IP] Found in DEVICE_ID.fingerprint.ipAddresses",
+                );
+              }
+
+              // ✅ ALSO: Check direct payload fields (backward compatibility)
+              if (event.payload.globalIP || event.payload.global_ip) {
+                globalIP =
+                  globalIP || event.payload.globalIP || event.payload.global_ip;
+              }
+              if (event.payload.ipv4 || event.payload.IPv4) {
+                ipv4 = ipv4 || event.payload.ipv4 || event.payload.IPv4;
+              }
+              if (event.payload.ipv6 || event.payload.IPv6) {
+                ipv6 = ipv6 || event.payload.ipv6 || event.payload.IPv6;
+              }
+              if (event.payload.localIP || event.payload.local_ip) {
+                localIP =
+                  localIP || event.payload.localIP || event.payload.local_ip;
+              }
+
+              // Also check nested ip object
+              if (event.payload.ip) {
+                if (typeof event.payload.ip === "string") {
+                  globalIP = globalIP || event.payload.ip;
+                } else if (typeof event.payload.ip === "object") {
+                  globalIP =
+                    globalIP ||
+                    event.payload.ip.global ||
+                    event.payload.ip.globalIP;
+                  ipv4 = ipv4 || event.payload.ip.ipv4 || event.payload.ip.IPv4;
+                  ipv6 = ipv6 || event.payload.ip.ipv6 || event.payload.ip.IPv6;
+                  localIP =
+                    localIP ||
+                    event.payload.ip.local ||
+                    event.payload.ip.localIP;
+                }
+              }
+            }
+          });
+
+          
+        }
+
         // ✅ Apply priority selection logic
         // 1. Try Global IP first (best for fraud detection & geolocation)
-        if (globalIP && globalIP !== 'null' && globalIP !== '' && globalIP !== '0.0.0.0' && globalIP !== 'undefined') {
-          selectedIP = globalIP;
-          sessions[sessionId].ipSource = 'global';
-          console.log('✅ [IP SELECTED] Using Global IP:', selectedIP);
-        }
-        // 2. Fallback to IPv4
-        else if (ipv4 && ipv4 !== 'null' && ipv4 !== '' && ipv4 !== '0.0.0.0' && ipv4 !== 'undefined') {
-          selectedIP = ipv4;
-          sessions[sessionId].ipSource = 'ipv4';
-          console.log('⚠️ [IP SELECTED] Using IPv4 (Global IP not available):', selectedIP);
-        }
+        if (
+  ipv4 &&
+  ipv4 !== "null" &&
+  ipv4 !== "" &&
+  ipv4 !== "0.0.0.0" &&
+  ipv4 !== "undefined"
+) {
+  selectedIP = ipv4;
+  sessions[sessionId].ipSource = "ipv4";
+  console.log("✅ [IP SELECTED] Using IPv4:", selectedIP);
+}
+// 2. Fallback to Global IP
+else if (
+  globalIP &&
+  globalIP !== "null" &&
+  globalIP !== "" &&
+  globalIP !== "0.0.0.0" &&
+  globalIP !== "undefined"
+) {
+  selectedIP = globalIP;
+  sessions[sessionId].ipSource = "global";
+  console.log("⚠️ [IP SELECTED] Using Global IP (IPv4 not available):", selectedIP);
+}
         // 3. Fallback to IPv6
-        else if (ipv6 && ipv6 !== 'null' && ipv6 !== '' && ipv6 !== '::' && ipv6 !== 'undefined') {
+        else if (
+          ipv6 &&
+          ipv6 !== "null" &&
+          ipv6 !== "" &&
+          ipv6 !== "::" &&
+          ipv6 !== "undefined"
+        ) {
           selectedIP = ipv6;
-          sessions[sessionId].ipSource = 'ipv6';
-          console.log('⚠️ [IP SELECTED] Using IPv6 (IPv4 not available):', selectedIP);
+          sessions[sessionId].ipSource = "ipv6";
+          console.log(
+            "⚠️ [IP SELECTED] Using IPv6 (IPv4 not available):",
+            selectedIP,
+          );
         }
         // 4. Last resort: backend IP (NOT RECOMMENDED - will be localhost)
         else {
-          selectedIP = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
-          selectedIP = selectedIP.replace('::ffff:', '');
-          sessions[sessionId].ipSource = 'backend';
-          console.warn('❌ [IP SELECTED] No SDK IP found! Using backend IP:', selectedIP);
-          console.warn('❌ [WARNING] Backend IP is likely "localhost" - Scoreplex will not work properly!');
+          selectedIP =
+            req.ip ||
+            req.headers["x-forwarded-for"] ||
+            req.connection.remoteAddress ||
+            "";
+          selectedIP = selectedIP.replace("::ffff:", "");
+          sessions[sessionId].ipSource = "backend";
+          console.warn(
+            "❌ [IP SELECTED] No SDK IP found! Using backend IP:",
+            selectedIP,
+          );
+          console.warn(
+            '❌ [WARNING] Backend IP is likely "localhost" - Scoreplex will not work properly!',
+          );
         }
-        
+
         // Store selected IP in session
         sessions[sessionId].selectedIP = selectedIP;
-        
+
+   console.log(`✅ [IP SELECTED] ${selectedIP} (Source: ${sessions[sessionId].ipSource})`);
+
         const scoreplexPayload = {
-          email: agentData.email || '',
+          email: agentData.email || "",
           phone: formattedPhone,
-          ip: selectedIP,  // ✅ Use selected IP with priority logic
-          first_name: agentData.firstName || agentData.customerName?.split(' ')[0] || '',
-          last_name: agentData.lastName || agentData.customerName?.split(' ').slice(1).join(' ') || '',
-          verification: true
+          ip: selectedIP, // ✅ Use selected IP with priority logic
+          first_name:
+            agentData.firstName || agentData.customerName?.split(" ")[0] || "",
+          last_name:
+            agentData.lastName ||
+            agentData.customerName?.split(" ").slice(1).join(" ") ||
+            "",
+          verification: true,
         };
 
-        console.log('📤 [SCOREPLEX] Payload:', JSON.stringify(scoreplexPayload, null, 2));
-        console.log('📤 [SCOREPLEX] IP Source:', sessions[sessionId].ipSource);
+        console.log(
+          "📤 [SCOREPLEX] Payload:",
+          JSON.stringify(scoreplexPayload, null, 2),
+        );
+        console.log("📤 [SCOREPLEX] IP Source:", sessions[sessionId].ipSource);
 
         const scoreplexResponse = await axios.post(
           `https://api.scoreplex.io/api/v1/search`,
           scoreplexPayload,
           {
             params: {
-              api_key: scoreplexApiKey
+              api_key: scoreplexApiKey,
             },
             headers: {
-              'Content-Type': 'application/json'
-            }
-          }
+              "Content-Type": "application/json",
+            },
+          },
         );
 
         if (scoreplexResponse.data && scoreplexResponse.data.id) {
           sessions[sessionId].scoreplexTaskId = scoreplexResponse.data.id;
-          console.log(`✅ [SCOREPLEX] Task created: ${scoreplexResponse.data.id}`);
-          console.log(`✅ [SCOREPLEX] Submitted with IP: ${selectedIP} (Source: ${sessions[sessionId].ipSource})`);
+          console.log(
+            `✅ [SCOREPLEX] Task created: ${scoreplexResponse.data.id}`,
+          );
+          console.log(
+            `✅ [SCOREPLEX] Submitted with IP: ${selectedIP} (Source: ${sessions[sessionId].ipSource})`,
+          );
         }
       }
     } catch (scoreplexError) {
-      console.error('❌ [SCOREPLEX] Submit error:', scoreplexError.message);
+      console.error("❌ [SCOREPLEX] Submit error:", scoreplexError.message);
       if (scoreplexError.response) {
-        console.error('❌ [SCOREPLEX] Response:', scoreplexError.response.data);
+        console.error("❌ [SCOREPLEX] Response:", scoreplexError.response.data);
       }
     }
 
     res.json({
       success: true,
-      message: 'SDK data saved successfully',
+      message: "SDK data saved successfully",
       sessionId: sessionId,
-      hasDistance: sessions[sessionId].sdkData.some(e => e.type === 'AGENT_USER_DISTANCE')
+      hasDistance: sessions[sessionId].sdkData.some(
+        (e) => e.type === "AGENT_USER_DISTANCE",
+      ),
     });
-
   } catch (error) {
-    console.error('❌ [SDK] Save error:', error.message);
+    console.error("❌ [SDK] Save error:", error.message);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 });
 
-
 // ==========================================
 // ✅ CHECK VERIFICATION STATUS
 // ==========================================
-app.get('/api/check-verification/:sessionId', (req, res) => {
+app.get("/api/check-verification/:sessionId", (req, res) => {
   try {
     const { sessionId } = req.params;
 
@@ -756,20 +834,19 @@ app.get('/api/check-verification/:sessionId', (req, res) => {
     if (!session) {
       return res.json({
         verified: false,
-        hasSDKData: false
+        hasSDKData: false,
       });
     }
 
     res.json({
       verified: session.verified || false,
-      hasSDKData: !!session.sdkData
+      hasSDKData: !!session.sdkData,
     });
-
   } catch (error) {
-    console.error('❌ [VERIFY] Check error:', error.message);
+    console.error("❌ [VERIFY] Check error:", error.message);
     res.status(500).json({
       verified: false,
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -777,7 +854,7 @@ app.get('/api/check-verification/:sessionId', (req, res) => {
 // ==========================================
 // ✅ GET DASHBOARD DATA WITH SCOREPLEX
 // ==========================================
-app.get('/api/dashboard-data/:sessionId', async (req, res) => {
+app.get("/api/dashboard-data/:sessionId", async (req, res) => {
   try {
     const { sessionId } = req.params;
 
@@ -788,7 +865,7 @@ app.get('/api/dashboard-data/:sessionId', async (req, res) => {
     if (!session) {
       return res.status(404).json({
         success: false,
-        error: 'Session not found'
+        error: "Session not found",
       });
     }
 
@@ -799,150 +876,283 @@ app.get('/api/dashboard-data/:sessionId', async (req, res) => {
       darknet: {},
       overallScore: 0,
       scoreplexData: null,
-      sdkData: session.sdkData || []
+      sdkData: session.sdkData || [],
     };
 
     if (session.scoreplexTaskId) {
       try {
-        console.log(`🔍 [SCOREPLEX] Fetching results for task: ${session.scoreplexTaskId}`);
+        console.log(
+          `🔍 [SCOREPLEX] Fetching results for task: ${session.scoreplexTaskId}`,
+        );
+
         
+
         // ✅ Wait 3 seconds for Scoreplex to process
-        console.log('⏳ Waiting 3 seconds for Scoreplex...');
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
+        console.log("⏳ Waiting 3 seconds for Scoreplex...");
+        await new Promise((resolve) => setTimeout(resolve, 30000));
+
         const scoreplexApiKey = process.env.SCOREPLEX_API_KEY;
-        
+
+       
+
         const scoreplexResponse = await axios.get(
           `https://api.scoreplex.io/api/v1/search/task/${session.scoreplexTaskId}`,
           {
             params: {
               api_key: scoreplexApiKey,
-              report: true
-            }
-          }
+              report: false,
+            },
+          },
         );
+
+        // ✅ ADD THIS CHECK
+console.log('📊 [SCOREPLEX] Task Status:', scoreplexResponse.data.report?.status);
+console.log('📊 [SCOREPLEX] Data Leaks Status:', scoreplexResponse.data.report?.data_leaks_status);
+
+        // ✅✅✅ ADD THIS DEBUG BLOCK ✅✅✅
+       
+        if (scoreplexResponse.data.report) {
+          const report = scoreplexResponse.data.report;
+
+          console.log("\n📦 [ALL REPORT KEYS]");
+          console.log("Keys in report:", Object.keys(report));
+
+          console.log("\n🔍 [SAMPLE OF REPORT DATA]");
+          console.log("email:", report.email);
+          console.log("phone:", report.phone);
+          console.log("overall_score:", report.overall_score);
+
+          console.log("\n🔎 [SEARCHING FOR DATA LEAK FIELDS]");
+          Object.keys(report).forEach((key) => {
+            if (
+              key.toLowerCase().includes("leak") ||
+              key.toLowerCase().includes("breach") ||
+              key.toLowerCase().includes("pwn") ||
+              key.toLowerCase().includes("compromise")
+            ) {
+              console.log(`  FOUND: ${key} =`, report[key]);
+            }
+          });
+        }
+       
+        // ✅✅✅ END BLOCK ✅✅✅
+        console.log(
+          'Has "email_data_leaks_count" at root:',
+          scoreplexResponse.data.email_data_leaks_count,
+        );
+        console.log(
+          'Has "email_data_leaks_count" in report:',
+          scoreplexResponse.data.report?.email_data_leaks_count,
+        );
+      
+        // ✅✅✅ END DEBUG BLOCK ✅✅✅
+
+        // ✅✅✅ ADD THIS TO SEE ALL REPORT KEYS ✅✅✅
+        console.log("\n📦 [REPORT OBJECT KEYS]");
+        if (scoreplexResponse.data.report) {
+          console.log(
+            "All keys in report:",
+            Object.keys(scoreplexResponse.data.report),
+          );
+          console.log("\n📝 [CHECKING ALL DATA LEAK FIELDS]");
+          const report = scoreplexResponse.data.report;
+
+          // Check all possible field names
+          const fieldsToCheck = [
+            "email_data_leaks_count",
+            "email_data_leaks_list",
+            "data_leaks_count",
+            "breaches",
+            "email_breaches",
+            "leaks",
+            "compromised",
+            "pwned",
+          ];
+
+          fieldsToCheck.forEach((field) => {
+            console.log(`  ${field}:`, report[field]);
+          });
+        }
+        console.log("🔍 [END RAW RESPONSE DEBUG]\n");
+        // ✅✅✅ END ENHANCED DEBUG ✅✅✅
 
         const report = scoreplexResponse.data.report;
 
         if (report) {
-          console.log('✅ [SCOREPLEX] Results fetched successfully');
+          console.log("✅ [SCOREPLEX] Results fetched successfully");
+            // 🚨 ADD THIS DEBUG BLOCK 🚨
+  console.log('\n🔍 [BREACH DATA CHECK]');
+  console.log('data_leaks_count:', report.data_leaks_count);
+  console.log('email_data_leaks_count:', report.email_data_leaks_count);
+  console.log('email_data_leaks_list length:', report.email_data_leaks_list?.length);
+  console.log('🔍 [END BREACH CHECK]\n');
+  // 🚨 END DEBUG BLOCK 🚨
+
+           // 🚨🚨🚨 ADD THIS DEBUG BLOCK RIGHT AFTER "Results fetched" 🚨🚨🚨
+  console.log('\n🔍 [SCOREPLEX IP IN RESPONSE]');
+  console.log('IP from report:', report.ip);
+  console.log('IP hostname:', report.ip_hostname);
+  console.log('IP address:', report.ip_address);
+  console.log('IP location:', report.ip_location);
+  console.log('Session stored IP:', session.selectedIP);
+  console.log('Session IP source:', session.ipSource);
+  console.log('🔍 [END SCOREPLEX IP CHECK]\n');
+  // 🚨🚨🚨 END DEBUG BLOCK 🚨🚨🚨
+
+          // ✅✅✅ ADD THIS DEBUG BLOCK ✅✅✅
+         
+          
 
           // ==========================================
           // EMAIL INTELLIGENCE
           // ==========================================
           intelligence.email = {
-            'email_addresses_amount': report.email_addresses_amount || 0,
-            'email_disposable': report.email_disposable || false,
-            'email_first_name': report.email_first_name || 'N/A',
-            'email_phone_numbers': report.email_phone_numbers || [],
-            'email_generic': report.email_generic || false,
-            'email_common': report.email_common || false,
-            'email_user_activity': report.email_user_activity || 'N/A',
-            'email_spam_trap_score': report.email_spam_trap_score || 0,
-            'email_frequent_complainer': report.email_frequent_complainer || false,
-            'email_suspect': report.email_suspect || false,
-            'email_recent_abuse': report.email_recent_abuse || false,
-            'email_domain_age': report.email_domain_age || 'N/A',
-            'email_domain_velocity': report.email_domain_velocity || 'N/A',
-            'email_domain_trust': report.email_domain_trust || 'N/A',
-            'email_suggested_domain': report.email_suggested_domain || 'N/A',
-            'email_smtp_score': report.email_smtp_score || 0,
-            'email_overall_score': report.email_overall_score || 0,
-            'email_risky_tld': report.email_risky_tld || false,
-            'email_spf_record': report.email_spf_record || false,
-            'email_dmarc_record': report.email_dmarc_record || false,
-            'email_mx_records': report.email_mx_records || false,
-            'email_valid': report.email_valid || false,
-            'email_deliverability': report.email_deliverability || 'N/A',
-            'email_google_name_valid': report.email_google_name_valid || false,
-            'email_format_is_bad': report.email_format_is_bad || false,
-            'email_has_stop_words': report.email_has_stop_words || false,
-            'email_account_vowels_count': report.email_account_vowels_count || 0,
-            'email_account_consonants_count': report.email_account_consonants_count || 0,
-            'email_account_length': report.email_account_length || 0,
-            'email_account_digit_count': report.email_account_digit_count || 0,
-            'email_social_has_profile_picture': report.email_social_has_profile_picture || false,
-            'email_addresses': report.email_addresses || []
+            email_addresses_amount: report.email_addresses_amount || 0,
+            email_disposable: report.email_disposable || false,
+            email_first_name: report.email_first_name || "N/A",
+            email_phone_numbers: report.email_phone_numbers || [],
+            email_generic: report.email_generic || false,
+            email_common: report.email_common || false,
+            email_user_activity: report.email_user_activity || "N/A",
+            email_spam_trap_score: report.email_spam_trap_score || 0,
+            email_frequent_complainer:
+              report.email_frequent_complainer || false,
+            email_suspect: report.email_suspect || false,
+            email_recent_abuse: report.email_recent_abuse || false,
+            email_domain_age: report.email_domain_age || "N/A",
+            email_domain_velocity: report.email_domain_velocity || "N/A",
+            email_domain_trust: report.email_domain_trust || "N/A",
+            email_suggested_domain: report.email_suggested_domain || "N/A",
+            email_smtp_score: report.email_smtp_score || 0,
+            email_overall_score: report.email_overall_score || 0,
+            email_risky_tld: report.email_risky_tld || false,
+            email_spf_record: report.email_spf_record || false,
+            email_dmarc_record: report.email_dmarc_record || false,
+            email_mx_records: report.email_mx_records || false,
+            email_valid: report.email_valid || false,
+            email_deliverability: report.email_deliverability || "N/A",
+            email_google_name_valid: report.email_google_name_valid || false,
+            email_format_is_bad: report.email_format_is_bad || false,
+            email_has_stop_words: report.email_has_stop_words || false,
+            email_account_vowels_count: report.email_account_vowels_count || 0,
+            email_account_consonants_count:
+              report.email_account_consonants_count || 0,
+            email_account_length: report.email_account_length || 0,
+            email_account_digit_count: report.email_account_digit_count || 0,
+            email_social_has_profile_picture:
+              report.email_social_has_profile_picture || false,
+            email_addresses: report.email_addresses || [],
           };
 
           // ==========================================
           // ✅✅✅ PHONE INTELLIGENCE FIX #3: Updated mapping with True Caller fallbacks ✅✅✅
           // ==========================================
           intelligence.phone = {
-            'phone_numbers_amount': report.phone_numbers_amount || report.sl_data_phones?.length || 0,
-            'phone_valid': report.phone_valid || false,
-            'phone_associated_emails': report.phone_associated_emails || [],
-            'phone_name': report.phone_name || report.true_caller_fullname || 'N/A',
-            'phone_line_type': report.phone_line_type || 'N/A',
-            'phone_recent_abuse': report.phone_recent_abuse || false,
-            'phone_spammer': report.phone_spammer || false,
-            'phone_voip': report.phone_voip || false,
-            'phone_prepaid': report.phone_prepaid || false,
-            'phone_risky': report.phone_risky || false,
-            'phone_active': report.phone_active || false,
-            'phone_country': report.phone_country || report.true_caller_country_code || 'N/A',
-            'phone_city': report.phone_city || report.true_caller_city || 'N/A',
-            'phone_region': report.phone_region || 'N/A',
-            'phone_zip_code': report.phone_zip_code || report.true_caller_zipcode || 'N/A',
-            'phone_timezone': report.phone_timezone || report.true_caller_timezone || 'N/A',
-            'phone_social_has_profile_picture': report.phone_social_has_profile_picture || false,
-            'phone_carrier': report.phone_carrier || report.true_caller_operator || 'N/A',
-            'phone_numbers_list': report.phone_numbers_list || report.sl_data_phones || []
+            phone_numbers_amount:
+              report.phone_numbers_amount || report.sl_data_phones?.length || 0,
+            phone_valid: report.phone_valid || false,
+            phone_associated_emails: report.phone_associated_emails || [],
+            phone_name:
+              report.phone_name || report.true_caller_fullname || "N/A",
+            phone_line_type: report.phone_line_type || "N/A",
+            phone_recent_abuse: report.phone_recent_abuse || false,
+            phone_spammer: report.phone_spammer || false,
+            phone_voip: report.phone_voip || false,
+            phone_prepaid: report.phone_prepaid || false,
+            phone_risky: report.phone_risky || false,
+            phone_active: report.phone_active || false,
+            phone_country:
+              report.phone_country || report.true_caller_country_code || "N/A",
+            phone_city: report.phone_city || report.true_caller_city || "N/A",
+            phone_region: report.phone_region || "N/A",
+            phone_zip_code:
+              report.phone_zip_code || report.true_caller_zipcode || "N/A",
+            phone_timezone:
+              report.phone_timezone || report.true_caller_timezone || "N/A",
+            phone_social_has_profile_picture:
+              report.phone_social_has_profile_picture || false,
+            phone_carrier:
+              report.phone_carrier || report.true_caller_operator || "N/A",
+            phone_numbers_list:
+              report.phone_numbers_list || report.sl_data_phones || [],
           };
 
           // ==========================================
           // IP INTELLIGENCE
           // ==========================================
           intelligence.ip = {
-            'ip_hostname': report.ip_hostname || report.ip || 'N/A',
-            'ip_country': report.ip_country || 'N/A',
-            'ip_city': report.ip_city || 'N/A',
-            'ip_region': report.ip_region || 'N/A',
-            'ip_time_zone': report.ip_time_zone || 'N/A',
-            'ip_connection_type': report.ip_connection_type || 'N/A',
-            'ip_latitude': report.ip_latitude || 'N/A',
-            'ip_longitude': report.ip_longitude || 'N/A',
-            'ip_isp': report.ip_isp || 'N/A',
-            'ip_organization': report.ip_organization || 'N/A',
-            'ip_asn': report.ip_asn || 'N/A',
-            'ip_proxy': report.ip_proxy || false,
-            'ip_vpn': report.ip_vpn || false,
-            'ip_tor': report.ip_tor || false,
-            'ip_recent_fraud': report.ip_recent_fraud || false,
-            'ip_bot_activity': report.ip_bot_activity || false,
-            'ip_is_crawler': report.ip_is_crawler || false,
-            'ip_frequent_fraud': report.ip_frequent_fraud || false,
-            'ip_high_risk_attacks': report.ip_high_risk_attacks || false,
-            'ip_shared_connection': report.ip_shared_connection || false,
-            'ip_dynamic_connection': report.ip_dynamic_connection || false,
-            'ip_trusted_network': report.ip_trusted_network || false
+             ip: report.ip || session.selectedIP || "N/A", 
+            ip_hostname: report.ip_hostname || report.ip || "N/A",
+            ip_country: report.ip_country || "N/A",
+            ip_city: report.ip_city || "N/A",
+            ip_region: report.ip_region || "N/A",
+            ip_time_zone: report.ip_time_zone || "N/A",
+            ip_connection_type: report.ip_connection_type || "N/A",
+            ip_latitude: report.ip_latitude || "N/A",
+            ip_longitude: report.ip_longitude || "N/A",
+            ip_isp: report.ip_isp || "N/A",
+            ip_organization: report.ip_organization || "N/A",
+            ip_asn: report.ip_asn || "N/A",
+            ip_proxy: report.ip_proxy || false,
+            ip_vpn: report.ip_vpn || false,
+            ip_tor: report.ip_tor || false,
+            ip_recent_fraud: report.ip_recent_fraud || false,
+            ip_bot_activity: report.ip_bot_activity || false,
+            ip_is_crawler: report.ip_is_crawler || false,
+            ip_frequent_fraud: report.ip_frequent_fraud || false,
+            ip_high_risk_attacks: report.ip_high_risk_attacks || false,
+            ip_shared_connection: report.ip_shared_connection || false,
+            ip_dynamic_connection: report.ip_dynamic_connection || false,
+            ip_trusted_network: report.ip_trusted_network || false,
           };
 
           // ==========================================
           // DARKNET / DATA LEAKS
           // ==========================================
+          const parseCommaSeparated = (str) => {
+            if (!str) return [];
+            if (Array.isArray(str)) return str;
+            return str
+              .split(",")
+              .map((item) => item.trim())
+              .filter((item) => item.length > 0);
+          };
           intelligence.darknet = {
-            'sl_data': {
-              'phones': report.phones || [],
-              'emails': report.emails || [],
-              'full_names': report.full_names || [],
-              'aliases': report.aliases || [],
-              'accounts': report.accounts_registered_list || [],
-              'addresses': report.addresses || [],
-              'genders': report.gender || 'N/A',
-              'birthdays': report.birthday || 'N/A'
+            sl_data: {
+              phones: parseCommaSeparated(
+                report.sl_data_phones ||
+                  report.phone_numbers_list ||
+                  report.phones,
+              ),
+              emails: parseCommaSeparated(
+                report.sl_data_emails ||
+                  report.email_addresses ||
+                  report.emails,
+              ),
+              full_names: parseCommaSeparated(report.full_names),
+              aliases: parseCommaSeparated(report.aliases),
+              accounts: parseCommaSeparated(report.accounts_registered_list),
+              addresses: parseCommaSeparated(
+                report.addresses || report.address_list,
+              ),
+              genders: report.gender || "N/A",
+              birthdays: report.birthday || report.date_of_birth || "N/A",
             },
-            'data_leaks_first_seen': report.data_leaks_first_seen || 'N/A',
-            'data_leaks_last_seen': report.data_leaks_last_seen || 'N/A',
-            'data_leaks_count': report.data_leaks_count || 0,
-            'email_data_leaks_count': report.email_data_leaks_count || 0,
-            'email_data_leaks_list': report.email_data_leaks_list || [],
-            'email_data_leaks_first_seen': report.email_data_leaks_first_seen || 'N/A',
-            'email_data_leaks_last_seen': report.email_data_leaks_last_seen || 'N/A',
-            'phone_data_leaks_count': report.phone_data_leaks_count || 0,
-            'phone_data_leaks_list': report.phone_data_leaks_list || [],
-            'phone_data_leaks_first_seen': report.phone_data_leaks_first_seen || 'N/A',
-            'phone_data_leaks_last_seen': report.phone_data_leaks_last_seen || 'N/A'
+            data_leaks_first_seen: report.data_leaks_first_seen || "N/A",
+            data_leaks_last_seen: report.data_leaks_last_seen || "N/A",
+            data_leaks_count: report.data_leaks_count || 0,
+            email_data_leaks_count: report.email_data_leaks_count || 0,
+            email_data_leaks_list: report.email_data_leaks_list || [],
+            email_data_leaks_first_seen:
+              report.email_data_leaks_first_seen || "N/A",
+            email_data_leaks_last_seen:
+              report.email_data_leaks_last_seen || "N/A",
+            phone_data_leaks_count: report.phone_data_leaks_count || 0,
+            phone_data_leaks_list: report.phone_data_leaks_list || [],
+            phone_data_leaks_first_seen:
+              report.phone_data_leaks_first_seen || "N/A",
+            phone_data_leaks_last_seen:
+              report.phone_data_leaks_last_seen || "N/A",
           };
 
           intelligence.overallScore = report.overall_score || 0;
@@ -951,40 +1161,38 @@ app.get('/api/dashboard-data/:sessionId', async (req, res) => {
             email: report.email_score || 0,
             phone: report.phone_score || 0,
             name: report.name_score || 0,
-            ip: report.ip_score || 0
+            ip: report.ip_score || 0,
           };
 
           intelligence.scoreplexData = report;
         }
       } catch (scoreplexError) {
-        console.error('❌ [SCOREPLEX] Fetch error:', scoreplexError.message);
+        console.error("❌ [SCOREPLEX] Fetch error:", scoreplexError.message);
       }
     }
 
     console.log(`✅ [DASHBOARD] Data prepared for session: ${sessionId}`);
 
     res.json({
-  success: true,
-  customerData: session.agentData || {},
-  intelligence: intelligence,
-  sessionInfo: {
-    sessionId: session.sessionId,
-    createdAt: session.createdAt,
-    updatedAt: session.updatedAt,
-    hasScoreplex: !!session.scoreplexTaskId,
-    hasSDK: !!(session.sdkData && session.sdkData.length > 0),
-    // ✅ Add selected IP info
-    selectedIP: session.selectedIP || 'N/A',
-    ipSource: session.ipSource || 'unknown'  // global, ipv4, ipv6, or backend
-  }
-});
-
-
+      success: true,
+      customerData: session.agentData || {},
+      intelligence: intelligence,
+      sessionInfo: {
+        sessionId: session.sessionId,
+        createdAt: session.createdAt,
+        updatedAt: session.updatedAt,
+        hasScoreplex: !!session.scoreplexTaskId,
+        hasSDK: !!(session.sdkData && session.sdkData.length > 0),
+        // ✅ Add selected IP info
+        selectedIP: session.selectedIP || "N/A",
+        ipSource: session.ipSource || "unknown", // global, ipv4, ipv6, or backend
+      },
+    });
   } catch (error) {
-    console.error('❌ [DASHBOARD] Error:', error.message);
+    console.error("❌ [DASHBOARD] Error:", error.message);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -992,7 +1200,7 @@ app.get('/api/dashboard-data/:sessionId', async (req, res) => {
 // ==========================================
 // ✅ SAVE AGENT DATA
 // ==========================================
-app.post('/api/save-agent-data', (req, res) => {
+app.post("/api/save-agent-data", (req, res) => {
   try {
     const { sessionId, customerData } = req.body;
 
@@ -1001,7 +1209,7 @@ app.post('/api/save-agent-data', (req, res) => {
     if (!sessionId) {
       return res.status(400).json({
         success: false,
-        error: 'Session ID is required'
+        error: "Session ID is required",
       });
     }
 
@@ -1009,7 +1217,7 @@ app.post('/api/save-agent-data', (req, res) => {
       sessions[sessionId] = {
         sessionId,
         verified: false,
-        createdAt: Date.now()
+        createdAt: Date.now(),
       };
     }
 
@@ -1020,15 +1228,14 @@ app.post('/api/save-agent-data', (req, res) => {
 
     res.json({
       success: true,
-      message: 'Agent data saved successfully',
-      sessionId: sessionId
+      message: "Agent data saved successfully",
+      sessionId: sessionId,
     });
-
   } catch (error) {
-    console.error('❌ [AGENT] Save error:', error.message);
+    console.error("❌ [AGENT] Save error:", error.message);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -1036,33 +1243,33 @@ app.post('/api/save-agent-data', (req, res) => {
 // ==========================================
 // 🧪 TEST SCOREPLEX ENDPOINT
 // ==========================================
-app.get('/api/test-scoreplex/:sessionId', async (req, res) => {
+app.get("/api/test-scoreplex/:sessionId", async (req, res) => {
   try {
     const { sessionId } = req.params;
     const session = sessions[sessionId];
-    
+
     if (!session || !session.scoreplexTaskId) {
-      return res.json({ error: 'No Scoreplex task found' });
+      return res.json({ error: "No Scoreplex task found" });
     }
-    
-    console.log('🧪 [TEST] Fetching Scoreplex report...');
-    
+
+    console.log("🧪 [TEST] Fetching Scoreplex report...");
+
     const scoreplexApiKey = process.env.SCOREPLEX_API_KEY;
-    
+
     const scoreplexResponse = await axios.get(
       `https://api.scoreplex.io/api/v1/search/task/${session.scoreplexTaskId}`,
       {
         params: {
           api_key: scoreplexApiKey,
-          report: true
-        }
-      }
+          report: true,
+        },
+      },
     );
-    
+
     const report = scoreplexResponse.data.report;
-    
-    console.log('📦 [FULL REPORT]:', JSON.stringify(report, null, 2));
-    
+
+    console.log("📦 [FULL REPORT]:", JSON.stringify(report, null, 2));
+
     res.json({
       success: true,
       taskId: session.scoreplexTaskId,
@@ -1079,13 +1286,12 @@ app.get('/api/test-scoreplex/:sessionId', async (req, res) => {
         phone_region: report.phone_region,
         true_caller_fullname: report.true_caller_fullname,
         true_caller_city: report.true_caller_city,
-        true_caller_operator: report.true_caller_operator
+        true_caller_operator: report.true_caller_operator,
       },
-      customerData: session.agentData
+      customerData: session.agentData,
     });
-    
   } catch (error) {
-    console.error('❌ [TEST] Error:', error.message);
+    console.error("❌ [TEST] Error:", error.message);
     res.status(500).json({ error: error.message });
   }
 });
@@ -1094,23 +1300,27 @@ app.get('/api/test-scoreplex/:sessionId', async (req, res) => {
 // START SERVER
 // ==========================================
 app.listen(PORT, () => {
-  console.log('===========================================');
-  console.log('🚀 Mappls Proxy Server Started!');
-  console.log('===========================================');
+  console.log("===========================================");
+  console.log("🚀 Mappls Proxy Server Started!");
+  console.log("===========================================");
   console.log(`📡 Server running on: http://localhost:${PORT}`);
   console.log(`✅ API key secured in environment variables`);
-  console.log('===========================================');
-  console.log('Available endpoints:');
+  console.log("===========================================");
+  console.log("Available endpoints:");
   console.log(`  GET  http://localhost:${PORT}/api`);
   console.log(`  POST http://localhost:${PORT}/api/reverse-geocode`);
   console.log(`  POST http://localhost:${PORT}/api/geocode`);
   console.log(`  POST http://localhost:${PORT}/api/calculate-distance`);
-  console.log(`  POST http://localhost:${PORT}/api/calculate-agent-user-distance`);
+  console.log(
+    `  POST http://localhost:${PORT}/api/calculate-agent-user-distance`,
+  );
   console.log(`  POST http://localhost:${PORT}/api/save-sdk-data`);
-  console.log(`  GET  http://localhost:${PORT}/api/check-verification/:sessionId`);
+  console.log(
+    `  GET  http://localhost:${PORT}/api/check-verification/:sessionId`,
+  );
   console.log(`  GET  http://localhost:${PORT}/api/dashboard-data/:sessionId`);
   console.log(`  GET  http://localhost:${PORT}/api/test-scoreplex/:sessionId`);
-  console.log('===========================================');
+  console.log("===========================================");
 });
 
 module.exports = app;

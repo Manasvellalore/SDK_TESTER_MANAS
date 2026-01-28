@@ -374,7 +374,7 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
             <div className="data-row">
   <span className="label">IP Address</span>
   <span className="value-default">
-    {intelligence.ip.ip_hostname || 'N/A'}
+    {intelligence.ip.ip || 'N/A'}
     {sessionInfo?.selectedIP && sessionInfo?.ipSource && (
       <span style={{
         marginLeft: '10px',
@@ -1099,38 +1099,7 @@ const renderSocialMedia = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="stats-cards">
-          <div className="stat-card">
-            <div className="stat-icon">👥</div>
-            <div className="stat-value">{stats.accounts}</div>
-            <div className="stat-label">Accounts</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">📝</div>
-            <div className="stat-value">{stats.names}</div>
-            <div className="stat-label">Names</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">📧</div>
-            <div className="stat-value">{stats.emails}</div>
-            <div className="stat-label">Emails</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">📱</div>
-            <div className="stat-value">{stats.phoneNumbers}</div>
-            <div className="stat-label">Phone Numbers</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">📍</div>
-            <div className="stat-value">{stats.locations}</div>
-            <div className="stat-label">Locations</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">🎭</div>
-            <div className="stat-value">{stats.aliases}</div>
-            <div className="stat-label">Aliases</div>
-          </div>
-        </div>
+        
       </div>
 
       {/* Main Content Area */}
