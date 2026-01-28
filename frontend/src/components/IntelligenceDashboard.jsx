@@ -58,6 +58,7 @@ const IntelligenceDashboard = ({ intelligence, customerData }) => {
     { id: 'phone', icon: '📱', label: 'Phone Intelligence', count: 19 },
     { id: 'ip', icon: '🌐', label: 'IP Intelligence', count: 22 },
     { id: 'darknet', icon: '🕵️', label: 'Darknet & Data Leaks', count: null },
+    { id: 'social', icon: '🌐', label: 'Social Media', count: null }, // ✅ ADD THIS LINE
     { id: 'sdk', icon: '📲', label: 'SDK Data', count: null }, // NEW!
     { id: 'overview', icon: '📊', label: 'Risk Overview', count: null }
   ];
@@ -980,7 +981,7 @@ const IntelligenceDashboard = ({ intelligence, customerData }) => {
               </span>
               <span className="contact-item">
                 <span className="contact-icon">📱</span>
-                {customerData?.phoneNumber || 'N/A'}
+                {customerData?.phone_Number || customerData?.phone ||'N/A'}
               </span>
             </div>
           </div>

@@ -1,5 +1,5 @@
 /* ============================================
-   COMPACT INTELLIGENCE DASHBOARD - MODERN UI
+   INTELLIGENCE DASHBOARD - IMPROVED READABILITY
    ============================================ */
 
 /* Root Variables */
@@ -31,6 +31,8 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: var(--text-primary);
   padding-bottom: 40px;
+  font-size: 15px; /* ✅ Increased base font */
+  font-weight: 500; /* ✅ Increased base weight */
 }
 
 .loading {
@@ -38,7 +40,8 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
+  font-weight: 600;
   color: var(--text-secondary);
   animation: pulse 2s ease-in-out infinite;
 }
@@ -51,7 +54,7 @@
   background: rgba(15, 15, 35, 0.6);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);
-  padding: 20px 32px 24px 32px;
+  padding: 16px 32px 20px 32px;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -66,14 +69,14 @@
 }
 
 .profile-avatar {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background: var(--gradient-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: white;
   box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
@@ -86,7 +89,7 @@
 }
 
 .profile-name {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 700;
   margin-bottom: 8px;
   background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
@@ -105,9 +108,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 600; /* ✅ Bolder */
   color: var(--text-secondary);
-  padding: 6px 12px;
+  padding: 6px 14px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   backdrop-filter: blur(10px);
@@ -120,7 +124,7 @@
 }
 
 .contact-icon {
-  font-size: 1rem;
+  font-size: 1.1rem;
   opacity: 0.8;
 }
 
@@ -128,7 +132,7 @@
 .stats-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 16px;
+  gap: 14px;
 }
 
 .stat-card {
@@ -136,7 +140,7 @@
   backdrop-filter: blur(10px);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  padding: 16px;
+  padding: 14px;
   text-align: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -166,15 +170,15 @@
 }
 
 .stat-icon {
-  font-size: 2rem;
-  margin-bottom: 8px;
+  font-size: 1.8rem;
+  margin-bottom: 6px;
   display: inline-block;
   position: relative;
   z-index: 1;
 }
 
 .stat-value {
-  font-size: 1.75rem;
+  font-size: 1.8rem; /* ✅ Bigger */
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 4px;
@@ -184,10 +188,10 @@
 
 .stat-label {
   font-size: 0.8rem;
+  font-weight: 600; /* ✅ Bolder */
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-weight: 500;
   position: relative;
   z-index: 1;
 }
@@ -222,11 +226,11 @@
 }
 
 .sidebar-header h3 {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 700; /* ✅ Bolder */
   text-transform: uppercase;
   letter-spacing: 1.2px;
   color: var(--text-muted);
-  font-weight: 600;
   padding: 0 12px;
 }
 
@@ -247,8 +251,8 @@
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 0.95rem; /* ✅ Bigger */
+  font-weight: 600; /* ✅ Bolder */
   position: relative;
   overflow: hidden;
 }
@@ -284,7 +288,7 @@
 }
 
 .nav-icon {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   flex-shrink: 0;
 }
 
@@ -297,8 +301,8 @@
   color: var(--text-primary);
   padding: 4px 10px;
   border-radius: 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 700; /* ✅ Bolder */
 }
 
 .nav-item.active .nav-count {
@@ -331,7 +335,7 @@
 }
 
 .content-title {
-  font-size: 1.75rem;
+  font-size: 2rem; /* ✅ Bigger */
   font-weight: 700;
   margin-bottom: 24px;
   background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
@@ -354,14 +358,15 @@
 }
 
 .content-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 20px;
   padding: 24px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .content-card::before {
@@ -378,7 +383,7 @@
 }
 
 .content-card:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
   border-color: rgba(102, 126, 234, 0.4);
   transform: translateY(-4px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
@@ -389,15 +394,18 @@
 }
 
 .card-header {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.2rem; /* ✅ MUCH BIGGER */
+  font-weight: 700; /* ✅ BOLDER */
   color: var(--text-primary);
-  margin-bottom: 18px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  margin: -24px -24px 20px -24px;
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.12) 0%, transparent 100%);
+  border-radius: 20px 20px 0 0;
   display: flex;
   align-items: center;
   gap: 8px;
+  letter-spacing: 0.3px;
 }
 
 .card-rows {
@@ -410,7 +418,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 14px;
+  padding: 12px 16px; /* ✅ More padding */
   background: rgba(255, 255, 255, 0.02);
   border-radius: 10px;
   transition: all 0.3s ease;
@@ -422,9 +430,9 @@
 }
 
 .data-row .label {
-  font-size: 0.875rem;
+  font-size: 0.95rem; /* ✅ BIGGER */
+  font-weight: 600; /* ✅ BOLDER */
   color: var(--text-secondary);
-  font-weight: 500;
   flex: 1;
 }
 
@@ -433,16 +441,17 @@
    ===================================== */
 
 .badge {
-  padding: 5px 14px;
+  padding: 6px 16px;
   border-radius: 18px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.9rem; /* ✅ Bigger */
+  font-weight: 700; /* ✅ Bolder */
   text-transform: uppercase;
   letter-spacing: 0.4px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   transition: all 0.3s ease;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
 }
 
 .badge-success {
@@ -477,13 +486,14 @@
 .value-na {
   color: var(--text-muted);
   font-style: italic;
-  font-size: 0.875rem;
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .value-score {
   font-weight: 700;
-  font-size: 1rem;
-  padding: 5px 14px;
+  font-size: 1.1rem; /* ✅ Bigger */
+  padding: 6px 16px;
   border-radius: 10px;
   display: inline-block;
 }
@@ -514,11 +524,12 @@
 
 .value-count {
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.1rem; /* ✅ Bigger */
   color: var(--text-primary);
-  padding: 4px 10px;
-  background: rgba(102, 126, 234, 0.2);
-  border-radius: 8px;
+  padding: 6px 14px;
+  background: rgba(102, 126, 234, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
 }
 
 .count-positive {
@@ -532,9 +543,95 @@
 }
 
 .value-default {
-  color: var(--text-primary);
-  font-weight: 500;
-  font-size: 0.9rem;
+  color: #e2e8f0;
+  font-weight: 600; /* ✅ Bolder */
+  font-size: 1rem; /* ✅ Bigger */
+}
+
+/* =====================================
+   SDK DATA SECTION - BIG & READABLE
+   ===================================== */
+
+.sdk-highlight {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-color: rgba(102, 126, 234, 0.4);
+  border-width: 2px;
+}
+
+.sdk-highlight .card-header {
+  font-size: 1.3rem; /* ✅ EVEN BIGGER for SDK */
+  font-weight: 700;
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.2) 0%, transparent 100%);
+}
+
+.sdk-highlight .data-row {
+  padding: 14px 18px; /* ✅ More padding */
+  background: rgba(102, 126, 234, 0.05);
+  border-left: 3px solid rgba(102, 126, 234, 0.5);
+  margin-bottom: 8px;
+}
+
+.sdk-highlight .data-row:hover {
+  background: rgba(102, 126, 234, 0.15);
+  border-left-color: rgba(102, 126, 234, 0.7);
+}
+
+.sdk-highlight .label {
+  font-size: 1rem; /* ✅ BIGGER labels for SDK */
+  font-weight: 700; /* ✅ BOLDER */
+}
+
+.sdk-json-card {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  border-color: rgba(102, 126, 234, 0.3);
+  border-width: 2px;
+}
+
+.sdk-json-card .card-header {
+  font-size: 1.4rem; /* ✅ HUGE */
+  font-weight: 700;
+  padding: 16px 20px;
+}
+
+.sdk-json-container {
+  max-height: 1000px; /* ✅ MUCH BIGGER - was 500px */
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.6); /* ✅ Darker */
+  border-radius: 16px;
+  padding: 28px; /* ✅ More padding */
+  border: 1px solid rgba(102, 126, 234, 0.25);
+}
+
+.sdk-json {
+  color: #38ef7d;
+  font-family: 'Fira Code', 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 15px; /* ✅ MUCH BIGGER - was 13px */
+  line-height: 2; /* ✅ More spacing */
+  font-weight: 500; /* ✅ Bolder */
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  letter-spacing: 0.4px;
+}
+
+.sdk-json-container::-webkit-scrollbar {
+  width: 12px; /* ✅ Wider scrollbar */
+}
+
+.sdk-json-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+}
+
+.sdk-json-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  border: 3px solid rgba(0, 0, 0, 0.4);
+}
+
+.sdk-json-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #7c8ff0 0%, #8a5bb8 100%);
 }
 
 /* =====================================
@@ -563,8 +660,8 @@
 }
 
 .overview-card h3 {
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: 1.3rem;
+  font-weight: 700;
   margin-bottom: 20px;
   color: var(--text-primary);
 }
@@ -620,7 +717,8 @@
 }
 
 .score-label {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -643,8 +741,8 @@
 .score-item-overview > span:first-child {
   min-width: 110px;
   color: var(--text-secondary);
-  font-weight: 500;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 .score-bar {
@@ -666,7 +764,7 @@
 
 .score-value-overview {
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.05rem;
   color: var(--text-primary);
   min-width: 55px;
   text-align: right;
@@ -686,8 +784,8 @@
   padding: 14px;
   border-radius: 14px;
   transition: all 0.3s ease;
-  font-weight: 500;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 .risk-safe {
@@ -726,6 +824,10 @@
   .overview-grid {
     grid-template-columns: 1fr;
   }
+  
+  .sdk-json {
+    font-size: 14px;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -757,6 +859,10 @@
   .dashboard-top-section {
     padding: 16px 20px;
   }
+  
+  .sdk-json {
+    font-size: 13px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -766,7 +872,7 @@
   }
   
   .profile-name {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
   }
   
   .profile-contact {
@@ -785,6 +891,15 @@
   
   .content-title {
     font-size: 1.5rem;
+  }
+  
+  .sdk-json-container {
+    max-height: 600px;
+    padding: 20px;
+  }
+  
+  .sdk-json {
+    font-size: 12px;
   }
 }
 
@@ -817,8 +932,8 @@ html {
 /* Custom scrollbar */
 .dashboard-content::-webkit-scrollbar,
 .sidebar-nav::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 .dashboard-content::-webkit-scrollbar-track,
@@ -835,55 +950,5 @@ html {
 
 .dashboard-content::-webkit-scrollbar-thumb:hover,
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
-  background: rgba(102, 126, 234, 0.7);
-}
-
-
-/* =====================================
-   SDK DATA SECTION
-   ===================================== */
-
-.sdk-highlight {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-  border-color: rgba(102, 126, 234, 0.4);
-}
-
-.sdk-json-card {
-  grid-column: 1 / -1;
-}
-
-.sdk-json-container {
-  max-height: 500px;
-  overflow-y: auto;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  padding: 16px;
-}
-
-.sdk-json {
-  color: #38ef7d;
-  font-family: 'Courier New', monospace;
-  font-size: 0.85rem;
-  line-height: 1.6;
-  margin: 0;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-.sdk-json-container::-webkit-scrollbar {
-  width: 8px;
-}
-
-.sdk-json-container::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-}
-
-.sdk-json-container::-webkit-scrollbar-thumb {
-  background: rgba(102, 126, 234, 0.5);
-  border-radius: 10px;
-}
-
-.sdk-json-container::-webkit-scrollbar-thumb:hover {
   background: rgba(102, 126, 234, 0.7);
 }

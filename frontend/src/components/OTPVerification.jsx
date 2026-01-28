@@ -16,9 +16,10 @@ function OTPVerification() {
   const [loadError, setLoadError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [otpAttempts, setOtpAttempts] = useState([]);
-  const [showMap, setShowMap] = useState(false); 
+  const [showMap, setShowMap] = useState(false);
   const [mapInitialized, setMapInitialized] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);    
+  const [isVerifying, setIsVerifying] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -50,15 +51,19 @@ function OTPVerification() {
         console.log("📦 [SDK] Loading bundle...");
 
         const existingScripts = document.querySelectorAll(
-          'script[src*="bargad-bundle"]'
+          'script[src*="bargad-bundle"]',
         );
         existingScripts.forEach((s) => {
           console.log("🗑️ [SDK] Removing old script");
           s.remove();
         });
 
-        window.BARGAD_API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-        console.log('🌍 [REACT] Setting SDK backend URL:', window.BARGAD_API_URL);
+        window.BARGAD_API_URL =
+          process.env.REACT_APP_API_URL || "http://localhost:3000";
+        console.log(
+          "🌍 [REACT] Setting SDK backend URL:",
+          window.BARGAD_API_URL,
+        );
 
         scriptElement = document.createElement("script");
         scriptElement.src = `/sdk/bargad-bundle.js?v=${Date.now()}`;
@@ -107,27 +112,29 @@ function OTPVerification() {
         }
 
         console.log("🎯 [SDK] Creating instance for OTP page...");
-        
-        console.log('🔍 [SDK] Checking for OTP elements...');
-        const otpInput = document.getElementById('otp');
-        const otpButton = document.getElementById('otp-verify-btn');
 
-        console.log('📍 OTP Input found:', !!otpInput);
-        console.log('📍 OTP Button found:', !!otpButton);
+        console.log("🔍 [SDK] Checking for OTP elements...");
+        const otpInput = document.getElementById("otp");
+        const otpButton = document.getElementById("otp-verify-btn");
+
+        console.log("📍 OTP Input found:", !!otpInput);
+        console.log("📍 OTP Button found:", !!otpButton);
 
         if (!otpInput || !otpButton) {
-          console.warn('⚠️ [SDK] OTP elements not ready, waiting 2 more seconds...');
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          
-          const otpInputRetry = document.getElementById('otp');
-          const otpButtonRetry = document.getElementById('otp-verify-btn');
-          console.log('📍 Retry - OTP Input:', !!otpInputRetry);
-          console.log('📍 Retry - OTP Button:', !!otpButtonRetry);
+          console.warn(
+            "⚠️ [SDK] OTP elements not ready, waiting 2 more seconds...",
+          );
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+
+          const otpInputRetry = document.getElementById("otp");
+          const otpButtonRetry = document.getElementById("otp-verify-btn");
+          console.log("📍 Retry - OTP Input:", !!otpInputRetry);
+          console.log("📍 Retry - OTP Button:", !!otpButtonRetry);
         }
 
         const instance = new window.Bargad(
           "test-api-key",
-          sessionId || "otp-user-1"
+          sessionId || "otp-user-1",
         );
 
         instance.trackOTPAttempts = {
@@ -149,25 +156,29 @@ function OTPVerification() {
 
         setTimeout(() => {
           console.log("🔐 [SDK] Manually reinitializing OTP tracking...");
-          
-          const otpInputFinal = document.getElementById('otp');
-          const otpButtonFinal = document.getElementById('otp-verify-btn');
-          
-          console.log('📍 FINAL CHECK - OTP Input:', !!otpInputFinal);
-          console.log('📍 FINAL CHECK - OTP Button:', !!otpButtonFinal);
-          
+
+          const otpInputFinal = document.getElementById("otp");
+          const otpButtonFinal = document.getElementById("otp-verify-btn");
+
+          console.log("📍 FINAL CHECK - OTP Input:", !!otpInputFinal);
+          console.log("📍 FINAL CHECK - OTP Button:", !!otpButtonFinal);
+
           if (otpInputFinal && otpButtonFinal && instance.initOTPAttempts) {
-            console.log('✅ [SDK] Calling initOTPAttempts() manually...');
+            console.log("✅ [SDK] Calling initOTPAttempts() manually...");
             try {
               instance.initOTPAttempts();
-              console.log('✅ [SDK] OTP tracking reinitialized successfully!');
+              console.log("✅ [SDK] OTP tracking reinitialized successfully!");
             } catch (err) {
-              console.error('❌ [SDK] Failed to reinitialize OTP:', err);
+              console.error("❌ [SDK] Failed to reinitialize OTP:", err);
             }
           } else if (!instance.initOTPAttempts) {
-            console.error('❌ [SDK] initOTPAttempts method not found on instance!');
+            console.error(
+              "❌ [SDK] initOTPAttempts method not found on instance!",
+            );
           } else {
-            console.error('❌ [SDK] OTP elements still not found after 2 seconds!');
+            console.error(
+              "❌ [SDK] OTP elements still not found after 2 seconds!",
+            );
           }
         }, 2000);
 
@@ -176,12 +187,16 @@ function OTPVerification() {
         setTimeout(() => {
           try {
             console.log("📤 [SDK] Forcing emission...");
-            if (instance.emitDeviceLocationData) instance.emitDeviceLocationData();
+            if (instance.emitDeviceLocationData)
+              instance.emitDeviceLocationData();
             if (instance.emitGyroscopeData) instance.emitGyroscopeData();
-            if (instance.emitAccelerometerData) instance.emitAccelerometerData();
+            if (instance.emitAccelerometerData)
+              instance.emitAccelerometerData();
             if (instance.emitMotionData) instance.emitMotionData();
-            if (instance.emitScreenOrientationData) instance.emitScreenOrientationData();
-            if (instance.emitDisplaySettingsData) instance.emitDisplaySettingsData();
+            if (instance.emitScreenOrientationData)
+              instance.emitScreenOrientationData();
+            if (instance.emitDisplaySettingsData)
+              instance.emitDisplaySettingsData();
             if (instance.emitDeviceScreenSize) instance.emitDeviceScreenSize();
             if (instance.emitDeviceID) instance.emitDeviceID();
             if (instance.emitCPUCoresData) instance.emitCPUCoresData();
@@ -215,7 +230,7 @@ function OTPVerification() {
   }, [sessionId]);
 
   const handleOtpChange = (e) => {
-    const value = e.target.value.replace(/\D/g, '');
+    const value = e.target.value.replace(/\D/g, "");
     if (value.length <= 6) {
       setOtp(value);
     }
@@ -223,317 +238,425 @@ function OTPVerification() {
 
   // ✅ MODIFIED: Added backend SDK data submission
   const handleVerifyOtp = async () => {
-    console.log('🔍 [DEBUG] OTP entered:', otp);
-    console.log('🔍 [DEBUG] Correct OTP:', CORRECT_OTP);
-    console.log('🔍 [DEBUG] Match?', otp === CORRECT_OTP);
-    
-    const attemptTimestamp = Date.now();
-    const newAttempt = {
-      otp: otp,
-      timestamp: attemptTimestamp,
-      isCorrect: otp === CORRECT_OTP
+  // 🆕 CHANGE #1: Prevent multiple clicks
+  if (isVerifying) {
+    console.log('⚠️ [CLICK-PREVENTION] Already verifying, please wait...');
+    return;
+  }
+
+  // 🆕 CHANGE #2: Validate inputs before starting
+  if (otp.length !== 6) {
+    setVerificationMessage("⚠️ Please enter a 6-digit OTP");
+    setTimeout(() => setVerificationMessage(""), 3000);
+    return;
+  }
+
+  if (!consent) {
+    setVerificationMessage("⚠️ Please accept the terms and conditions");
+    setTimeout(() => setVerificationMessage(""), 3000);
+    return;
+  }
+
+  // 🆕 CHANGE #3: Set verifying state immediately to block multiple clicks
+  setIsVerifying(true);
+
+  console.log("🔍 [DEBUG] OTP entered:", otp);
+  console.log("🔍 [DEBUG] Correct OTP:", CORRECT_OTP);
+  console.log("🔍 [DEBUG] Match?", otp === CORRECT_OTP);
+
+  const attemptTimestamp = Date.now();
+  const newAttempt = {
+    otp: otp,
+    timestamp: attemptTimestamp,
+    isCorrect: otp === CORRECT_OTP,
+  };
+
+  const updatedAttempts = [...otpAttempts, newAttempt];
+  setOtpAttempts(updatedAttempts);
+
+  // 🆕 CHANGE #4: Handle WRONG OTP first - quick exit without heavy operations
+  if (otp !== CORRECT_OTP) {
+    // ❌ WRONG OTP
+    console.log("❌ [WRONG-OTP] Incorrect OTP entered");
+    setVerificationMessage(
+      `⚠️ Wrong OTP. Attempt ${updatedAttempts.length}. Try again.`,
+    );
+
+    setTimeout(() => {
+      setVerificationMessage("");
+      setOtp(""); // 🆕 Clear OTP input
+      setIsVerifying(false); // 🆕 Re-enable button for next attempt
+    }, 3000);
+
+    return; // 🆕 EXIT IMMEDIATELY - Don't run 10+ second operations for wrong OTP
+  }
+
+  // ✅ CORRECT OTP - Continue with all your existing logic
+  console.log("✅ [CORRECT-OTP] Starting verification process...");
+  setIsVerified(true);
+  
+  // 🆕 CHANGE #5: Show immediate success feedback
+  setVerificationMessage("✅ OTP Verified! Processing...");
+
+  // 🆕 CHANGE #6: Wrap everything in try-catch to handle errors
+  try {
+    // ✅✅✅ ALL YOUR EXISTING CODE BELOW - UNCHANGED ✅✅✅
+    console.log("⏳ [SDK] Waiting for all events to collect (8 seconds)...");
+    await new Promise((resolve) => setTimeout(resolve, 8000));
+
+    // Force emit all SDK events
+    if (bargadInstance) {
+      console.log("📤 [SDK] Forcing emission of all events...");
+      try {
+        if (bargadInstance.emitKeypressData)
+          bargadInstance.emitKeypressData();
+        if (bargadInstance.emitClipboardData)
+          bargadInstance.emitClipboardData();
+        if (bargadInstance.emitLongPressData)
+          bargadInstance.emitLongPressData();
+        if (bargadInstance.emitTapData) bargadInstance.emitTapData();
+        if (bargadInstance.emitSwipeData) bargadInstance.emitSwipeData();
+        if (bargadInstance.emitScreenOrientationData)
+          bargadInstance.emitScreenOrientationData();
+        if (bargadInstance.emitDisplaySettingsData)
+          bargadInstance.emitDisplaySettingsData();
+        if (bargadInstance.emitPinchData) bargadInstance.emitPinchData();
+        if (bargadInstance.emitAmbientLightData)
+          bargadInstance.emitAmbientLightData();
+        if (bargadInstance.emitDeviceLocationData)
+          bargadInstance.emitDeviceLocationData();
+        if (bargadInstance.emitGyroscopeData)
+          bargadInstance.emitGyroscopeData();
+        if (bargadInstance.emitProximityData)
+          bargadInstance.emitProximityData();
+        if (bargadInstance.emitMotionData) bargadInstance.emitMotionData();
+        if (bargadInstance.emitAccelerometerData)
+          bargadInstance.emitAccelerometerData();
+        if (bargadInstance.emitDeviceScreenSize)
+          bargadInstance.emitDeviceScreenSize();
+        if (bargadInstance.emitDeviceID) bargadInstance.emitDeviceID();
+        if (bargadInstance.emitIMEI) bargadInstance.emitIMEI();
+        if (bargadInstance.emitBluetoothDevices)
+          bargadInstance.emitBluetoothDevices();
+        if (bargadInstance.emitCPUCoresData)
+          bargadInstance.emitCPUCoresData();
+        if (bargadInstance.emitTouchBiometricsData)
+          bargadInstance.emitTouchBiometricsData();
+        if (bargadInstance.emitFormTimeData)
+          bargadInstance.emitFormTimeData();
+        if (bargadInstance.emitInputPatternData)
+          bargadInstance.emitInputPatternData();
+
+        console.log("✅ [SDK] All emissions triggered");
+
+        // Wait 2 more seconds for emissions to register
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        console.log(
+          `📊 [SDK] Total events now: ${bargadInstance.allEvents?.length || 0}`,
+        );
+      } catch (emitError) {
+        console.error("❌ [SDK] Emit error:", emitError);
+      }
+    }
+
+    const timeDiffs = calculateTimeDiffs(updatedAttempts);
+    const wrongAttempts = updatedAttempts.filter((a) => !a.isCorrect);
+    const totalAttempts = updatedAttempts.length;
+
+    const fraudScore = calculateOtpRisk(totalAttempts);
+    const isRapidGuessing = timeDiffs.some((t) => t < 3);
+
+    const otpEvent = {
+      type: "OTP_VERIFICATION",
+      payload: {
+        verificationAttempts: totalAttempts,
+        verificationAttemptType: totalAttempts === 1 ? "SINGLE" : "MULTIPLE",
+        attempts: updatedAttempts.map((a) => ({
+          otpValue: a.otp,
+          attemptTimestamp: a.timestamp,
+          isCorrect: a.isCorrect,
+          attemptNumber: updatedAttempts.indexOf(a) + 1,
+        })),
+        firstAttemptTimestamp: updatedAttempts[0].timestamp,
+        lastAttemptTimestamp: attemptTimestamp,
+        timeBetweenAttempts: timeDiffs,
+        averageTimeBetweenAttempts:
+          timeDiffs.length > 0
+            ? (
+                timeDiffs.reduce((a, b) => a + b, 0) / timeDiffs.length
+              ).toFixed(2)
+            : 0,
+        fraudScore: {
+          score: fraudScore,
+          level:
+            fraudScore > 70
+              ? "HIGH_RISK"
+              : fraudScore > 40
+                ? "MEDIUM_RISK"
+                : "LOW_RISK",
+          reasons: [
+            `${totalAttempts} verification ${totalAttempts === 1 ? "attempt" : "attempts"}`,
+            `${wrongAttempts.length} wrong OTP ${wrongAttempts.length === 1 ? "entry" : "entries"}`,
+            totalAttempts > 3
+              ? "Multiple failed attempts - suspicious"
+              : "Normal verification behavior",
+            isRapidGuessing
+              ? "Rapid guessing detected - bot suspected"
+              : "Normal timing pattern",
+          ],
+          confidence: totalAttempts > 1 ? 0.8 : 0.9,
+        },
+        verificationPattern: {
+          patternType:
+            totalAttempts > 3
+              ? "TRIAL_AND_ERROR"
+              : totalAttempts > 1
+                ? "RETRY"
+                : "FIRST_ATTEMPT_SUCCESS",
+          suspicionLevel:
+            totalAttempts > 3 ? "HIGH" : totalAttempts > 1 ? "MEDIUM" : "LOW",
+          isRapidGuessing: isRapidGuessing,
+          behaviorIndicator: isRapidGuessing ? "BOT_LIKE" : "HUMAN_LIKE",
+        },
+        totalAttempts: totalAttempts,
+        wrongAttempts: wrongAttempts.length,
+        correctAttempts: updatedAttempts.filter((a) => a.isCorrect).length,
+        finalStatus: "VERIFIED",
+        riskScore: fraudScore,
+        riskLevel:
+          fraudScore > 70 ? "HIGH" : fraudScore > 40 ? "MEDIUM" : "LOW",
+        isSuspicious: totalAttempts > 2,
+        otpLength: CORRECT_OTP.length,
+        currentOtpValue: otp,
+      },
+      timestamp: Date.now(),
+      userId: sessionId || "otp-user-1",
+      SDK: "Bargad-v1.0.0",
     };
 
-    const updatedAttempts = [...otpAttempts, newAttempt];
-    setOtpAttempts(updatedAttempts);
-
-    if (otp === CORRECT_OTP) {
-      // ✅ CORRECT OTP
-      setIsVerified(true);
-
-      // ✅✅✅ NEW: WAIT FOR ALL SDK EVENTS TO COMPLETE ✅✅✅
-  console.log('⏳ [SDK] Waiting for all events to collect (8 seconds)...');
-  await new Promise(resolve => setTimeout(resolve, 8000));
-  
-  // Force emit all SDK events
-  if (bargadInstance) {
-    console.log('📤 [SDK] Forcing emission of all events...');
-    try {
-      if (bargadInstance.emitKeypressData) bargadInstance.emitKeypressData();
-      if (bargadInstance.emitClipboardData) bargadInstance.emitClipboardData();
-      if (bargadInstance.emitLongPressData) bargadInstance.emitLongPressData();
-      if (bargadInstance.emitTapData) bargadInstance.emitTapData();
-      if (bargadInstance.emitSwipeData) bargadInstance.emitSwipeData();
-      if (bargadInstance.emitScreenOrientationData) bargadInstance.emitScreenOrientationData();
-      if (bargadInstance.emitDisplaySettingsData) bargadInstance.emitDisplaySettingsData();
-      if (bargadInstance.emitPinchData) bargadInstance.emitPinchData();
-      if (bargadInstance.emitAmbientLightData) bargadInstance.emitAmbientLightData();
-      if (bargadInstance.emitDeviceLocationData) bargadInstance.emitDeviceLocationData();
-      if (bargadInstance.emitGyroscopeData) bargadInstance.emitGyroscopeData();
-      if (bargadInstance.emitProximityData) bargadInstance.emitProximityData();
-      if (bargadInstance.emitMotionData) bargadInstance.emitMotionData();
-      if (bargadInstance.emitAccelerometerData) bargadInstance.emitAccelerometerData();
-      if (bargadInstance.emitDeviceScreenSize) bargadInstance.emitDeviceScreenSize();
-      if (bargadInstance.emitDeviceID) bargadInstance.emitDeviceID();
-      if (bargadInstance.emitIMEI) bargadInstance.emitIMEI();
-      if (bargadInstance.emitBluetoothDevices) bargadInstance.emitBluetoothDevices();
-      if (bargadInstance.emitCPUCoresData) bargadInstance.emitCPUCoresData();
-      if (bargadInstance.emitTouchBiometricsData) bargadInstance.emitTouchBiometricsData();
-      if (bargadInstance.emitFormTimeData) bargadInstance.emitFormTimeData();
-      if (bargadInstance.emitInputPatternData) bargadInstance.emitInputPatternData();
-      
-      console.log('✅ [SDK] All emissions triggered');
-      
-      // Wait 2 more seconds for emissions to register
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log(`📊 [SDK] Total events now: ${bargadInstance.allEvents?.length || 0}`);
-    } catch (emitError) {
-      console.error('❌ [SDK] Emit error:', emitError);
+    if (bargadInstance && bargadInstance.allEvents) {
+      bargadInstance.allEvents.push(otpEvent);
+      console.log("✅ [OTP_VERIFICATION] Event added to SDK");
+      console.log("📊 [OTP_VERIFICATION] Total attempts:", totalAttempts);
+      console.log("📊 [OTP_VERIFICATION] Fraud score:", fraudScore);
     }
-  }
-  // ✅✅✅ END NEW CODE ✅✅✅
-  
-      
-      const timeDiffs = calculateTimeDiffs(updatedAttempts);
-      const wrongAttempts = updatedAttempts.filter(a => !a.isCorrect);
-      const totalAttempts = updatedAttempts.length;
-      
-      const fraudScore = calculateOtpRisk(totalAttempts);
-      const isRapidGuessing = timeDiffs.some(t => t < 3);
-      
-      const otpEvent = {
-        type: "OTP_VERIFICATION",
-        payload: {
-          verificationAttempts: totalAttempts,
-          verificationAttemptType: totalAttempts === 1 ? "SINGLE" : "MULTIPLE",
-          attempts: updatedAttempts.map(a => ({
-            otpValue: a.otp,
-            attemptTimestamp: a.timestamp,
-            isCorrect: a.isCorrect,
-            attemptNumber: updatedAttempts.indexOf(a) + 1
-          })),
-          firstAttemptTimestamp: updatedAttempts[0].timestamp,
-          lastAttemptTimestamp: attemptTimestamp,
-          timeBetweenAttempts: timeDiffs,
-          averageTimeBetweenAttempts: timeDiffs.length > 0 
-            ? (timeDiffs.reduce((a, b) => a + b, 0) / timeDiffs.length).toFixed(2)
-            : 0,
-          fraudScore: {
-            score: fraudScore,
-            level: fraudScore > 70 ? "HIGH_RISK" : fraudScore > 40 ? "MEDIUM_RISK" : "LOW_RISK",
-            reasons: [
-              `${totalAttempts} verification ${totalAttempts === 1 ? 'attempt' : 'attempts'}`,
-              `${wrongAttempts.length} wrong OTP ${wrongAttempts.length === 1 ? 'entry' : 'entries'}`,
-              totalAttempts > 3 ? "Multiple failed attempts - suspicious" : "Normal verification behavior",
-              isRapidGuessing ? "Rapid guessing detected - bot suspected" : "Normal timing pattern"
-            ],
-            confidence: totalAttempts > 1 ? 0.8 : 0.9
-          },
-          verificationPattern: {
-            patternType: totalAttempts > 3 ? "TRIAL_AND_ERROR" : totalAttempts > 1 ? "RETRY" : "FIRST_ATTEMPT_SUCCESS",
-            suspicionLevel: totalAttempts > 3 ? "HIGH" : totalAttempts > 1 ? "MEDIUM" : "LOW",
-            isRapidGuessing: isRapidGuessing,
-            behaviorIndicator: isRapidGuessing ? "BOT_LIKE" : "HUMAN_LIKE"
-          },
-          totalAttempts: totalAttempts,
-          wrongAttempts: wrongAttempts.length,
-          correctAttempts: updatedAttempts.filter(a => a.isCorrect).length,
-          finalStatus: "VERIFIED",
-          riskScore: fraudScore,
-          riskLevel: fraudScore > 70 ? "HIGH" : fraudScore > 40 ? "MEDIUM" : "LOW",
-          isSuspicious: totalAttempts > 2,
-          otpLength: CORRECT_OTP.length,
-          currentOtpValue: otp
-        },
-        timestamp: Date.now(),
-        userId: sessionId || "otp-user-1",
-        SDK: "Bargad-v1.0.0"
-      };
 
-      if (bargadInstance && bargadInstance.allEvents) {
-        bargadInstance.allEvents.push(otpEvent);
-        console.log('✅ [OTP_VERIFICATION] Event added to SDK');
-        console.log('📊 [OTP_VERIFICATION] Total attempts:', totalAttempts);
-        console.log('📊 [OTP_VERIFICATION] Fraud score:', fraudScore);
-      }
+    // Calculate Agent-User Distance
+    console.log("🗺️ [AGENT-USER] Starting distance calculation...");
 
-      // Calculate Agent-User Distance
-      console.log('🗺️ [AGENT-USER] Starting distance calculation...');
+    let events = bargadInstance?.allEvents || [];
 
-      let events = bargadInstance?.allEvents || [];
+    console.log("🔍 [DEBUG] bargadInstance exists?", !!bargadInstance);
+    console.log(
+      "🔍 [DEBUG] bargadInstance.allEvents exists?",
+      !!bargadInstance?.allEvents,
+    );
+    console.log("🔍 [DEBUG] events array length:", events.length);
+    console.log(
+      "🔍 [DEBUG] First 5 event types:",
+      events.slice(0, 5).map((e) => e.type),
+    );
 
-      // ✅ ADD THIS DEBUG
-console.log('🔍 [DEBUG] bargadInstance exists?', !!bargadInstance);
-console.log('🔍 [DEBUG] bargadInstance.allEvents exists?', !!bargadInstance?.allEvents);
-console.log('🔍 [DEBUG] events array length:', events.length);
-console.log('🔍 [DEBUG] First 5 event types:', events.slice(0, 5).map(e => e.type));
+    if (events.length === 0) {
+      console.error(
+        "❌ [ERROR] No events collected! bargadInstance might not be initialized!",
+      );
+      console.log("Available on window:", {
+        bargadInstance: !!window.bargadInstance,
+        Bargad: !!window.Bargad,
+      });
+    }
+    
+    const userLocationEvent = events.find(
+      (e) => e.type === "DEVICE_LOCATION",
+    );
 
-if (events.length === 0) {
-  console.error('❌ [ERROR] No events collected! bargadInstance might not be initialized!');
-  console.log('Available on window:', {
-    bargadInstance: !!window.bargadInstance,
-    Bargad: !!window.Bargad
-  });
-}
-      const userLocationEvent = events.find((e) => e.type === "DEVICE_LOCATION");
+    if (userLocationEvent && sessionId) {
+      console.log("✅ [AGENT-USER] User location found");
 
-      if (userLocationEvent && sessionId) {
-        console.log('✅ [AGENT-USER] User location found');
+      const agentDataString = localStorage.getItem(
+        `agent_location_${sessionId}`,
+      );
+      console.log(
+        "🔍 [AGENT-USER] Agent data:",
+        agentDataString ? "Found" : "NOT FOUND",
+      );
 
-        const agentDataString = localStorage.getItem(`agent_location_${sessionId}`);
-        console.log('🔍 [AGENT-USER] Agent data:', agentDataString ? 'Found' : 'NOT FOUND');
+      if (agentDataString) {
+        const agentData = JSON.parse(agentDataString);
+        console.log("✅ [AGENT-USER] Agent location parsed");
 
-        if (agentDataString) {
-          const agentData = JSON.parse(agentDataString);
-          console.log('✅ [AGENT-USER] Agent location parsed');
+        try {
+          console.log("🗺️ [AGENT-USER] Calling MapmyIndia API...");
 
-          try {
-            console.log('🗺️ [AGENT-USER] Calling MapmyIndia API...');
+          const API_BASE_URL =
+            process.env.REACT_APP_API_URL || "http://localhost:3000";
 
-            const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-
-            const response = await fetch(`${API_BASE_URL}/api/calculate-distance`, {
-              method: 'POST',
+          const response = await fetch(
+            `${API_BASE_URL}/api/calculate-distance`,
+            {
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json'
+                "Content-Type": "application/json",
               },
               body: JSON.stringify({
                 userLat: agentData.location.latitude,
                 userLon: agentData.location.longitude,
                 bankLat: userLocationEvent.payload.latitude,
-                bankLon: userLocationEvent.payload.longitude
-              })
-            });
+                bankLon: userLocationEvent.payload.longitude,
+              }),
+            },
+          );
 
-            if (response.ok) {
-              const data = await response.json();
+          if (response.ok) {
+            const data = await response.json();
 
-              if (data.success) {
-                console.log('✅ [AGENT-USER] Distance:', data.distanceKm, 'km');
+            if (data.success) {
+              console.log("✅ [AGENT-USER] Distance:", data.distanceKm, "km");
 
-                const agentUserDistanceEvent = {
-                  type: "AGENT_USER_DISTANCE",
-                  payload: {
-                    agentLocation: {
-                      latitude: agentData.location.latitude,
-                      longitude: agentData.location.longitude,
-                      name: agentData.agentName || 'Agent',
-                      address: agentData.location.address || 'Agent Location'
-                    },
-                    userLocation: {
-                      latitude: userLocationEvent.payload.latitude,
-                      longitude: userLocationEvent.payload.longitude,
-                      name: 'Customer',
-                      address: userLocationEvent.payload.address?.formattedAddress || 'User Location'
-                    },
-                    distance: {
-                      km: data.distanceKm,
-                      meters: Math.round(data.distanceKm * 1000),
-                      miles: parseFloat((data.distanceKm * 0.621371).toFixed(2))
-                    },
-                    duration: {
-                      minutes: data.durationMinutes,
-                      formatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`
-                    },
-                    drivingDistance: {
-                      km: data.distanceKm,
-                      durationFormatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`
-                    },
-                    calculationMethod: "MAPPLS_DISTANCE_MATRIX_API",
-                    riskAnalysis: assessAgentUserRisk(data.distanceKm)
+              const agentUserDistanceEvent = {
+                type: "AGENT_USER_DISTANCE",
+                payload: {
+                  agentLocation: {
+                    latitude: agentData.location.latitude,
+                    longitude: agentData.location.longitude,
+                    name: agentData.agentName || "Agent",
+                    address: agentData.location.address || "Agent Location",
                   },
-                  timestamp: Date.now(),
-                  userId: sessionId || "otp-user-1",
-                  SDK: "Bargad-v1.0.0"
-                };
+                  userLocation: {
+                    latitude: userLocationEvent.payload.latitude,
+                    longitude: userLocationEvent.payload.longitude,
+                    name: "Customer",
+                    address:
+                      userLocationEvent.payload.address?.formattedAddress ||
+                      "User Location",
+                  },
+                  distance: {
+                    km: data.distanceKm,
+                    meters: Math.round(data.distanceKm * 1000),
+                    miles: parseFloat(
+                      (data.distanceKm * 0.621371).toFixed(2),
+                    ),
+                  },
+                  duration: {
+                    minutes: data.durationMinutes,
+                    formatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`,
+                  },
+                  drivingDistance: {
+                    km: data.distanceKm,
+                    durationFormatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`,
+                  },
+                  calculationMethod: "MAPPLS_DISTANCE_MATRIX_API",
+                  riskAnalysis: assessAgentUserRisk(data.distanceKm),
+                },
+                timestamp: Date.now(),
+                userId: sessionId || "otp-user-1",
+                SDK: "Bargad-v1.0.0",
+              };
 
-                events.push(agentUserDistanceEvent);
-                console.log('✅ [AGENT-USER] Event added! Total events:', events.length);
-              } else {
-                console.error('❌ [AGENT-USER] API error:', data.error);
-              }
+              events.push(agentUserDistanceEvent);
+              console.log(
+                "✅ [AGENT-USER] Event added! Total events:",
+                events.length,
+              );
             } else {
-              console.error('❌ [AGENT-USER] HTTP error:', response.status);
+              console.error("❌ [AGENT-USER] API error:", data.error);
             }
-          } catch (err) {
-            console.error('❌ [AGENT-USER] Fetch failed:', err);
+          } else {
+            console.error("❌ [AGENT-USER] HTTP error:", response.status);
           }
-        } else {
-          console.warn('⚠️ [AGENT-USER] No agent location in localStorage');
+        } catch (err) {
+          console.error("❌ [AGENT-USER] Fetch failed:", err);
         }
       } else {
-        console.warn('⚠️ [AGENT-USER] Missing user location or sessionId');
+        console.warn("⚠️ [AGENT-USER] No agent location in localStorage");
       }
+    } else {
+      console.warn("⚠️ [AGENT-USER] Missing user location or sessionId");
+    }
 
-      // ✅ NEW: Send SDK data to backend
-      console.log('💾 [BACKEND] Sending SDK data to backend...');
-      
-      try {
-        const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-        
-        const sdkDataResponse = await fetch(`${API_BASE_URL}/api/save-sdk-data`, {
-          method: 'POST',
+    // Send SDK data to backend
+    console.log("💾 [BACKEND] Sending SDK data to backend...");
+
+    try {
+      const API_BASE_URL =
+        process.env.REACT_APP_API_URL || "http://localhost:3000";
+
+      const sdkDataResponse = await fetch(
+        `${API_BASE_URL}/api/save-sdk-data`,
+        {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             sessionId: sessionId,
-            sdkData: events
-          })
-        });
+            sdkData: events,
+          }),
+        },
+      );
 
-        if (sdkDataResponse.ok) {
-          console.log('✅ [BACKEND] SDK data saved successfully');
-        } else {
-          console.warn('⚠️ [BACKEND] Failed to save SDK data');
-        }
-      } catch (err) {
-        console.error('❌ [BACKEND] Error saving SDK data:', err);
+      if (sdkDataResponse.ok) {
+        console.log("✅ [BACKEND] SDK data saved successfully");
+      } else {
+        console.warn("⚠️ [BACKEND] Failed to save SDK data");
       }
-
-      // Mark session as verified
-      if (sessionId) {
-        console.log(`✅ [SESSION] Marking session ${sessionId} as verified`);
-        localStorage.setItem(
-          `verification_${sessionId}`,
-          JSON.stringify({
-            verified: true,
-            timestamp: new Date().toISOString(),
-            otp: otp,
-            eventCount: events.length,
-          })
-        );
-
-        window.dispatchEvent(new Event("storage"));
-        console.log('📡 [SESSION] Agent Portal notified');
-      }
-
-      // Show success message
-      setVerificationMessage("✅ OTP Verified! Redirecting...");
-
-      // ✅ CHANGED: Navigate to Thank You page instead of results
-      setTimeout(() => {
-        console.log('✅ [OTP] Navigating to Thank You page...');
-        navigate('/thank-you');
-      }, 1500);
-
-    } else {
-      // ❌ WRONG OTP
-      setVerificationMessage(`⚠️ Wrong OTP. Attempt ${updatedAttempts.length}. Try again.`);
-      
-      setTimeout(() => {
-        setVerificationMessage("");
-      }, 3000);
+    } catch (err) {
+      console.error("❌ [BACKEND] Error saving SDK data:", err);
     }
-  };
+
+    // Mark session as verified
+    if (sessionId) {
+      console.log(`✅ [SESSION] Marking session ${sessionId} as verified`);
+      localStorage.setItem(
+        `verification_${sessionId}`,
+        JSON.stringify({
+          verified: true,
+          timestamp: new Date().toISOString(),
+          otp: otp,
+          eventCount: events.length,
+        }),
+      );
+
+      window.dispatchEvent(new Event("storage"));
+      console.log("📡 [SESSION] Agent Portal notified");
+    }
+
+    // Show success message
+    setVerificationMessage("✅ OTP Verified! Redirecting...");
+
+    // Navigate to Thank You page
+    setTimeout(() => {
+      console.log("✅ [OTP] Navigating to Thank You page...");
+      navigate("/thank-you");
+    }, 1500);
+
+  } catch (error) {
+    // 🆕 CHANGE #7: Handle any errors gracefully
+    console.error("❌ [ERROR] Verification process failed:", error);
+    setVerificationMessage("❌ An error occurred. Please try again.");
+    setIsVerifying(false); // Re-enable button on error
+  }
+};
+
 
   // Submit form - KEEPING ORIGINAL FUNCTIONALITY
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (otp.length !== 6) {
-      alert('⚠️ Please enter a 6-digit OTP');
+      alert("⚠️ Please enter a 6-digit OTP");
       return;
     }
 
     if (!consent) {
-      alert('⚠️ Please accept the terms and conditions to proceed');
+      alert("⚠️ Please accept the terms and conditions to proceed");
       return;
     }
 
     try {
-      console.log('🚀 [SUBMIT] Processing final submission...');
+      console.log("🚀 [SUBMIT] Processing final submission...");
       setIsSubmitting(true);
 
       await new Promise((resolve) => setTimeout(resolve, 8000));
@@ -544,45 +667,59 @@ if (events.length === 0) {
         events = bargadInstance.allEvents || [];
         console.log(`📊 [SUBMIT] ${events.length} events captured`);
 
-        const otpAttempts = events.filter(e => e.type === "OTP_ATTEMPT");
+        const otpAttempts = events.filter((e) => e.type === "OTP_ATTEMPT");
         console.log(`🔐 [SUBMIT] OTP attempts captured: ${otpAttempts.length}`);
 
-        console.log('📍 [AGENT-USER] Starting distance calculation...');
+        console.log("📍 [AGENT-USER] Starting distance calculation...");
 
-        const userLocationEvent = events.find((e) => e.type === "DEVICE_LOCATION");
+        const userLocationEvent = events.find(
+          (e) => e.type === "DEVICE_LOCATION",
+        );
 
         if (userLocationEvent && sessionId) {
-          console.log('✅ User location found');
+          console.log("✅ User location found");
 
-          const agentDataString = localStorage.getItem(`agent_location_${sessionId}`);
+          const agentDataString = localStorage.getItem(
+            `agent_location_${sessionId}`,
+          );
 
           if (agentDataString) {
             const agentData = JSON.parse(agentDataString);
-            console.log('✅ Agent location found');
+            console.log("✅ Agent location found");
 
             try {
-              console.log('🗺️ [AGENT-USER] Calling backend API with MapmyIndia...');
+              console.log(
+                "🗺️ [AGENT-USER] Calling backend API with MapmyIndia...",
+              );
 
-              const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+              const API_BASE_URL =
+                process.env.REACT_APP_API_URL || "http://localhost:3000";
 
-              const response = await fetch(`${API_BASE_URL}/api/calculate-distance`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
+              const response = await fetch(
+                `${API_BASE_URL}/api/calculate-distance`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    userLat: agentData.location.latitude,
+                    userLon: agentData.location.longitude,
+                    bankLat: userLocationEvent.payload.latitude,
+                    bankLon: userLocationEvent.payload.longitude,
+                  }),
                 },
-                body: JSON.stringify({
-                  userLat: agentData.location.latitude,
-                  userLon: agentData.location.longitude,
-                  bankLat: userLocationEvent.payload.latitude,
-                  bankLon: userLocationEvent.payload.longitude
-                })
-              });
+              );
 
               if (response.ok) {
                 const data = await response.json();
 
                 if (data.success) {
-                  console.log('✅ [AGENT-USER] Distance calculated via MapmyIndia:', data.distanceKm, 'km');
+                  console.log(
+                    "✅ [AGENT-USER] Distance calculated via MapmyIndia:",
+                    data.distanceKm,
+                    "km",
+                  );
 
                   const agentUserDistanceEvent = {
                     type: "AGENT_USER_DISTANCE",
@@ -590,92 +727,121 @@ if (events.length === 0) {
                       agentLocation: {
                         latitude: agentData.location.latitude,
                         longitude: agentData.location.longitude,
-                        name: agentData.agentName || 'Agent',
-                        address: agentData.location.address || 'Agent Location'
+                        name: agentData.agentName || "Agent",
+                        address: agentData.location.address || "Agent Location",
                       },
                       userLocation: {
                         latitude: userLocationEvent.payload.latitude,
                         longitude: userLocationEvent.payload.longitude,
-                        name: 'Customer',
-                        address: userLocationEvent.payload.address?.formattedAddress || 'User Location'
+                        name: "Customer",
+                        address:
+                          userLocationEvent.payload.address?.formattedAddress ||
+                          "User Location",
                       },
                       distance: {
                         km: data.distanceKm,
                         meters: Math.round(data.distanceKm * 1000),
-                        miles: parseFloat((data.distanceKm * 0.621371).toFixed(2))
+                        miles: parseFloat(
+                          (data.distanceKm * 0.621371).toFixed(2),
+                        ),
                       },
                       duration: {
                         minutes: data.durationMinutes,
-                        formatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`
+                        formatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`,
                       },
                       drivingDistance: {
                         km: data.distanceKm,
-                        durationFormatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`
+                        durationFormatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`,
                       },
                       calculationMethod: "MAPPLS_DISTANCE_MATRIX_API",
                       riskAnalysis: assessAgentUserRisk(data.distanceKm),
                       isSuspicious: data.distanceKm > 50,
-                      riskLevel: data.distanceKm > 100 ? 'CRITICAL' : data.distanceKm > 50 ? 'HIGH' : 'LOW',
-                      riskScore: data.distanceKm > 100 ? 90 : data.distanceKm > 50 ? 70 : 30
+                      riskLevel:
+                        data.distanceKm > 100
+                          ? "CRITICAL"
+                          : data.distanceKm > 50
+                            ? "HIGH"
+                            : "LOW",
+                      riskScore:
+                        data.distanceKm > 100
+                          ? 90
+                          : data.distanceKm > 50
+                            ? 70
+                            : 30,
                     },
                     timestamp: Date.now(),
                     userId: sessionId || "otp-user-1",
-                    SDK: "Bargad-v1.0.0"
+                    SDK: "Bargad-v1.0.0",
                   };
 
                   events.push(agentUserDistanceEvent);
-                  console.log('✅ [AGENT-USER] Distance event added (MapmyIndia)');
+                  console.log(
+                    "✅ [AGENT-USER] Distance event added (MapmyIndia)",
+                  );
                 } else {
-                  console.error('❌ [AGENT-USER] API returned error:', data.error);
+                  console.error(
+                    "❌ [AGENT-USER] API returned error:",
+                    data.error,
+                  );
                 }
               } else {
-                console.error('❌ [AGENT-USER] Backend returned error status:', response.status);
+                console.error(
+                  "❌ [AGENT-USER] Backend returned error status:",
+                  response.status,
+                );
               }
             } catch (err) {
-              console.error('❌ [AGENT-USER] API call failed:', err);
+              console.error("❌ [AGENT-USER] API call failed:", err);
             }
           } else {
-            console.warn('⚠️ [AGENT-USER] Agent location not found in localStorage');
+            console.warn(
+              "⚠️ [AGENT-USER] Agent location not found in localStorage",
+            );
           }
         } else {
           if (!userLocationEvent) {
-            console.warn('⚠️ [AGENT-USER] User location not captured');
+            console.warn("⚠️ [AGENT-USER] User location not captured");
           }
           if (!sessionId) {
-            console.warn('⚠️ [AGENT-USER] No session ID in URL');
+            console.warn("⚠️ [AGENT-USER] No session ID in URL");
           }
         }
 
         const hasBankDistance = events.some((e) => e.type === "BANK_DISTANCE");
 
         if (!hasBankDistance) {
-          const locationEvent = events.find((e) => e.type === "DEVICE_LOCATION");
+          const locationEvent = events.find(
+            (e) => e.type === "DEVICE_LOCATION",
+          );
 
           if (locationEvent && bargadInstance.bankDistanceTracker) {
-            console.log('🗺️ [SUBMIT] Calculating bank distance...');
+            console.log("🗺️ [SUBMIT] Calculating bank distance...");
             try {
               const { latitude, longitude } = locationEvent.payload;
-              const address = locationEvent.payload.address?.formattedAddress || "Address not available";
+              const address =
+                locationEvent.payload.address?.formattedAddress ||
+                "Address not available";
 
-              const bankEvent = await bargadInstance.bankDistanceTracker.calculateDistanceToBank(
-                latitude,
-                longitude,
-                "SBI Bank - Shirpur Branch",
-                address,
-                sessionId || "otp-user-1"
-              );
+              const bankEvent =
+                await bargadInstance.bankDistanceTracker.calculateDistanceToBank(
+                  latitude,
+                  longitude,
+                  "SBI Bank - Shirpur Branch",
+                  address,
+                  sessionId || "otp-user-1",
+                );
 
               events.push(bankEvent);
-              console.log('✅ [SUBMIT] Bank distance added');
+              console.log("✅ [SUBMIT] Bank distance added");
             } catch (err) {
-              console.error('❌ [SUBMIT] Bank distance failed:', err);
+              console.error("❌ [SUBMIT] Bank distance failed:", err);
             }
           }
         }
 
         console.log(`✅ [SUBMIT] Final: ${events.length} events`);
       } else {
-        console.warn('⚠️ [SUBMIT] SDK not loaded');
+        console.warn("⚠️ [SUBMIT] SDK not loaded");
         events = [
           {
             type: "OTP_VERIFICATION",
@@ -696,22 +862,24 @@ if (events.length === 0) {
             timestamp: new Date().toISOString(),
             otp: otp,
             eventCount: events.length,
-          })
+          }),
         );
 
         window.dispatchEvent(new Event("storage"));
-        console.log('📡 [SESSION] Agent Portal notified');
+        console.log("📡 [SESSION] Agent Portal notified");
       }
 
-      sessionStorage.setItem('otpEvents', JSON.stringify(events));
-      sessionStorage.setItem('otpData', JSON.stringify({ otp, sessionId, timestamp: new Date().toISOString() }));
+      sessionStorage.setItem("otpEvents", JSON.stringify(events));
+      sessionStorage.setItem(
+        "otpData",
+        JSON.stringify({ otp, sessionId, timestamp: new Date().toISOString() }),
+      );
 
-      console.log('✅ [SUBMIT] Complete, navigating to results...');
-      navigate('/otp-results');
-
+      console.log("✅ [SUBMIT] Complete, navigating to results...");
+      navigate("/otp-results");
     } catch (error) {
-      console.error('❌ [SUBMIT] Error:', error);
-      alert('Verification error: ' + error.message);
+      console.error("❌ [SUBMIT] Error:", error);
+      alert("Verification error: " + error.message);
       setIsSubmitting(false);
     }
   };
@@ -786,22 +954,27 @@ if (events.length === 0) {
             id="otp-verify-btn"
             className="otp-verify-btn"
             onClick={handleVerifyOtp}
-            disabled={isSubmitting || otp.length !== 6 || !consent} 
+            disabled={isSubmitting || otp.length !== 6 || !consent}
           >
             VERIFY OTP
           </button>
 
           {verificationMessage && (
-            <div className={`toast-notification ${verificationMessage.includes('✅') ? 'toast-success' : 'toast-error'}`}>
+            <div
+              className={`toast-notification ${verificationMessage.includes("✅") ? "toast-success" : "toast-error"}`}
+            >
               <div className="toast-icon">
-                {verificationMessage.includes('✅') ? '✅' : '⚠️'}
+                {verificationMessage.includes("✅") ? "✅" : "⚠️"}
               </div>
               <div className="toast-content">
                 <div className="toast-title">
-                  {verificationMessage.includes('✅') ? 'Success!' : 'Error'}
+                  {verificationMessage.includes("✅") ? "Success!" : "Error"}
                 </div>
                 <div className="toast-message">
-                  {verificationMessage.replace('✅', '').replace('⚠️', '').trim()}
+                  {verificationMessage
+                    .replace("✅", "")
+                    .replace("⚠️", "")
+                    .trim()}
                 </div>
               </div>
             </div>
@@ -809,53 +982,92 @@ if (events.length === 0) {
         </form>
 
         {showMap && (
-          <div className="map-section" style={{ marginTop: '30px' }}>
+          <div className="map-section" style={{ marginTop: "30px" }}>
             <div className="map-header">
               <h3>📍 Location Verification</h3>
               <p>Your location and nearest bank branch</p>
             </div>
-            <div 
-              id="mappls-map" 
-              style={{ 
-                width: '100%', 
-                height: '400px', 
-                borderRadius: '12px',
-                border: '2px solid #e0e0e0',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                overflow: 'hidden'
+            <div
+              id="mappls-map"
+              style={{
+                width: "100%",
+                height: "400px",
+                borderRadius: "12px",
+                border: "2px solid #e0e0e0",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                overflow: "hidden",
               }}
             ></div>
-            {bargadInstance?.allEvents?.find(e => e.type === 'BANK_DISTANCE') && (
-              <div className="map-info" style={{
-                marginTop: '16px',
-                padding: '16px',
-                background: '#f8f9fa',
-                borderRadius: '8px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
+            {bargadInstance?.allEvents?.find(
+              (e) => e.type === "BANK_DISTANCE",
+            ) && (
+              <div
+                className="map-info"
+                style={{
+                  marginTop: "16px",
+                  padding: "16px",
+                  background: "#f8f9fa",
+                  borderRadius: "8px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <div>
-                  <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#666' }}>
+                  <p
+                    style={{
+                      margin: "0 0 8px 0",
+                      fontSize: "14px",
+                      color: "#666",
+                    }}
+                  >
                     Distance to Bank
                   </p>
-                  <p style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#4285F4' }}>
-                    {bargadInstance.allEvents.find(e => e.type === 'BANK_DISTANCE').payload.distance.km.toFixed(2)} km
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: "24px",
+                      fontWeight: "bold",
+                      color: "#4285F4",
+                    }}
+                  >
+                    {bargadInstance.allEvents
+                      .find((e) => e.type === "BANK_DISTANCE")
+                      .payload.distance.km.toFixed(2)}{" "}
+                    km
                   </p>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#666' }}>
+                <div style={{ textAlign: "right" }}>
+                  <p
+                    style={{
+                      margin: "0 0 8px 0",
+                      fontSize: "14px",
+                      color: "#666",
+                    }}
+                  >
                     Drive Time
                   </p>
-                  <p style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#34A853' }}>
-                    ~{Math.round(bargadInstance.allEvents.find(e => e.type === 'BANK_DISTANCE').payload.duration.minutes)} min
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: "24px",
+                      fontWeight: "bold",
+                      color: "#34A853",
+                    }}
+                  >
+                    ~
+                    {Math.round(
+                      bargadInstance.allEvents.find(
+                        (e) => e.type === "BANK_DISTANCE",
+                      ).payload.duration.minutes,
+                    )}{" "}
+                    min
                   </p>
                 </div>
               </div>
             )}
           </div>
         )}
-
       </div>
     </div>
   );
@@ -865,7 +1077,7 @@ const calculateTimeDiffs = (attempts) => {
   if (attempts.length < 2) return [];
   const diffs = [];
   for (let i = 1; i < attempts.length; i++) {
-    diffs.push((attempts[i].timestamp - attempts[i-1].timestamp) / 1000);
+    diffs.push((attempts[i].timestamp - attempts[i - 1].timestamp) / 1000);
   }
   return diffs;
 };
@@ -887,8 +1099,10 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
@@ -951,7 +1165,7 @@ function assessAgentUserRisk(distanceKm) {
     riskLevel,
     isSuspicious,
     reasons,
-    recommendation
+    recommendation,
   };
 }
 
