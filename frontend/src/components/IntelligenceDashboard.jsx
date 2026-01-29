@@ -235,23 +235,39 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
         </div>
 
         {/* Email Profile */}
-        <div className="content-card">
-          <h3 className="card-header">Email Profile & Links</h3>
-          <div className="card-rows">
-            <div className="data-row">
-              <span className="label">Email - User Name</span>
-              {renderValue(intelligence.email.email_first_name)}
-            </div>
-            <div className="data-row">
-              <span className="label">Email - Social Profile Picture</span>
-              {renderBoolean(intelligence.email.email_social_has_profile_picture)}
-            </div>
-            <div className="data-row">
-              <span className="label">Emails - Linked to this ID count</span>
-              {renderValue(intelligence.email.email_addresses_amount, 'count')}
-            </div>
-          </div>
+        {/* Email Profile */}
+<div className="content-card">
+  <h3 className="card-header">Email Profile & Links</h3>
+  <div className="card-rows">
+    <div className="data-row">
+      <span className="label">Email - User Name</span>
+      {renderValue(intelligence.email.email_first_name)}
+    </div>
+    <div className="data-row">
+      <span className="label">Email - Social Profile Picture</span>
+      {renderBoolean(intelligence.email.email_social_has_profile_picture)}
+    </div>
+    <div className="data-row">
+      <span className="label">Emails - Linked to this ID count</span>
+      {renderValue(intelligence.email.email_addresses_amount, 'count')}
+    </div>
+    
+    {/* ✅ ADD THIS - Show actual email addresses */}
+    {intelligence.email.email_addresses && intelligence.email.email_addresses.length > 0 && (
+      <div className="data-row">
+        <span className="label">Email Addresses</span>
+        <div className="value-list">
+          {intelligence.email.email_addresses.map((email, index) => (
+            <span key={index} className="badge badge-neutral" style={{margin: '2px'}}>
+              {email}
+            </span>
+          ))}
         </div>
+      </div>
+    )}
+  </div>
+</div>
+
       </div>
     </div>
   );
@@ -340,23 +356,39 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
         </div>
 
         {/* Phone Profile */}
-        <div className="content-card">
-          <h3 className="card-header">Phone Profile</h3>
-          <div className="card-rows">
-            <div className="data-row">
-              <span className="label">Phone No - User Name</span>
-              {renderValue(intelligence.phone.phone_name)}
-            </div>
-            <div className="data-row">
-              <span className="label">Phone No - Social Media Profile Picture</span>
-              {renderBoolean(intelligence.phone.phone_social_has_profile_picture)}
-            </div>
-            <div className="data-row">
-              <span className="label">Phone No - Linked To This Phone No Count</span>
-              {renderValue(intelligence.phone.phone_numbers_amount, 'count')}
-            </div>
-          </div>
+       {/* Phone Profile */}
+<div className="content-card">
+  <h3 className="card-header">Phone Profile</h3>
+  <div className="card-rows">
+    <div className="data-row">
+      <span className="label">Phone No - User Name</span>
+      {renderValue(intelligence.phone.phone_name)}
+    </div>
+    <div className="data-row">
+      <span className="label">Phone No - Social Media Profile Picture</span>
+      {renderBoolean(intelligence.phone.phone_social_has_profile_picture)}
+    </div>
+    <div className="data-row">
+      <span className="label">Phone No - Linked To This Phone No Count</span>
+      {renderValue(intelligence.phone.phone_numbers_amount, 'count')}
+    </div>
+    
+    {/* ✅ ADD THIS - Show actual phone numbers */}
+    {intelligence.phone.phone_numbers_list && intelligence.phone.phone_numbers_list.length > 0 && (
+      <div className="data-row">
+        <span className="label">Phone Numbers</span>
+        <div className="value-list">
+          {intelligence.phone.phone_numbers_list.map((phone, index) => (
+            <span key={index} className="badge badge-neutral" style={{margin: '2px'}}>
+              {phone}
+            </span>
+          ))}
         </div>
+      </div>
+    )}
+  </div>
+</div>
+
       </div>
     </div>
   );
