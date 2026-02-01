@@ -1,23 +1,165 @@
-import React, { useState } from 'react';
-import OnboardingForm from './OnboardingForm';
-import SessionModal from './SessionModal';
-import IntelligenceDashboard from './IntelligenceDashboard'; // ✅ NEW: Complete intelligence dashboard
- // ✅ NEW: Import dashboard
-import { Toaster } from 'react-hot-toast';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/AgentPortal.css';
 
 const AgentPortal = () => {
-  const [sessionData, setSessionData] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [verificationStatus, setVerificationStatus] = useState('pending');
+  const navigate = useNavigate();
   
-  // ✅ NEW: Dashboard states
-  const [showDashboard, setShowDashboard] = useState(false);
-  const [dashboardData, setDashboardData] = useState(null);
+  const [activeTab, setActiveTab] = useState('individual');
+  const [formData, setFormData] = useState({
+    fullName: '',
+    fatherName: '',
+    panNumber: '',
+    dob: '',
+    mobileNumber: '',
+    emailId: '',
+    addressLine1: '',
+    addressLine2: '',
+    residenceType: '',
+    customerAge: '',
+    updateAddress: false,
+    addressType: 'domestic',
+    state: '',
+    city: '',
+    landmark: '',
+    pinCode: '',
+    documentType: '',
+    uploadedFile: null,
+    countryCode: '',
+    stdCode: '',
+    phoneNumber: '',
+    extension: '',
+    contactEmailId: '',
+  });
 
-  // ==========================================
-  // AGENT LOCATION CAPTURE
-  // ==========================================
+  const [consent, setConsent] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitAttempts, setSubmitAttempts] = useState([]);
+  const [sessionId, setSessionId] = useState(null);
+  
+  const [sdkReady, setSdkReady] = useState(false);
+  const [bargadInstance, setBargadInstance] = useState(null);
+  const [loadError, setLoadError] = useState(null);
+
+  // SDK INITIALIZATION
+  useEffect(() => {
+    const newSessionId = Math.random().toString(36).substring(2, 15);
+    setSessionId(newSessionId);
+    console.log('🔑 [SESSION] Generated:', newSessionId);
+    
+    loadSDK(newSessionId);
+  }, []);
+
+  const loadSDK = async (sid) => {
+    try {
+      console.log('🚀 [SDK] Initializing on form page...');
+
+      if (window.bargadInstance) {
+        console.log('✅ [SDK] Using existing instance');
+        setBargadInstance(window.bargadInstance);
+        setSdkReady(true);
+        return;
+      }
+
+      if (window.Bargad) {
+        console.log('✅ [SDK] Class exists, creating instance');
+        await initializeBargad(sid);
+        return;
+      }
+
+      console.log('📦 [SDK] Loading bundle...');
+
+      const existingScripts = document.querySelectorAll('script[src*="bargad-bundle"]');
+      existingScripts.forEach((s) => s.remove());
+
+      window.BARGAD_API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+      
+      const scriptElement = document.createElement('script');
+      scriptElement.src = `/sdk/bargad-bundle.js?v=${Date.now()}`;
+      scriptElement.type = 'text/javascript';
+      scriptElement.async = false;
+
+      scriptElement.onload = async () => {
+        console.log('✅ [SDK] Bundle loaded');
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        if (window.Bargad) {
+          await initializeBargad(sid);
+        } else {
+          throw new Error('Bargad class not found after loading');
+        }
+      };
+
+      scriptElement.onerror = (e) => {
+        console.error('❌ [SDK] Failed to load bundle', e);
+        setLoadError('Failed to load SDK bundle');
+        setSdkReady(true);
+      };
+
+      document.head.appendChild(scriptElement);
+    } catch (error) {
+      console.error('❌ [SDK] Error:', error);
+      setLoadError(error.message);
+      setSdkReady(true);
+    }
+  };
+
+  const initializeBargad = async (sid) => {
+    try {
+      if (window.bargadInstance) {
+        console.log('⚠️ [SDK] Instance already exists');
+        setBargadInstance(window.bargadInstance);
+        setSdkReady(true);
+        return;
+      }
+
+      console.log('🎯 [SDK] Creating instance for form page...');
+
+      const instance = new window.Bargad('test-api-key', sid);
+
+      instance.trackDeviceLocation = true;
+      instance.trackDeviceScreenSize = true;
+      instance.trackDeviceID = true;
+      instance.trackCPUCores = true;
+      instance.trackGyroscope = true;
+      instance.trackAccelerometerEvents = true;
+      instance.trackMotionEvents = true;
+      instance.trackScreenOrientation = true;
+      instance.trackDisplaySettings = true;
+
+      console.log('🚀 [SDK] Initializing trackers...');
+      instance.initialize();
+
+      setTimeout(() => {
+        try {
+          console.log('📤 [SDK] Forcing emission...');
+          if (instance.emitDeviceLocationData) instance.emitDeviceLocationData();
+          if (instance.emitGyroscopeData) instance.emitGyroscopeData();
+          if (instance.emitAccelerometerData) instance.emitAccelerometerData();
+          if (instance.emitMotionData) instance.emitMotionData();
+          if (instance.emitScreenOrientationData) instance.emitScreenOrientationData();
+          if (instance.emitDisplaySettingsData) instance.emitDisplaySettingsData();
+          if (instance.emitDeviceScreenSize) instance.emitDeviceScreenSize();
+          if (instance.emitDeviceID) instance.emitDeviceID();
+          if (instance.emitCPUCoresData) instance.emitCPUCoresData();
+
+          console.log(`✅ [SDK] Events: ${instance.allEvents?.length || 0}`);
+        } catch (err) {
+          console.error('❌ [SDK] Emit error:', err);
+        }
+      }, 4000);
+
+      window.bargadInstance = instance;
+      setBargadInstance(instance);
+      setSdkReady(true);
+
+      console.log('✅ [SDK] Ready and tracking!');
+    } catch (error) {
+      console.error('❌ [SDK] Init error:', error);
+      setLoadError(error.message);
+      setSdkReady(true);
+    }
+  };
 
   const captureAgentLocation = () => {
     return new Promise((resolve, reject) => {
@@ -31,10 +173,7 @@ const AgentPortal = () => {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           console.log('✅ [AGENT] GPS location captured!');
-          console.log('📍 Latitude:', position.coords.latitude);
-          console.log('📍 Longitude:', position.coords.longitude);
-          console.log('📍 Accuracy:', position.coords.accuracy, 'meters');
-
+          
           const locationData = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
@@ -43,10 +182,7 @@ const AgentPortal = () => {
             capturedAt: new Date().toISOString()
           };
 
-          // Get address from backend
           try {
-            console.log('🗺️ [AGENT] Fetching address from backend...');
-            
             const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
             
             const response = await fetch(`${API_BASE_URL}/api/reverse-geocode`, {
@@ -66,13 +202,7 @@ const AgentPortal = () => {
               if (data.success) {
                 locationData.address = data.address;
                 console.log('✅ [AGENT] Address:', data.address);
-              } else {
-                console.warn('⚠️ [AGENT] Address lookup failed');
-                locationData.address = `${position.coords.latitude}, ${position.coords.longitude}`;
               }
-            } else {
-              console.warn('⚠️ [AGENT] Backend returned error');
-              locationData.address = `${position.coords.latitude}, ${position.coords.longitude}`;
             }
           } catch (err) {
             console.warn('⚠️ [AGENT] Address fetch failed:', err);
@@ -83,24 +213,7 @@ const AgentPortal = () => {
         },
         (error) => {
           console.error('❌ [AGENT] Location error:', error);
-
-          let errorMessage = 'Could not get location. ';
-          
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              errorMessage += 'Permission denied. Please allow location access.';
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMessage += 'Location unavailable. Please check your device settings.';
-              break;
-            case error.TIMEOUT:
-              errorMessage += 'Request timed out. Please try again.';
-              break;
-            default:
-              errorMessage += 'Unknown error occurred.';
-          }
-
-          reject(new Error(errorMessage));
+          reject(new Error('Could not get location. Please allow location access.'));
         },
         {
           enableHighAccuracy: true,
@@ -111,227 +224,681 @@ const AgentPortal = () => {
     });
   };
 
-  // ✅ NEW: Fetch dashboard data after verification
-  const fetchDashboardData = async (sessionId, customerData, agentLocation) => {
-  try {
-    console.log('📊 [DASHBOARD] Fetching dashboard data for session:', sessionId);
-    
-    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-    
-    const response = await fetch(`${API_BASE_URL}/api/dashboard-data/${sessionId}`);
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log('✅ [DASHBOARD] Data fetched successfully');
-      console.log('   - Customer Data:', data.customerData?.customerName);
-      console.log('   - SDK Events:', data.intelligence?.sdkData?.length || 0);
-      console.log('   - Has Distance:', data.intelligence?.sdkData?.some(e => e.type === 'AGENT_USER_DISTANCE') || false);
-      console.log('   - Session Info:', data.sessionInfo);  // ✅ NEW: Debug log
-      console.log('   - IP Source:', data.sessionInfo?.ipSource);  // ✅ NEW: Debug log
-      
-      // ✅ Prepare data for IntelligenceDashboard component
-      setDashboardData({
-        customerData: data.customerData || customerData, // Use backend data, fallback to form data
-        intelligence: data.intelligence, // Includes sdkData, email, phone, ip, darknet, scores
-         sessionInfo: data.sessionInfo
-      });
-      
-      setShowDashboard(true);
-      
-      return true;
-    } else {
-      console.warn('⚠️ [DASHBOARD] Failed to fetch dashboard data:', response.status);
-      return false;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!consent) {
+      alert('⚠️ Please accept the terms and conditions');
+      return;
     }
-  } catch (error) {
-    console.error('❌ [DASHBOARD] Error fetching data:', error);
-    return false;
-  }
-};
 
+    const attemptTimestamp = Date.now();
+    const newAttempt = {
+      timestamp: attemptTimestamp,
+      attemptNumber: submitAttempts.length + 1,
+    };
 
-  // ==========================================
-  // HANDLE GENERATE OTP WITH LOCATION
-  // ==========================================
+    const updatedAttempts = [...submitAttempts, newAttempt];
+    setSubmitAttempts(updatedAttempts);
 
-  const handleGenerateOTP = async (formData) => {
+    console.log(`🔄 [SUBMIT] Attempt ${updatedAttempts.length}`);
+
+    setIsSubmitting(true);
+
     try {
-      console.log('🚀 [AGENT] Starting OTP generation with location capture...');
+      console.log('🚀 [SUBMIT] Processing submission...');
 
-      // STEP 1: CAPTURE AGENT LOCATION
-      console.log('📍 [AGENT] Capturing agent location...');
-      
       const agentLocation = await captureAgentLocation();
-      
-      console.log('✅ [AGENT] Agent location captured:', agentLocation);
+      console.log('✅ [AGENT] Location captured');
 
-      // STEP 2: GENERATE SESSION ID
-      const sessionId = Math.random().toString(36).substring(2, 15);
-      
-      const baseUrl = window.location.origin;
-      const verificationLink = `${baseUrl}/verify-otp?session=${sessionId}`;
-      
-      console.log('🔑 [AGENT] Session ID:', sessionId);
-      console.log('🔗 [AGENT] Verification link:', verificationLink);
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
-      // ✅ NEW: STEP 2.5: Send customer data to backend
-    // ✅✅✅ FIXED: STEP 2.5: Send customer data to backend with CORRECT field names
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+      const nameParts = (formData.fullName || '').trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
 
-console.log('📤 [AGENT] Sending customer data to backend...');
-console.log('📤 [AGENT] Form data:', formData);
+      // Use both possible field names so Case Manager and Scoreplex get phone/email
+      const phoneRaw = (formData.mobileNumber || formData.phoneNumber || '').trim();
+      const phone = phoneRaw
+        ? (phoneRaw.startsWith('+') ? phoneRaw : `+91${phoneRaw.replace(/^0+/, '')}`)
+        : '';
+      const email = (formData.emailId || formData.contactEmailId || '').trim();
 
-// Split customerName into firstName and lastName
-const nameParts = (formData.customerName || '').trim().split(' ');
-const firstName = nameParts[0] || '';
-const lastName = nameParts.slice(1).join(' ') || '';
+      const customerData = {
+        customerName: formData.fullName || 'Customer',
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        phone: phone,
+        // Keep alternate keys so backend can fallback if needed
+        phoneNumber: formData.phoneNumber,
+        mobileNumber: formData.mobileNumber,
+        emailId: formData.emailId,
+        contactEmailId: formData.contactEmailId,
+        address: [formData.addressLine1, formData.addressLine2, formData.city, formData.state].filter(Boolean).join(', '),
+        dob: formData.dob,
+        pan: formData.panNumber,
+        fatherName: formData.fatherName,
+        residenceType: formData.residenceType,
+        age: formData.customerAge,
+      };
 
-const customerData = {
-  customerName: formData.customerName || '',
-  firstName: firstName,
-  lastName: lastName,
-  email: formData.email || '',
-  phone: formData.phoneNumber || '',  // ✅ Note: form uses 'phoneNumber'
-  address: formData.address || ''
-};
+      await fetch(`${API_BASE_URL}/api/save-agent-data`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sessionId: sessionId,
+          customerData: customerData
+        })
+      });
 
-console.log('📤 [AGENT] Processed customer data:', customerData);
+      console.log('⏳ [SDK] Waiting for all events to collect (8 seconds)...');
+      await new Promise((resolve) => setTimeout(resolve, 8000));
 
-try {
-  const saveResponse = await fetch(`${API_BASE_URL}/api/save-agent-data`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      sessionId: sessionId,
-      customerData: customerData
-    })
-  });
+      if (bargadInstance) {
+        console.log('📤 [SDK] Forcing emission of all events...');
+        try {
+          if (bargadInstance.emitKeypressData) bargadInstance.emitKeypressData();
+          if (bargadInstance.emitClipboardData) bargadInstance.emitClipboardData();
+          if (bargadInstance.emitLongPressData) bargadInstance.emitLongPressData();
+          if (bargadInstance.emitTapData) bargadInstance.emitTapData();
+          if (bargadInstance.emitSwipeData) bargadInstance.emitSwipeData();
+          if (bargadInstance.emitScreenOrientationData) bargadInstance.emitScreenOrientationData();
+          if (bargadInstance.emitDisplaySettingsData) bargadInstance.emitDisplaySettingsData();
+          if (bargadInstance.emitPinchData) bargadInstance.emitPinchData();
+          if (bargadInstance.emitAmbientLightData) bargadInstance.emitAmbientLightData();
+          if (bargadInstance.emitDeviceLocationData) bargadInstance.emitDeviceLocationData();
+          if (bargadInstance.emitGyroscopeData) bargadInstance.emitGyroscopeData();
+          if (bargadInstance.emitProximityData) bargadInstance.emitProximityData();
+          if (bargadInstance.emitMotionData) bargadInstance.emitMotionData();
+          if (bargadInstance.emitAccelerometerData) bargadInstance.emitAccelerometerData();
+          if (bargadInstance.emitDeviceScreenSize) bargadInstance.emitDeviceScreenSize();
+          if (bargadInstance.emitDeviceID) bargadInstance.emitDeviceID();
+          if (bargadInstance.emitIMEI) bargadInstance.emitIMEI();
+          if (bargadInstance.emitBluetoothDevices) bargadInstance.emitBluetoothDevices();
+          if (bargadInstance.emitCPUCoresData) bargadInstance.emitCPUCoresData();
+          if (bargadInstance.emitTouchBiometricsData) bargadInstance.emitTouchBiometricsData();
+          if (bargadInstance.emitFormTimeData) bargadInstance.emitFormTimeData();
+          if (bargadInstance.emitInputPatternData) bargadInstance.emitInputPatternData();
 
-  if (saveResponse.ok) {
-    console.log('✅ [AGENT] Customer data sent successfully');
-  } else {
-    console.error('❌ [AGENT] Failed to send customer data');
-  }
-} catch (err) {
-  console.error('❌ [AGENT] Failed to send customer data:', err);
-}
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          console.log(`📊 [SDK] Total events: ${bargadInstance.allEvents?.length || 0}`);
+        } catch (emitError) {
+          console.error('❌ [SDK] Emit error:', emitError);
+        }
+      }
 
-      // STEP 3: CREATE AGENT DATA OBJECT
+      let events = bargadInstance?.allEvents || [];
+
+      const timeDiffs = calculateTimeDiffs(updatedAttempts);
+      const totalAttempts = updatedAttempts.length;
+      const fraudScore = calculateSubmitRisk(totalAttempts);
+
+      const submissionEvent = {
+        type: 'FORM_SUBMISSION',
+        payload: {
+          submissionAttempts: totalAttempts,
+          attempts: updatedAttempts,
+          firstAttemptTimestamp: updatedAttempts[0].timestamp,
+          lastAttemptTimestamp: attemptTimestamp,
+          timeBetweenAttempts: timeDiffs,
+          fraudScore: {
+            score: fraudScore,
+            level: fraudScore > 70 ? 'HIGH_RISK' : fraudScore > 40 ? 'MEDIUM_RISK' : 'LOW_RISK',
+            confidence: 0.9,
+          },
+          finalStatus: 'SUBMITTED',
+        },
+        timestamp: Date.now(),
+        userId: sessionId,
+        SDK: 'Bargad-v1.0.0',
+      };
+
+      events.push(submissionEvent);
+
+      console.log('🗺️ [AGENT-USER] Starting distance calculation...');
+
+      const userLocationEvent = events.find((e) => e.type === 'DEVICE_LOCATION');
+
+      if (userLocationEvent) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/calculate-distance`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userLat: agentLocation.latitude,
+              userLon: agentLocation.longitude,
+              bankLat: userLocationEvent.payload.latitude,
+              bankLon: userLocationEvent.payload.longitude,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+
+            if (data.success) {
+              console.log('✅ [AGENT-USER] Distance:', data.distanceKm, 'km');
+
+              const agentUserDistanceEvent = {
+                type: 'AGENT_USER_DISTANCE',
+                payload: {
+                  agentLocation: {
+                    latitude: agentLocation.latitude,
+                    longitude: agentLocation.longitude,
+                    name: 'Agent',
+                    address: agentLocation.address || 'Agent Location',
+                  },
+                  userLocation: {
+                    latitude: userLocationEvent.payload.latitude,
+                    longitude: userLocationEvent.payload.longitude,
+                    name: 'Customer',
+                    address: userLocationEvent.payload.address?.formattedAddress || 'User Location',
+                  },
+                  distance: {
+                    km: data.distanceKm,
+                    meters: Math.round(data.distanceKm * 1000),
+                    miles: parseFloat((data.distanceKm * 0.621371).toFixed(2)),
+                  },
+                  duration: {
+                    minutes: data.durationMinutes,
+                    formatted: `${Math.floor(data.durationMinutes / 60)}h ${Math.round(data.durationMinutes % 60)}m`,
+                  },
+                  calculationMethod: 'MAPPLS_DISTANCE_MATRIX_API',
+                  riskAnalysis: assessAgentUserRisk(data.distanceKm),
+                },
+                timestamp: Date.now(),
+                userId: sessionId,
+                SDK: 'Bargad-v1.0.0',
+              };
+
+              events.push(agentUserDistanceEvent);
+            }
+          }
+        } catch (err) {
+          console.error('❌ [AGENT-USER] Distance calculation failed:', err);
+        }
+      }
+
+      console.log('💾 [BACKEND] Sending SDK data to backend...');
+
+      try {
+        const sdkDataResponse = await fetch(`${API_BASE_URL}/api/save-sdk-data`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sessionId: sessionId,
+            sdkData: events,
+          }),
+        });
+
+        if (sdkDataResponse.ok) {
+          console.log('✅ [BACKEND] SDK data saved successfully');
+        }
+      } catch (err) {
+        console.error('❌ [BACKEND] Error saving SDK data:', err);
+      }
+
       const agentData = {
         location: agentLocation,
-        agentName: formData.agentName || 'Agent Name',
+        agentName: 'Agent Name',
         agentId: 'AGENT_001',
         branchName: 'Shirpur Branch',
-        branchAddress: 'Shirpur, Dhule District, Maharashtra',
         sessionId: sessionId,
         timestamp: Date.now(),
-        createdAt: new Date().toISOString()
       };
 
-      // STEP 4: STORE AGENT LOCATION WITH SESSION
       localStorage.setItem(`agent_location_${sessionId}`, JSON.stringify(agentData));
-      console.log('💾 [AGENT] Agent data stored for session:', sessionId);
 
-      // STEP 5: CREATE SESSION DATA
-      const session = {
-        sessionId,
-        verificationLink,
-        customerData: formData,
-        agentLocation: agentLocation,
-        timestamp: new Date().toISOString()
-      };
+      console.log('✅ [SUBMIT] Complete! Navigating to Thank You page...');
 
-      setSessionData(session);
-      setShowModal(true);
-
-      // ✅ MODIFIED: STEP 6: MONITOR VERIFICATION STATUS AND SHOW DASHBOARD
-      const checkVerification = async () => {
-        const verification = localStorage.getItem(`verification_${sessionId}`);
-        if (verification) {
-          const data = JSON.parse(verification);
-          if (data.verified) {
-            console.log('✅ [AGENT] Customer verified session:', sessionId);
-            
-            setVerificationStatus('verified');
-            
-            // ✅ NEW: Close modal and load dashboard
-            console.log('📊 [DASHBOARD] Loading dashboard...');
-            setShowModal(false);
-            
-            // Fetch dashboard data
-            const success = await fetchDashboardData(sessionId, formData, agentLocation);
-            
-            if (success) {
-              setShowDashboard(true);
-              console.log('✅ [DASHBOARD] Dashboard displayed!');
-            }
-            
-            // Clean up
-            localStorage.removeItem(`verification_${sessionId}`);
-            clearInterval(interval);
-          }
-        }
-      };
-
-      const interval = setInterval(checkVerification, 2000);
-      setTimeout(() => clearInterval(interval), 300000);
-
-      console.log('✅ [AGENT] OTP generation complete with location tracking!');
+      navigate('/thank-you', { state: { sessionId } });
 
     } catch (error) {
-      console.error('❌ [AGENT] Error in handleGenerateOTP:', error);
-      alert(`Error: ${error.message}\n\nPlease try again and allow location access.`);
+      console.error('❌ [SUBMIT] Error:', error);
+      alert(`Error: ${error.message}`);
+      setIsSubmitting(false);
     }
   };
 
-  // ✅ NEW: Render dashboard if verification complete
-  if (showDashboard && dashboardData) {
-  return (
-    <IntelligenceDashboard 
-      intelligence={dashboardData.intelligence} 
-      customerData={dashboardData.customerData}
-      sessionInfo={dashboardData.sessionInfo} 
-    />
-  );
-}
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
 
   return (
-    <div className="agent-portal-container">
-      <Toaster position="top-right" />
-      
-      <header className="portal-header">
-        <div className="header-content">
-          <img src="Bargad_logo.jpeg" alt="Bargad.ai" className="logo" />
-          <h1>Bargad.ai Agent Portal</h1>
-          <span className="badge">Fraud Detection System</span>
+    <div className="kyc-container">
+      <header className="kyc-header">
+        <div className="header-left">
+          <img src="/Bargad_logo.jpeg" alt="KYC" className="kyc-logo" />
+          <span className="header-title">plus</span>
+        </div>
+        <div className="header-right">
+          <div className="user-info">
+            <div className="icon-circle">👤</div>
+            <div>
+              <div className="user-name">Rushit Morye</div>
+              <div className="user-subtitle">Here we are to help you...</div>
+            </div>
+          </div>
+          <div className="icon-circle">📁</div>
+          <div className="icon-circle">🔔</div>
         </div>
       </header>
 
-      <div className="portal-content">
-        <div className="content-wrapper">
-          <div className="intro-section">
-            <h2>Customer Onboarding</h2>
-            <p>Securely onboard customers with real-time device verification</p>
-          </div>
-
-          <OnboardingForm 
-            onGenerateOTP={handleGenerateOTP}
-            verificationStatus={verificationStatus}
-            sessionData={sessionData}
-          />
-        </div>
+      <div className="kyc-banner">
+        CUSTOMER INTERACTION FRONTED (SVR-CPV-IPV-RE-KYC-)
       </div>
 
-      {showModal && sessionData && (
-        <SessionModal 
-          sessionData={sessionData}
-          onClose={() => setShowModal(false)}
-        />
-      )}
+      <div className="kyc-main">
+        <aside className="sidebar">
+          <button 
+            className={`sidebar-btn ${activeTab === 'individual' ? 'active' : ''}`}
+            onClick={() => setActiveTab('individual')}
+          >
+            Individual
+          </button>
+          <button 
+            className={`sidebar-btn ${activeTab === 'authorized' ? 'active' : ''}`}
+            onClick={() => setActiveTab('authorized')}
+          >
+            Authorised Signatory
+          </button>
+          <button 
+            className={`sidebar-btn ${activeTab === 'proprietor' ? 'active' : ''}`}
+            onClick={() => setActiveTab('proprietor')}
+          >
+            Proprietor
+          </button>
+          <button 
+            className={`sidebar-btn ${activeTab === 'partner' ? 'active' : ''}`}
+            onClick={() => setActiveTab('partner')}
+          >
+            Partner
+          </button>
+          <button 
+            className={`sidebar-btn ${activeTab === 'beneficial' ? 'active' : ''}`}
+            onClick={() => setActiveTab('beneficial')}
+          >
+            Beneficial Owner
+          </button>
+        </aside>
+
+        <main className="form-content">
+          {!sdkReady && (
+            <div className="sdk-loading">
+              <div className="loading-spinner"></div>
+              <p>Initializing SDK trackers...</p>
+            </div>
+          )}
+
+          {sdkReady && (
+            <form onSubmit={handleSubmit}>
+              <div className="form-tabs">
+                <button type="button" className="tab-btn active">Input Number</button>
+                <button type="button" className="tab-btn">CF</button>
+              </div>
+
+              {/* Customer Info Card */}
+              <div className="info-card">
+                <div className="profile-section">
+                  <img src="/default-avatar.png" alt="Profile" className="profile-img" />
+                </div>
+                <div className="info-grid">
+                  <div>
+                    <label>Full Name</label>
+                    <div className="info-value">Varunus R Bhoite</div>
+                  </div>
+                  <div>
+                    <label>Pan Number</label>
+                    <div className="info-value">XXXX XXXX 8531</div>
+                  </div>
+                  <div>
+                    <label>Address Line 1</label>
+                    <div className="info-value">Varunus Villa 18</div>
+                  </div>
+                  <div>
+                    <label>Address Line 2</label>
+                    <div className="info-value">Gurukrupa Rd</div>
+                  </div>
+                  <div>
+                    <label>Father Name</label>
+                    <div className="info-value">RXXXOXXFX</div>
+                  </div>
+                  <div>
+                    <label>City</label>
+                    <div className="info-value">DN Nagar</div>
+                  </div>
+                  <div>
+                    <label>Residence</label>
+                    <div className="info-value">Mumbai</div>
+                  </div>
+                  <div>
+                    <label>Customer Age</label>
+                    <div className="info-value">400610</div>
+                  </div>
+                  <div>
+                    <label>DOB</label>
+                    <div className="info-value">12 May 1990</div>
+                  </div>
+                  <div>
+                    <label>Email ID</label>
+                    <div className="info-value">amit007@gmail.com</div>
+                  </div>
+                  <div>
+                    <label>Mobile No</label>
+                    <div className="info-value">9XXXXXXX72</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Consent Checkbox */}
+              <div className="consent-section">
+                <label className="consent-label">
+                  <input
+                    type="checkbox"
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                  />
+                  <span>I wish to change my contact details/ current address in the bank records. Attached herewith the KYC documents for the purpose of updation.</span>
+                </label>
+              </div>
+
+              {/* Update Current Address */}
+              <div className="form-section">
+                <div className="section-header">
+                  <span className="icon">ℹ️</span>
+                  <h3>Update Current Address :</h3>
+                  <div className="radio-buttons">
+                    <label>Preferred Mailing Address</label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="addressType"
+                        value="yes"
+                        checked={formData.addressType === 'yes'}
+                        onChange={handleChange}
+                      />
+                      Yes
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="addressType"
+                        value="no"
+                        checked={formData.addressType === 'no'}
+                        onChange={handleChange}
+                      />
+                      No
+                    </label>
+                  </div>
+                </div>
+
+                <div className="form-grid-2">
+                  <div className="form-group">
+                    <label>Address Line 1</label>
+                    <input
+                      type="text"
+                      name="addressLine1"
+                      value={formData.addressLine1}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Address Line 2</label>
+                    <input
+                      type="text"
+                      name="addressLine2"
+                      value={formData.addressLine2}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>State</label>
+                    <select name="state" value={formData.state} onChange={handleChange}>
+                      <option value="">Select</option>
+                      <option value="maharashtra">Maharashtra</option>
+                      <option value="delhi">Delhi</option>
+                      <option value="karnataka">Karnataka</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>City</label>
+                    <select name="city" value={formData.city} onChange={handleChange}>
+                      <option value="">Select</option>
+                      <option value="mumbai">Mumbai</option>
+                      <option value="pune">Pune</option>
+                      <option value="delhi">Delhi</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Landmark</label>
+                    <input
+                      type="text"
+                      name="landmark"
+                      value={formData.landmark}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Pin Code</label>
+                    <select name="pinCode" value={formData.pinCode} onChange={handleChange}>
+                      <option value="">Select</option>
+                      <option value="400001">400001</option>
+                      <option value="400002">400002</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upload Proof of Address */}
+              <div className="form-section">
+                <div className="section-header">
+                  <span className="icon">📷</span>
+                  <h3>Upload Proof of Address :</h3>
+                  <div className="radio-buttons">
+                    <label>Is this your permanent address?</label>
+                    <label>
+                      <input type="radio" name="permanentAddress" value="yes" />
+                      Yes
+                    </label>
+                    <label>
+                      <input type="radio" name="permanentAddress" value="no" />
+                      No
+                    </label>
+                  </div>
+                </div>
+
+                <div className="form-grid-2">
+                  <div className="form-group">
+                    <label>Officially Valid Document (OVD)</label>
+                    <select name="documentType" value={formData.documentType} onChange={handleChange}>
+                      <option value="">Select OVD</option>
+                      <option value="passport">Passport</option>
+                      <option value="aadhaar">Aadhaar Card</option>
+                      <option value="driving">Driving License</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Details of OVD</label>
+                    <div className="ovd-details">
+                      <div className="detail-row">
+                        <span>OVD Identification Number</span>
+                        <span>XXXX XXXX XXXX</span>
+                      </div>
+                      <div className="detail-row">
+                        <span>Name</span>
+                        <span>XXXX</span>
+                      </div>
+                      <div className="detail-row">
+                        <span>Place of Issue</span>
+                        <span>XXXX</span>
+                      </div>
+                      <div className="detail-row">
+                        <span>Date of Issue</span>
+                        <span>XXXX</span>
+                      </div>
+                      <div className="detail-row">
+                        <span>Date of Expiry</span>
+                        <span>XXXX</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="form-group full-width">
+                    <label>Upload/ Drag & Drop</label>
+                    <div className="upload-area">
+                      <span className="upload-icon">+</span>
+                    </div>
+                    <p className="upload-note">If the above current address is not (fully) government address please make to address, please refer back to HO Detail.).</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Update Contact Details */}
+              <div className="form-section">
+                <div className="section-header">
+                  <span className="icon">ℹ️</span>
+                  <h3>Update Contact Details :</h3>
+                </div>
+
+                <div className="form-grid-4">
+                  <div className="form-group">
+                    <label>Country Code</label>
+                    <input
+                      type="text"
+                      name="countryCode"
+                      value={formData.countryCode}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>STD Code</label>
+                    <input
+                      type="text"
+                      name="stdCode"
+                      value={formData.stdCode}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Phone Number</label>
+                    <input
+                      type="text"
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Extension</label>
+                    <input
+                      type="text"
+                      name="extension"
+                      value={formData.extension}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="form-group full-width">
+                    <label>Email ID</label>
+                    <input
+                      type="email"
+                      name="contactEmailId"
+                      value={formData.contactEmailId}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" className="submit-button" disabled={isSubmitting}>
+                {isSubmitting ? 'Submitting...' : 'Submit'}
+              </button>
+            </form>
+          )}
+        </main>
+      </div>
     </div>
   );
 };
+
+// Helper functions
+const calculateTimeDiffs = (attempts) => {
+  if (attempts.length < 2) return [];
+  const diffs = [];
+  for (let i = 1; i < attempts.length; i++) {
+    diffs.push((attempts[i].timestamp - attempts[i - 1].timestamp) / 1000);
+  }
+  return diffs;
+};
+
+const calculateSubmitRisk = (totalAttempts) => {
+  if (totalAttempts === 1) return 0;
+  if (totalAttempts === 2) return 20;
+  if (totalAttempts === 3) return 40;
+  if (totalAttempts <= 5) return 70;
+  return 95;
+};
+
+function assessAgentUserRisk(distanceKm) {
+  let riskScore = 0;
+  let riskLevel = 'LOW';
+  let isSuspicious = false;
+  let recommendation = '';
+  const reasons = [];
+
+  if (distanceKm > 200) {
+    riskScore = 90;
+    riskLevel = 'CRITICAL';
+    isSuspicious = true;
+    reasons.push(`User is ${distanceKm.toFixed(1)} km away from agent`);
+    recommendation = 'BLOCK - Require video KYC';
+  } else if (distanceKm > 100) {
+    riskScore = 70;
+    riskLevel = 'HIGH';
+    isSuspicious = true;
+    reasons.push(`User is ${distanceKm.toFixed(1)} km away from agent`);
+    recommendation = 'REVIEW - Verify with video call';
+  } else if (distanceKm > 50) {
+    riskScore = 50;
+    riskLevel = 'MEDIUM';
+    isSuspicious = true;
+    reasons.push(`User is ${distanceKm.toFixed(1)} km away`);
+    recommendation = 'ALERT - Confirm customer details';
+  } else {
+    riskScore = 10;
+    riskLevel = 'VERY_LOW';
+    isSuspicious = false;
+    reasons.push(`User is ${distanceKm.toFixed(1)} km away`);
+    recommendation = 'APPROVE - Proceed normally';
+  }
+
+  return {
+    riskScore,
+    riskLevel,
+    isSuspicious,
+    reasons,
+    recommendation,
+    distanceKm: distanceKm.toFixed(2),
+  };
+}
 
 export default AgentPortal;

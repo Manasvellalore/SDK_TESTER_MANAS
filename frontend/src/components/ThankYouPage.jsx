@@ -50,7 +50,11 @@ function ThankYouPage() {
           </p>
           <button 
             className="close-button" 
-            onClick={() => window.close()}
+            onClick={() => {
+              const casesUrl = `${window.location.origin}/cases`;
+              window.open(casesUrl, '_blank');
+              window.close();
+            }}
           >
             Close Window
           </button>

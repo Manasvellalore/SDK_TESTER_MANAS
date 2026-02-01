@@ -19,6 +19,90 @@ app.use("/api/map", mapRoutes);
 const sessions = {};
 
 // ==========================================
+// IP GEOLOCATION - Correct lat/long for selected IP (skip loopback)
+// ==========================================
+function isPublicIPv4(ip) {
+  if (!ip || typeof ip !== "string") return false;
+  const trimmed = ip.trim().replace(/^::ffff:/, "");
+  if (trimmed === "::1" || trimmed === "127.0.0.1" || trimmed === "localhost") return false;
+  return /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(trimmed);
+}
+
+async function getIPGeolocation(ip) {
+  if (!isPublicIPv4(ip)) return null;
+  const trimmed = ip.trim().replace(/^::ffff:/, "");
+  try {
+    const res = await axios.get(
+      `http://ip-api.com/json/${trimmed}?fields=status,country,regionName,city,lat,lon,timezone`,
+      { timeout: 5000 }
+    );
+    if (res.data && res.data.status === "success")
+      return {
+        ip_country: res.data.country || "N/A",
+        ip_region: res.data.regionName || "N/A",
+        ip_city: res.data.city || "N/A",
+        ip_latitude: res.data.lat != null ? res.data.lat : "N/A",
+        ip_longitude: res.data.lon != null ? res.data.lon : "N/A",
+        ip_time_zone: res.data.timezone || "N/A",
+      };
+    return null;
+  } catch (err) {
+    console.warn("⚠️ [IP GEO] Lookup failed for", trimmed, err.message);
+    return null;
+  }
+}
+
+// ==========================================
+// SCOREPLEX - Start task on form submit (so data is ready when dashboard opens)
+// ==========================================
+async function createScoreplexTask(sessionId, agentData, ip = "") {
+  const scoreplexApiKey = process.env.SCOREPLEX_API_KEY;
+  if (!scoreplexApiKey) {
+    console.warn("⚠️ [SCOREPLEX] API key not configured");
+    return null;
+  }
+  const rawPhone = agentData.phone || agentData.phoneNumber || agentData.mobileNumber || "";
+  let formattedPhone = "";
+  if (rawPhone) {
+    formattedPhone = String(rawPhone).trim().startsWith("+")
+      ? String(rawPhone).trim()
+      : `+91${String(rawPhone).trim().replace(/^0+/, "")}`;
+  }
+  const email = agentData.email || agentData.emailId || agentData.contactEmailId || "";
+  if (!email && !formattedPhone) {
+    console.warn("⚠️ [SCOREPLEX] No email or phone for task");
+    return null;
+  }
+  const payload = {
+    email: email,
+    phone: formattedPhone,
+    ip: ip || "",
+    first_name: agentData.firstName || (agentData.customerName || "").split(" ")[0] || "",
+    last_name: agentData.lastName || (agentData.customerName || "").split(" ").slice(1).join(" ") || "",
+    verification: true,
+  };
+  try {
+    const res = await axios.post(
+      "https://api.scoreplex.io/api/v1/search",
+      payload,
+      {
+        params: { api_key: scoreplexApiKey },
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    if (res.data && res.data.id) {
+      sessions[sessionId].scoreplexTaskId = res.data.id;
+      console.log(`✅ [SCOREPLEX] Task started on submit: ${res.data.id}`);
+      return res.data.id;
+    }
+    return null;
+  } catch (err) {
+    console.error("❌ [SCOREPLEX] Create task error:", err.message);
+    return null;
+  }
+}
+
+// ==========================================
 // CONFIGURATION
 // ==========================================
 const MAPPLS_ACCESS_TOKEN = process.env.MAPPLS_ACCESS_TOKEN;
@@ -150,7 +234,7 @@ app.post("/api/geocode", async (req, res) => {
     console.log(`🔍 Geocoding address: ${address}`);
 
     const response = await axios.get(
-      `https://atlas.mappls.com/api/places/geocode`,
+      `https://atlas.mappls.com/api/places/search/json`,
       {
         params: {
           address: address,
@@ -165,9 +249,19 @@ app.post("/api/geocode", async (req, res) => {
 
     console.log("✅ Geocoding results retrieved");
 
+       const results = (data.suggestedLocations || data.results || []).map(loc => ({
+      formattedAddress: loc.address || loc.formatted_address || loc.text,
+      latitude: loc.lat || loc.latlng?.lat,
+      longitude: loc.lng || loc.latlng?.lng,
+      locality: loc.locality,
+      city: loc.city,
+      state: loc.state,
+      pincode: loc.pincode,
+    })).filter(r => r.latitude && r.longitude);
+
     res.json({
       success: true,
-      results: data.copResults || [],
+      results: results.slice(0, 5), // Top 5 results
     });
   } catch (error) {
     console.error("❌ Geocoding error:", error.message);
@@ -505,6 +599,11 @@ app.post("/api/calculate-agent-user-distance", async (req, res) => {
   }
 });
 
+
+
+
+
+
 // ==========================================
 // ✅ SAVE SDK DATA + CALCULATE DISTANCE
 // ==========================================
@@ -614,13 +713,16 @@ app.post("/api/save-sdk-data", async (req, res) => {
       } else {
         const agentData = sessions[sessionId].agentData || {};
 
-        // ✅ Format phone with country code
+        // ✅ Format phone with country code (support phone, phoneNumber, mobileNumber)
+        const rawPhone = agentData.phone || agentData.phoneNumber || agentData.mobileNumber || "";
         let formattedPhone = "";
-        if (agentData.phone) {
-          formattedPhone = agentData.phone.startsWith("+")
-            ? agentData.phone
-            : `+91${agentData.phone}`;
+        if (rawPhone) {
+          formattedPhone = String(rawPhone).trim().startsWith("+")
+            ? String(rawPhone).trim()
+            : `+91${String(rawPhone).trim().replace(/^0+/, "")}`;
         }
+
+        const emailForScoreplex = agentData.email || agentData.emailId || agentData.contactEmailId || "";
 
         // ✅✅✅ IP SELECTION LOGIC - PRIORITY: Global IP > IPv4 > IPv6 ✅✅✅
         let selectedIP = "";
@@ -755,7 +857,7 @@ else if (
    console.log(`✅ [IP SELECTED] ${selectedIP} (Source: ${sessions[sessionId].ipSource})`);
 
         const scoreplexPayload = {
-          email: agentData.email || "",
+          email: emailForScoreplex,
           phone: formattedPhone,
           ip: selectedIP, // ✅ Use selected IP with priority logic
           first_name:
@@ -885,25 +987,35 @@ app.get("/api/dashboard-data/:sessionId", async (req, res) => {
           `🔍 [SCOREPLEX] Fetching results for task: ${session.scoreplexTaskId}`,
         );
 
-        
-
-        // ✅ Wait 3 seconds for Scoreplex to process
-        console.log("⏳ Waiting 3 seconds for Scoreplex...");
-        await new Promise((resolve) => setTimeout(resolve, 30000));
-
         const scoreplexApiKey = process.env.SCOREPLEX_API_KEY;
+        const maxRetries = 5;
+        const retryDelayMs = 2000;
+        let scoreplexResponse = null;
 
-       
-
-        const scoreplexResponse = await axios.get(
-          `https://api.scoreplex.io/api/v1/search/task/${session.scoreplexTaskId}`,
-          {
-            params: {
-              api_key: scoreplexApiKey,
-              report: false,
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+          if (attempt > 0) {
+            console.log(`⏳ [SCOREPLEX] Report not ready, retry ${attempt}/${maxRetries} in ${retryDelayMs / 1000}s...`);
+            await new Promise((r) => setTimeout(r, retryDelayMs));
+          }
+          scoreplexResponse = await axios.get(
+            `https://api.scoreplex.io/api/v1/search/task/${session.scoreplexTaskId}`,
+            {
+              params: {
+                api_key: scoreplexApiKey,
+                report: false,
+              },
             },
-          },
-        );
+          );
+          const report = scoreplexResponse.data?.report;
+          const status = report?.status;
+          if (report && status !== "processing" && status !== "pending") {
+            console.log(`✅ [SCOREPLEX] Report ready on attempt ${attempt + 1}`);
+            break;
+          }
+          if (attempt === maxRetries) {
+            console.warn("⚠️ [SCOREPLEX] Report not ready after retries, returning partial data");
+          }
+        }
 
         // ✅ ADD THIS CHECK
 console.log('📊 [SCOREPLEX] Task Status:', scoreplexResponse.data.report?.status);
@@ -1078,11 +1190,13 @@ console.log('📊 [SCOREPLEX] Data Leaks Status:', scoreplexResponse.data.report
           };
 
           // ==========================================
-          // IP INTELLIGENCE
+          // IP INTELLIGENCE - Selected IP (sent to Scoreplex) + correct location
           // ==========================================
+          const selectedIP = session.selectedIP || report.ip || "N/A";
           intelligence.ip = {
-             ip: report.ip || session.selectedIP || "N/A", 
-            ip_hostname: report.ip_hostname || report.ip || "N/A",
+            ip: selectedIP,
+            ip: report.ip || session.selectedIP || "N/A",
+            ip_hostname: report.ip_hostname || "N/A",
             ip_country: report.ip_country || "N/A",
             ip_city: report.ip_city || "N/A",
             ip_region: report.ip_region || "N/A",
@@ -1105,6 +1219,43 @@ console.log('📊 [SCOREPLEX] Data Leaks Status:', scoreplexResponse.data.report
             ip_dynamic_connection: report.ip_dynamic_connection || false,
             ip_trusted_network: report.ip_trusted_network || false,
           };
+          // Use user's device location (SDK) for region/city/lat-long so it shows their actual location, not IP geolocation.
+          const deviceLocationEvent = (session.sdkData || []).find(
+            (e) => e.type === "DEVICE_LOCATION"
+          );
+          const userLocation = deviceLocationEvent?.payload;
+          const hasDeviceLocation =
+            userLocation &&
+            userLocation.latitude != null &&
+            userLocation.longitude != null;
+          if (hasDeviceLocation) {
+            intelligence.ip.ip_latitude = userLocation.latitude;
+            intelligence.ip.ip_longitude = userLocation.longitude;
+            if (userLocation.address) {
+              intelligence.ip.ip_city =
+                userLocation.address.city ||
+                userLocation.address.locality ||
+                userLocation.address.subDistrict ||
+                intelligence.ip.ip_city;
+              intelligence.ip.ip_region =
+                userLocation.address.state ||
+                userLocation.address.region ||
+                intelligence.ip.ip_region;
+              if (userLocation.address.country)
+                intelligence.ip.ip_country = userLocation.address.country;
+            }
+          } else if (isPublicIPv4(selectedIP)) {
+            // No device location: fallback to IP geolocation for the selected IP.
+            const ipGeo = await getIPGeolocation(selectedIP);
+            if (ipGeo) {
+              intelligence.ip.ip_country = ipGeo.ip_country;
+              intelligence.ip.ip_region = ipGeo.ip_region;
+              intelligence.ip.ip_city = ipGeo.ip_city;
+              intelligence.ip.ip_latitude = ipGeo.ip_latitude;
+              intelligence.ip.ip_longitude = ipGeo.ip_longitude;
+              intelligence.ip.ip_time_zone = ipGeo.ip_time_zone;
+            }
+          }
 
           // ==========================================
           // DARKNET / DATA LEAKS
@@ -1276,9 +1427,17 @@ console.log('Associated Addresses:', intelligence.data_leaks.sl_data.addresses.l
 
     console.log(`✅ [DASHBOARD] Data prepared for session: ${sessionId}`);
 
+    // Normalize customerData so phone/email always available for dashboard display
+    const agentData = session.agentData || {};
+    const customerData = {
+      ...agentData,
+      phone: agentData.phone || agentData.phoneNumber || agentData.mobileNumber || agentData.phone,
+      email: agentData.email || agentData.emailId || agentData.contactEmailId || agentData.email,
+    };
+
     res.json({
       success: true,
-      customerData: session.agentData || {},
+      customerData,
       intelligence: intelligence,
       sessionInfo: {
         sessionId: session.sessionId,
@@ -1303,7 +1462,7 @@ console.log('Associated Addresses:', intelligence.data_leaks.sl_data.addresses.l
 // ==========================================
 // ✅ SAVE AGENT DATA
 // ==========================================
-app.post("/api/save-agent-data", (req, res) => {
+app.post("/api/save-agent-data", async (req, res) => {
   try {
     const { sessionId, customerData } = req.body;
 
@@ -1328,6 +1487,11 @@ app.post("/api/save-agent-data", (req, res) => {
     sessions[sessionId].updatedAt = Date.now();
 
     console.log(`✅ [AGENT] Customer data saved`);
+
+    // Start Scoreplex when user clicks submit so data is ready when they open dashboard
+    if (customerData && (customerData.phone || customerData.phoneNumber || customerData.mobileNumber || customerData.email || customerData.emailId || customerData.contactEmailId)) {
+      await createScoreplexTask(sessionId, customerData, "");
+    }
 
     res.json({
       success: true,
@@ -1401,6 +1565,50 @@ app.get("/api/test-scoreplex/:sessionId", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// ==========================================
+// CASES MANAGER - LIST ALL CASES
+// ==========================================
+app.get("/api/cases", (req, res) => {
+  console.log("📋 [CASES] Fetching all cases");
+  console.log("📋 [CASES] Total sessions:", Object.keys(sessions).length);
+  
+  // Debug: Show what's in each session
+  Object.entries(sessions).forEach(([sessionId, session]) => {
+    console.log(`  Session ${sessionId}:`, {
+      hasAgentData: !!session.agentData,
+      hasSDKData: !!session.sdkData,
+      agentName: session.agentData?.customerName,
+      sdkEventsCount: session.sdkData?.length
+    });
+  });
+  
+  // ✅ LESS STRICT: Show cases even if only agentData exists
+  const allCases = Object.entries(sessions)
+    .filter(([sessionId, session]) => session.agentData) // Only need agentData
+    .map(([sessionId, session], index) => {
+      const caseNumber = String(index + 1).padStart(6, '0');
+      return {
+        caseNumber: `CASE-${caseNumber}`,
+        leadNo: session.agentData.phone || session.agentData.phoneNumber || session.agentData.mobileNumber || 'N/A',
+        name: session.agentData.customerName || session.agentData.name || 'Unknown',
+        date: new Date(session.createdAt || Date.now()).toLocaleDateString('en-GB'),
+        status: session.sdkData ? 'Completed' : 'Pending',
+        sessionId: sessionId,
+      };
+    })
+    .reverse();
+
+  console.log(`📋 [CASES] Found ${allCases.length} cases`);
+  res.json({
+    success: true,
+    cases: allCases,
+    total: allCases.length,
+  });
+});
+
+// Keep existing endpoints below...
+
 
 // ==========================================
 // START SERVER

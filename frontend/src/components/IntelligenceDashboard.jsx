@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../styles/IntelligenceDashboard.css';
+import GeocodeSection from './GeocodeSection';
 
 const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
   const [activeTab, setActiveTab] = useState('email'); // Default tab
@@ -58,6 +59,7 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
     { id: 'phone', icon: '📱', label: 'Phone Intelligence', count: 19 },
     { id: 'ip', icon: '🌐', label: 'IP Intelligence', count: 22 },
     { id: 'darknet', icon: '🕵️', label: 'Darknet & Data Leaks', count: null },
+     { id: 'geocode', icon: '🗺️', label: 'Geocode', count: null },
     // { id: 'social', icon: '🌐', label: 'Social Media', count: null }, // ✅ ADD THIS LINE
     { id: 'sdk', icon: '📲', label: 'SDK Data', count: null }, // NEW!
     { id: 'overview', icon: '📊', label: 'Risk Overview', count: null }
@@ -76,6 +78,8 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
       return renderIPIntelligence();
     case 'darknet':
       return renderDarknetIntelligence();
+       case 'geocode':  // ✅ ADD THIS CASE
+      return <GeocodeSection customerData={customerData} intelligence={intelligence} sessionInfo={sessionInfo} />;
     case 'social':  // ✅ ADD THIS CASE
       return renderSocialMedia();
     case 'sdk':
@@ -1168,11 +1172,11 @@ const renderSocialMedia = () => {
             <div className="profile-contact">
               <span className="contact-item">
                 <span className="contact-icon">📧</span>
-                {customerData?.email || 'N/A'}
+                {customerData?.email || customerData?.emailId || customerData?.contactEmailId || 'N/A'}
               </span>
               <span className="contact-item">
                 <span className="contact-icon">📱</span>
-                {customerData?.phone_Number || customerData?.phone ||'N/A'}
+                {customerData?.phone || customerData?.phone_Number || customerData?.phoneNumber || customerData?.mobileNumber || 'N/A'}
               </span>
             </div>
           </div>

@@ -1,38 +1,3 @@
-// ========================================
-// 🌍 API URL Configuration (Deployment Safe)
-// ========================================
-const getBargadApiUrl = () => {
-  // Priority 1: Check if React app set it globally (production)
-  if (typeof window !== 'undefined' && window.BARGAD_API_URL) {
-    console.log('✅ [SDK] Using React-provided API URL:', window.BARGAD_API_URL);
-    return window.BARGAD_API_URL;
-  }
-  
-  // Priority 2: Detect based on hostname (auto-detection)
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    
-    // Local development
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      console.log('✅ [SDK] Running locally, using localhost:3000');
-      return 'http://localhost:3000';
-    }
-    
-    // Production - will be set by React before SDK loads
-    console.log('⚠️ [SDK] Production mode - API URL should be set by React');
-    return window.BARGAD_API_URL || '';
-  }
-  
-  // Fallback (should never reach here)
-  console.warn('⚠️ [SDK] Fallback to localhost:3000');
-  return 'http://localhost:3000';
-};
-
-
-const BARGAD_API_BASE_URL = getBargadApiUrl();
-console.log('🔧 [BARGAD SDK] API Base URL configured:', BARGAD_API_BASE_URL || '(will be set by React)');
-
-
 // ============================================================================
 // BANK DISTANCE CALCULATOR - Track distance between user and bank branches
 // ============================================================================
@@ -40,7 +5,7 @@ console.log('🔧 [BARGAD SDK] API Base URL configured:', BARGAD_API_BASE_URL ||
 (function() {
   'use strict';
   
-  // Prevent multiple declarations
+  // Prevent multiple declarations (avoids "Identifier already declared" when script loads twice)
   if (window.__BARGAD_SDK_LOADED__) {
     console.log('⚠️ Bargad SDK already loaded, skipping...');
     return;
@@ -48,8 +13,28 @@ console.log('🔧 [BARGAD SDK] API Base URL configured:', BARGAD_API_BASE_URL ||
   
   window.__BARGAD_SDK_LOADED__ = true;
   console.log('✅ Loading Bargad SDK...');
-  
-  // YOUR EXISTING SDK CODE GOES HERE
+
+  // 🌍 API URL Configuration (Deployment Safe) - inside IIFE so not re-declared on second load
+  const getBargadApiUrl = () => {
+    if (typeof window !== 'undefined' && window.BARGAD_API_URL) {
+      console.log('✅ [SDK] Using React-provided API URL:', window.BARGAD_API_URL);
+      return window.BARGAD_API_URL;
+    }
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        console.log('✅ [SDK] Running locally, using localhost:3000');
+        return 'http://localhost:3000';
+      }
+      console.log('⚠️ [SDK] Production mode - API URL should be set by React');
+      return window.BARGAD_API_URL || '';
+    }
+    console.warn('⚠️ [SDK] Fallback to localhost:3000');
+    return 'http://localhost:3000';
+  };
+
+  const BARGAD_API_BASE_URL = getBargadApiUrl();
+  console.log('🔧 [BARGAD SDK] API Base URL configured:', BARGAD_API_BASE_URL || '(will be set by React)');
 
 
 class BankDistanceTracker {
