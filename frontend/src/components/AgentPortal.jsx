@@ -665,22 +665,24 @@ const AgentPortal = () => {
 
                   <div className="form-group">
                     <label>State</label>
-                    <select name="state" value={formData.state} onChange={handleChange}>
-                      <option value="">Select</option>
-                      <option value="maharashtra">Maharashtra</option>
-                      <option value="delhi">Delhi</option>
-                      <option value="karnataka">Karnataka</option>
-                    </select>
+                    <input
+                      type="text"
+                      name="state"
+                      value={formData.state}
+                      onChange={handleChange}
+                      placeholder="Enter state"
+                    />
                   </div>
 
                   <div className="form-group">
                     <label>City</label>
-                    <select name="city" value={formData.city} onChange={handleChange}>
-                      <option value="">Select</option>
-                      <option value="mumbai">Mumbai</option>
-                      <option value="pune">Pune</option>
-                      <option value="delhi">Delhi</option>
-                    </select>
+                    <input
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      placeholder="Enter city"
+                    />
                   </div>
 
                   <div className="form-group">
@@ -695,11 +697,13 @@ const AgentPortal = () => {
 
                   <div className="form-group">
                     <label>Pin Code</label>
-                    <select name="pinCode" value={formData.pinCode} onChange={handleChange}>
-                      <option value="">Select</option>
-                      <option value="400001">400001</option>
-                      <option value="400002">400002</option>
-                    </select>
+                    <input
+                      type="text"
+                      name="pinCode"
+                      value={formData.pinCode}
+                      onChange={handleChange}
+                      placeholder="Enter pin code"
+                    />
                   </div>
                 </div>
               </div>
