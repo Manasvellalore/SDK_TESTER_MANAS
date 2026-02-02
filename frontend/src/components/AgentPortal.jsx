@@ -769,6 +769,16 @@ const AgentPortal = () => {
                 </div>
 
                 <div className="form-grid-4">
+                  <div className="form-group full-width">
+                    <label>Name</label>
+                    <input
+                      type="text"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleChange}
+                      placeholder="Enter customer name"
+                    />
+                  </div>
                   <div className="form-group">
                     <label>Country Code</label>
                     <input

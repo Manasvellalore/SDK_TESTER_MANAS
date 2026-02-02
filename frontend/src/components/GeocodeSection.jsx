@@ -293,7 +293,15 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
         <div className="address-card form-address-card">
           <div className="address-icon form-icon">📝</div>
           <div className="address-content">
-            <h4>Address in Form</h4>
+            <div className="address-card-header">
+              <h4>Address in Form</h4>
+              <span className="distance-pill">
+                {(() => {
+                  const d = distanceKm(formLatLng, deviceLatLng);
+                  return d != null ? `${d.toFixed(2)} km to Device` : "0 km";
+                })()}
+              </span>
+            </div>
             <p className="user-name">{userName}</p>
             <p className="address-text">{formAddress}</p>
           </div>
@@ -303,7 +311,15 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
         <div className="address-card device-address-card">
           <div className="address-icon device-icon">📱</div>
           <div className="address-content">
-            <h4>Device Address</h4>
+            <div className="address-card-header">
+              <h4>Device Address</h4>
+              <span className="distance-pill">
+                {(() => {
+                  const d = distanceKm(deviceLatLng, mapLatLng);
+                  return d != null ? `${d.toFixed(2)} km to Map` : "0 km";
+                })()}
+              </span>
+            </div>
             <p className="user-name">{userName}</p>
             <p className="address-text">{deviceAddress}</p>
           </div>
@@ -313,7 +329,15 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
         <div className="address-card map-address-card">
           <div className="address-icon map-icon">🗺️</div>
           <div className="address-content">
-            <h4>Address on Map</h4>
+            <div className="address-card-header">
+              <h4>Address on Map</h4>
+              <span className="distance-pill">
+                {(() => {
+                  const d = distanceKm(mapLatLng, formLatLng);
+                  return d != null ? `${d.toFixed(2)} km to Form` : "0 km";
+                })()}
+              </span>
+            </div>
             <p className="user-name">{userName}</p>
             <p className="address-text">{mapAddress}</p>
           </div>
@@ -343,6 +367,23 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
       </div>
     </div>
   );
+};
+
+// Helper: distance in km between two lat/lng points (Haversine)
+const distanceKm = (p1, p2) => {
+  if (!p1 || !p2 || p1.lat == null || p1.lng == null || p2.lat == null || p2.lng == null)
+    return null;
+  const R = 6371;
+  const toRad = (x) => (x * Math.PI) / 180;
+  const d =
+    R *
+    Math.acos(
+      Math.sin(toRad(p1.lat)) * Math.sin(toRad(p2.lat)) +
+        Math.cos(toRad(p1.lat)) *
+          Math.cos(toRad(p2.lat)) *
+          Math.cos(toRad(p2.lng - p1.lng))
+    );
+  return d;
 };
 
 // Helper function to calculate spread between 3 points

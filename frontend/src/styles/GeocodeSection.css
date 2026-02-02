@@ -89,12 +89,39 @@
   flex: 1;
 }
 
+/* Title and pill on same row, pill on the right */
+.address-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.address-card-header h4 {
+  margin: 0;
+  flex-shrink: 0;
+}
+
 .address-content h4 {
   color: #ffffff;
   font-size: 16px;
   font-weight: 600;
-  margin: 0 0 10px 0;
   letter-spacing: 0.5px;
+}
+
+/* Pilled distance badge - right of title */
+.distance-pill {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e3c30;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
 }
 
 .user-name {
