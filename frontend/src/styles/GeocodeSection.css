@@ -32,6 +32,23 @@
   background: #f5f5f5;
 }
 
+/* Hide MAPPLS / MapmyIndia logo (bottom-left) */
+.map-container .mappls-map [class*="logo"],
+.map-container .mappls-map [class*="attribution"],
+.map-container .mappls-map [class*="branding"],
+.map-container .mappls-map [class*="copyright"],
+.map-container .mappls-map [class*="watermark"],
+.map-container .mappls-map a[href*="mappls"],
+.map-container .mappls-map a[href*="mapmyindia"],
+.map-container .mappls-map .leaflet-control-attribution {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
 .address-cards-container {
   display: flex;
   flex-direction: column;

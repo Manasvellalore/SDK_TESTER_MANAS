@@ -600,18 +600,6 @@ const AgentPortal = () => {
                 </div>
               </div>
 
-              {/* Consent Checkbox */}
-              <div className="consent-section">
-                <label className="consent-label">
-                  <input
-                    type="checkbox"
-                    checked={consent}
-                    onChange={(e) => setConsent(e.target.checked)}
-                  />
-                  <span>I wish to change my contact details/ current address in the bank records. Attached herewith the KYC documents for the purpose of updation.</span>
-                </label>
-              </div>
-
               {/* Update Current Address */}
               <div className="form-section">
                 <div className="section-header">
@@ -831,6 +819,18 @@ const AgentPortal = () => {
                     />
                   </div>
                 </div>
+              </div>
+
+              {/* Consent Checkbox - below Update Contact Details */}
+              <div className="consent-section">
+                <label className="consent-label">
+                  <input
+                    type="checkbox"
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                  />
+                  <span>I wish to change my contact details/ current address in the bank records. Attached herewith the KYC documents for the purpose of updation.</span>
+                </label>
               </div>
 
               <button type="submit" className="submit-button" disabled={isSubmitting}>
