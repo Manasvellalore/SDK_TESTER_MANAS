@@ -3,13 +3,14 @@ import "../styles/GeocodeSection.css";
 
 const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
   const mapRef = useRef(null);
+  const ipLatLngRef = useRef(null);
   const [formAddress, setFormAddress] = useState("Loading...");
   const [deviceAddress, setDeviceAddress] = useState("Loading...");
-  const [mapAddress, setMapAddress] = useState("Loading...");
+  const [ipAddress, setIpAddress] = useState("Loading...");
   const [mapInstance, setMapInstance] = useState(null);
   const [formLatLng, setFormLatLng] = useState(null);
   const [deviceLatLng, setDeviceLatLng] = useState(null);
-  const [mapLatLng, setMapLatLng] = useState(null);
+  const [ipLatLng, setIpLatLng] = useState(null);
 
   // Extract user data
   const userName =
@@ -25,9 +26,22 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
   const deviceLng =
     deviceLocationEvent?.payload?.longitude || intelligence?.longitude;
 
+  // Get IP coordinates from IP intelligence (dashboard)
+  const ipLatRaw = intelligence?.ip?.ip_latitude;
+  const ipLngRaw = intelligence?.ip?.ip_longitude;
+  const ipLat =
+    ipLatRaw != null && ipLatRaw !== "N/A" && !isNaN(Number(ipLatRaw))
+      ? Number(ipLatRaw)
+      : null;
+  const ipLng =
+    ipLngRaw != null && ipLngRaw !== "N/A" && !isNaN(Number(ipLngRaw))
+      ? Number(ipLngRaw)
+      : null;
+
   useEffect(() => {
     console.log("🗺️ [GEOCODE] Component mounted");
     console.log("📍 Device Coordinates:", { lat: deviceLat, lng: deviceLng });
+    console.log("📍 IP Coordinates:", { lat: ipLat, lng: ipLng });
     console.log("📝 Form Address:", formAddressRaw);
 
     // Set form address immediately
@@ -36,23 +50,30 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
     if (!deviceLat || !deviceLng) {
       console.error("⚠️ No device coordinates available");
       setDeviceAddress("No location data available");
-      setMapAddress("No location data available");
+      setIpAddress("No location data available");
       return;
     }
 
     // Set device coordinates
     setDeviceLatLng({ lat: deviceLat, lng: deviceLng });
 
-    // Fetch addresses and geocoding
+    // Fetch device address (reverse geocode)
     fetchAddresses(deviceLat, deviceLng);
+
+    // Fetch IP address from IP intelligence lat/lng when available
+    if (ipLat != null && ipLng != null) {
+      fetchIpAddress(ipLat, ipLng);
+    } else {
+      setIpAddress("No IP location data available");
+    }
 
     // Geocode form address to get lat/lng
     if (formAddressRaw && formAddressRaw !== "Not provided") {
       geocodeFormAddress(formAddressRaw);
     }
 
-    // Initialize map after 1 second
-    const timer = setTimeout(() => initializeMap(), 1000);
+    // Initialize map after delay so device and IP reverse-geocode can complete
+    const timer = setTimeout(() => initializeMap(), 2500);
 
     return () => {
       clearTimeout(timer);
@@ -64,11 +85,11 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
         }
       }
     };
-  }, [deviceLat, deviceLng, formAddressRaw]);
+  }, [deviceLat, deviceLng, ipLat, ipLng, formAddressRaw]);
 
   const fetchAddresses = async (lat, lng) => {
     try {
-      console.log("🌍 [GEOCODE] Fetching device/map address...");
+      console.log("🌍 [GEOCODE] Fetching device address...");
 
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/api/reverse-geocode`,
@@ -83,21 +104,61 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
       console.log("✅ [GEOCODE] Device address response:", data);
 
       if (data.success && data.address) {
+        const addr = data.address;
         const formatted =
-          data.address.formatted_address ||
-          `${data.address.locality || ""}, ${data.address.city || ""}, ${data.address.state || ""}`.trim();
+          addr.formattedAddress ||
+          addr.formatted_address ||
+          [addr.street, addr.locality, addr.city, addr.state].filter(Boolean).join(", ") ||
+          `${addr.locality || ""}, ${addr.city || ""}, ${addr.state || ""}`.trim();
 
         setDeviceAddress(formatted || "Address not available");
-        setMapAddress(formatted || "Address not available");
-        setMapLatLng({ lat, lng }); // Map address uses same coordinates
       } else {
         setDeviceAddress("Address not available");
-        setMapAddress("Address not available");
       }
     } catch (error) {
       console.error("❌ [GEOCODE] Error fetching address:", error);
       setDeviceAddress("Error loading address");
-      setMapAddress("Error loading address");
+    }
+  };
+
+  const fetchIpAddress = async (lat, lng) => {
+    try {
+      console.log("🌍 [GEOCODE] Fetching IP address...");
+
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/reverse-geocode`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ latitude: lat, longitude: lng }),
+        },
+      );
+
+      const data = await response.json();
+      console.log("✅ [GEOCODE] IP address response:", data);
+
+      const coords = { lat, lng };
+      ipLatLngRef.current = coords;
+      if (data.success && data.address) {
+        const addr = data.address;
+        const formatted =
+          addr.formattedAddress ||
+          addr.formatted_address ||
+          [addr.street, addr.locality, addr.city, addr.state].filter(Boolean).join(", ") ||
+          `${addr.locality || ""}, ${addr.city || ""}, ${addr.state || ""}`.trim();
+
+        setIpAddress(formatted || "Address not available");
+        setIpLatLng(coords);
+      } else {
+        setIpAddress("Address not available");
+        setIpLatLng(coords);
+      }
+    } catch (error) {
+      console.error("❌ [GEOCODE] Error fetching IP address:", error);
+      setIpAddress("Error loading address");
+      const coords = { lat, lng };
+      ipLatLngRef.current = coords;
+      setIpLatLng(coords);
     }
   };
 
@@ -176,16 +237,16 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
       return marker;
     };
 
-    // 1. Device Location Marker (BLUE)
+    // 1. Device Location (A1) Marker (BLUE)
     if (deviceLat && deviceLng) {
       const deviceMarker = addMarker(
         deviceLat, 
         deviceLng, 
-        '📱 Device Location', 
+        '📱 Device Location (A1)', 
         '#2196f3',
         `
           <div style="padding: 12px; min-width: 200px;">
-            <strong style="color: #2196f3;">📱 Device Location</strong><br/>
+            <strong style="color: #2196f3;">📱 Device Location (A1)</strong><br/>
             <small style="color: #666;">GPS from SDK<br>
             Lat: ${deviceLat.toFixed(6)}<br>Lng: ${deviceLng.toFixed(6)}</small>
           </div>
@@ -193,16 +254,16 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
       );
     }
 
-    // 2. Form Address Marker (RED)
+    // 2. Address in Form (A3) Marker (RED)
     if (formLatLng) {
       const formMarker = addMarker(
         formLatLng.lat, 
         formLatLng.lng, 
-        '📝 Form Address', 
+        '📝 Address in Form (A3)', 
         '#f44336',
         `
           <div style="padding: 12px; min-width: 200px;">
-            <strong style="color: #f44336;">📝 Form Address</strong><br/>
+            <strong style="color: #f44336;">📝 Address in Form (A3)</strong><br/>
             <small style="color: #666;">What user entered<br>
             Lat: ${formLatLng.lat.toFixed(6)}<br>Lng: ${formLatLng.lng.toFixed(6)}</small>
           </div>
@@ -210,18 +271,19 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
       );
     }
 
-    // 3. Map Address Marker (GREEN)
-    if (mapLatLng) {
-      const mapMarker = addMarker(
-        mapLatLng.lat, 
-        mapLatLng.lng, 
-        '🗺️ Map Address', 
-        '#4caf50',
+    // 3. IP Address Marker (GREEN) - from IP intelligence lat/long (use ref so async fetch is visible at init time)
+    const ipCoords = ipLatLngRef.current || ipLatLng;
+    if (ipCoords) {
+      const ipMarker = addMarker(
+        ipCoords.lat,
+        ipCoords.lng,
+        "🌐 IP Address (A2)",
+        "#4caf50",
         `
           <div style="padding: 12px; min-width: 200px;">
-            <strong style="color: #4caf50;">🗺️ Map Address</strong><br/>
-            <small style="color: #666;">Reverse geocoded<br>
-            Lat: ${mapLatLng.lat.toFixed(6)}<br>Lng: ${mapLatLng.lng.toFixed(6)}</small>
+            <strong style="color: #4caf50;">🌐 IP Address (A2)</strong><br/>
+            <small style="color: #666;">From IP intelligence<br>
+            Lat: ${ipCoords.lat.toFixed(6)}<br>Lng: ${ipCoords.lng.toFixed(6)}</small>
           </div>
         `
       );
@@ -233,7 +295,7 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
       const bounds = [];
       if (deviceLat && deviceLng) bounds.push([deviceLat, deviceLng]);
       if (formLatLng) bounds.push([formLatLng.lat, formLatLng.lng]);
-      if (mapLatLng) bounds.push([mapLatLng.lat, mapLatLng.lng]);
+      if (ipCoords) bounds.push([ipCoords.lat, ipCoords.lng]);
       
       if (bounds.length > 1) {
         map.fitBounds(bounds, { padding: [20, 20] });
@@ -287,59 +349,56 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
         )}
       </div>
 
-      {/* Address Cards */}
-      <div className="address-cards-container">
-        {/* Form Address */}
-        <div className="address-card form-address-card">
-          <div className="address-icon form-icon">📝</div>
-          <div className="address-content">
+      {/* Address Cards (left) + Distance column (right) */}
+      <div className="geocode-cards-and-column">
+        <div className="address-cards-container">
+          {/* 1. Device Location (A1) */}
+          <div className="address-card device-address-card">
+            <div className="address-icon device-icon">📱</div>
+            <div className="address-content">
             <div className="address-card-header">
-              <h4>Address in Form</h4>
-              <span className="distance-pill">
-                {(() => {
-                  const d = distanceKm(formLatLng, deviceLatLng);
-                  return d != null ? `${d.toFixed(2)} km to Device` : "0 km";
-                })()}
-              </span>
+              <h4>Device Location (A1)</h4>
             </div>
-            <p className="user-name">{userName}</p>
-            <p className="address-text">{formAddress}</p>
+              <p className="user-name">{userName}</p>
+              <p className="address-text">{deviceAddress}</p>
+            </div>
+          </div>
+
+          {/* 2. IP Address (A2) - lat/long from IP intelligence */}
+          <div className="address-card map-address-card">
+            <div className="address-icon map-icon">🌐</div>
+            <div className="address-content">
+            <div className="address-card-header">
+              <h4>IP Address (A2)</h4>
+            </div>
+              <p className="user-name">{userName}</p>
+              <p className="address-text">{ipAddress}</p>
+            </div>
+          </div>
+
+          {/* 3. Address in Form (A3) */}
+          <div className="address-card form-address-card">
+            <div className="address-icon form-icon">📝</div>
+            <div className="address-content">
+            <div className="address-card-header">
+              <h4>Address in Form (A3)</h4>
+            </div>
+              <p className="user-name">{userName}</p>
+              <p className="address-text">{formAddress}</p>
+            </div>
           </div>
         </div>
 
-        {/* Device Address */}
-        <div className="address-card device-address-card">
-          <div className="address-icon device-icon">📱</div>
-          <div className="address-content">
-            <div className="address-card-header">
-              <h4>Device Address</h4>
-              <span className="distance-pill">
-                {(() => {
-                  const d = distanceKm(deviceLatLng, mapLatLng);
-                  return d != null ? `${d.toFixed(2)} km to Map` : "0 km";
-                })()}
-              </span>
-            </div>
-            <p className="user-name">{userName}</p>
-            <p className="address-text">{deviceAddress}</p>
-          </div>
-        </div>
-
-        {/* Map Address */}
-        <div className="address-card map-address-card">
-          <div className="address-icon map-icon">🗺️</div>
-          <div className="address-content">
-            <div className="address-card-header">
-              <h4>Address on Map</h4>
-              <span className="distance-pill">
-                {(() => {
-                  const d = distanceKm(mapLatLng, formLatLng);
-                  return d != null ? `${d.toFixed(2)} km to Form` : "0 km";
-                })()}
-              </span>
-            </div>
-            <p className="user-name">{userName}</p>
-            <p className="address-text">{mapAddress}</p>
+        {/* Vertical column: distances between A1, A2, A3 */}
+        <div className="distance-column">
+          <div className="distance-column-item">
+            <span className="distance-column-label">A1 ↔ A2</span>
+            <span className="distance-column-value">
+              {(() => {
+                const d = distanceKm(deviceLatLng, ipLatLng);
+                return d != null ? `${d.toFixed(2)} km` : "—";
+              })()}
+            </span>
           </div>
         </div>
       </div>
@@ -351,14 +410,14 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
           The map shows all 3 locations as markers. A red polygon connects them
           when locations differ.
         </p>
-        {formLatLng && deviceLatLng && mapLatLng && (
+        {formLatLng && deviceLatLng && ipLatLng && (
           <div className="risk-indicator">
             <strong>Distance Spread:</strong>{" "}
-            {calculateSpread(formLatLng, deviceLatLng, mapLatLng).toFixed(2)} km
+            {calculateSpread(formLatLng, deviceLatLng, ipLatLng).toFixed(2)} km
             <span
-              className={`risk-badge ${calculateSpread(formLatLng, deviceLatLng, mapLatLng) > 5 ? "high-risk" : "low-risk"}`}
+              className={`risk-badge ${calculateSpread(formLatLng, deviceLatLng, ipLatLng) > 5 ? "high-risk" : "low-risk"}`}
             >
-              {calculateSpread(formLatLng, deviceLatLng, mapLatLng) > 5
+              {calculateSpread(formLatLng, deviceLatLng, ipLatLng) > 5
                 ? "⚠️ HIGH RISK"
                 : "✅ LOW RISK"}
             </span>
