@@ -1020,8 +1020,8 @@ app.get("/api/dashboard-data/:sessionId", async (req, res) => {
         );
 
         const scoreplexApiKey = process.env.SCOREPLEX_API_KEY;
-        const maxRetries = 5;
-        const retryDelayMs = 2000;
+        const maxRetries = 10;
+        const retryDelayMs = 3000;
         let scoreplexResponse = null;
 
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -1039,14 +1039,21 @@ app.get("/api/dashboard-data/:sessionId", async (req, res) => {
             },
           );
           const report = scoreplexResponse.data?.report;
+
           const status = report?.status;
           if (report && status !== "processing" && status !== "pending") {
             console.log(`✅ [SCOREPLEX] Report ready on attempt ${attempt + 1}`);
             break;
           }
           if (attempt === maxRetries) {
-            console.warn("⚠️ [SCOREPLEX] Report not ready after retries, returning partial data");
-          }
+  console.warn("⚠️ [SCOREPLEX] Report not ready after retries!");
+  // ✅ Don't process incomplete data - return error instead
+  return res.status(202).json({
+    success: false,
+    error: 'Report still processing, please refresh dashboard in 10 seconds',
+    stillProcessing: true
+  });
+}
         }
 
         // ✅ ADD THIS CHECK
@@ -1222,7 +1229,7 @@ console.log('📊 [SCOREPLEX] Data Leaks Status:', scoreplexResponse.data.report
           };
 
           // ==========================================
-          // IP INTELLIGENCE - Selected IP (sent to Scoreplex) + correct location
+          // IP INTELLIGENCE - Fetch region/city from IP address for the IP location card
           // ==========================================
           const selectedIP = session.selectedIP || report.ip || "N/A";
           intelligence.ip = {
@@ -1250,33 +1257,9 @@ console.log('📊 [SCOREPLEX] Data Leaks Status:', scoreplexResponse.data.report
             ip_dynamic_connection: report.ip_dynamic_connection || false,
             ip_trusted_network: report.ip_trusted_network || false,
           };
-          // Use user's device location (SDK) for region/city/lat-long so it shows their actual location, not IP geolocation.
-          const deviceLocationEvent = (session.sdkData || []).find(
-            (e) => e.type === "DEVICE_LOCATION"
-          );
-          const userLocation = deviceLocationEvent?.payload;
-          const hasDeviceLocation =
-            userLocation &&
-            userLocation.latitude != null &&
-            userLocation.longitude != null;
-          if (hasDeviceLocation) {
-            intelligence.ip.ip_latitude = userLocation.latitude;
-            intelligence.ip.ip_longitude = userLocation.longitude;
-            if (userLocation.address) {
-              intelligence.ip.ip_city =
-                userLocation.address.city ||
-                userLocation.address.locality ||
-                userLocation.address.subDistrict ||
-                intelligence.ip.ip_city;
-              intelligence.ip.ip_region =
-                userLocation.address.state ||
-                userLocation.address.region ||
-                intelligence.ip.ip_region;
-              if (userLocation.address.country)
-                intelligence.ip.ip_country = userLocation.address.country;
-            }
-          } else if (isPublicIPv4(selectedIP)) {
-            // No device location: fallback to IP geolocation for the selected IP.
+
+          // Fetch region and city through IP address (ip-api.com) for the IP location card
+          if (isPublicIPv4(selectedIP)) {
             const ipGeo = await getIPGeolocation(selectedIP);
             if (ipGeo) {
               intelligence.ip.ip_country = ipGeo.ip_country;
@@ -1285,6 +1268,7 @@ console.log('📊 [SCOREPLEX] Data Leaks Status:', scoreplexResponse.data.report
               intelligence.ip.ip_latitude = ipGeo.ip_latitude;
               intelligence.ip.ip_longitude = ipGeo.ip_longitude;
               intelligence.ip.ip_time_zone = ipGeo.ip_time_zone;
+              console.log(`✅ [IP GEO] Region/city from IP ${selectedIP}: ${ipGeo.ip_region}, ${ipGeo.ip_city}`);
             }
           }
 
