@@ -1,6 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/CasesManager.css';
 
+const LOCAL_STORAGE_CASES_KEY = 'bargad_cases';
+
+function loadCasesFromStorage() {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_CASES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCasesToStorage(cases) {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_CASES_KEY, JSON.stringify(cases));
+  } catch (e) {
+    console.warn('Could not save cases to localStorage', e);
+  }
+}
+
+function mergeCases(apiCases, localCases) {
+  const byId = new Map();
+  (localCases || []).forEach((c) => byId.set(c.sessionId, c));
+  (apiCases || []).forEach((c) => byId.set(c.sessionId, c));
+  const merged = Array.from(byId.values());
+  merged.sort((a, b) => {
+    const da = (a.date && new Date(a.date)) || 0;
+    const db = (b.date && new Date(b.date)) || 0;
+    return db - da;
+  });
+  return merged;
+}
+
 const CasesManager = () => {
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,17 +49,35 @@ const CasesManager = () => {
   const fetchCases = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cases`);
-      const data = await response.json();
-      
-      if (data.success) {
-        setCases(data.cases || []);
-      } else {
-        setError('Failed to load cases');
+      setError(null);
+      const localCases = loadCasesFromStorage();
+      let apiCases = [];
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cases`);
+        const data = await response.json();
+        if (data.success && Array.isArray(data.cases)) apiCases = data.cases;
+      } catch {
+        // API failed or unavailable; use localStorage only
       }
+      const merged = mergeCases(apiCases, localCases);
+      const withCaseNumbers = merged.map((c, i) => ({
+        ...c,
+        caseNumber: c.caseNumber || `CASE-${String(i + 1).padStart(6, '0')}`,
+      }));
+      setCases(withCaseNumbers);
+      saveCasesToStorage(withCaseNumbers);
     } catch (err) {
       console.error('Error fetching cases:', err);
-      setError('Error loading cases');
+      const localOnly = loadCasesFromStorage();
+      if (localOnly.length > 0) {
+        const withCaseNumbers = localOnly.map((c, i) => ({
+          ...c,
+          caseNumber: c.caseNumber || `CASE-${String(i + 1).padStart(6, '0')}`,
+        }));
+        setCases(withCaseNumbers);
+      } else {
+        setError('Error loading cases');
+      }
     } finally {
       setLoading(false);
     }

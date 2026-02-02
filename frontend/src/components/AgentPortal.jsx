@@ -449,6 +449,25 @@ const AgentPortal = () => {
 
       localStorage.setItem(`agent_location_${sessionId}`, JSON.stringify(agentData));
 
+      // Persist case to localStorage so Cases Manager shows it on live link / after refresh
+      const CASES_KEY = 'bargad_cases';
+      const newCase = {
+        sessionId,
+        leadNo: formData.phoneNumber || formData.mobileNumber || 'N/A',
+        name: formData.fullName || 'Unknown',
+        date: new Date().toLocaleDateString('en-GB'),
+        status: 'Completed',
+      };
+      try {
+        const raw = localStorage.getItem(CASES_KEY);
+        const list = raw ? JSON.parse(raw) : [];
+        const filtered = Array.isArray(list) ? list.filter((c) => c.sessionId !== sessionId) : [];
+        filtered.unshift(newCase);
+        localStorage.setItem(CASES_KEY, JSON.stringify(filtered));
+      } catch (e) {
+        console.warn('Could not save case to localStorage', e);
+      }
+
       console.log('✅ [SUBMIT] Complete! Navigating to Thank You page...');
 
       navigate('/thank-you', { state: { sessionId } });
