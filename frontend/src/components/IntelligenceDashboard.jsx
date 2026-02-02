@@ -1265,12 +1265,6 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
                   </span>
                 </div>
                 <div className="data-row">
-                  <span className="label">remoteAccess.confidence</span>
-                  <span className="value-default">
-                    {deviceId.fingerprint?.remoteAccess?.confidence ?? "N/A"}
-                  </span>
-                </div>
-                <div className="data-row">
                   <span className="label">emulatorDetection.isEmulator</span>
                   <span className="value-default">
                     {deviceId.fingerprint?.emulatorDetection?.isEmulator === true
@@ -1288,12 +1282,6 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
                       : deviceId.fingerprint?.botDetection?.isBot === false
                         ? "NO"
                         : "N/A"}
-                  </span>
-                </div>
-                <div className="data-row">
-                  <span className="label">botDetection.botScore</span>
-                  <span className="value-default">
-                    {deviceId.fingerprint?.botDetection?.botScore ?? "N/A"}
                   </span>
                 </div>
                 <div className="data-row">
@@ -1322,11 +1310,23 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
                   </span>
                 </div>
                 <div className="data-row">
-                  <span className="label">availableSensors</span>
+                  <span className="label">batteryInfo.charging</span>
                   <span className="value-default">
-                    {Array.isArray(deviceId.fingerprint.availableSensors)
-                      ? deviceId.fingerprint.availableSensors.join(", ")
-                      : deviceId.fingerprint.availableSensors ?? "N/A"}
+                    {deviceId.fingerprint.batteryInfo?.charging === true
+                      ? "YES"
+                      : deviceId.fingerprint.batteryInfo?.charging === false
+                        ? "NO"
+                        : "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">batteryInfo.supported</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.batteryInfo?.supported === true
+                      ? "YES"
+                      : deviceId.fingerprint.batteryInfo?.supported === false
+                        ? "NO"
+                        : "N/A"}
                   </span>
                 </div>
                 <div className="data-row">
@@ -1393,8 +1393,8 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
             </div>
           )}
 
-          {/* Behavior Analytics */}
-          {(touchBiometrics || keypress) && (
+          {/* User Behavior Patterns – commented out (do not remove) */}
+          {false && (touchBiometrics || keypress) && (
             <div className="content-card">
               <h3 className="card-header">🖱️ User Behavior Patterns</h3>
               <div className="card-rows">
@@ -1459,7 +1459,7 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
           {/* One card per SDK type (key-value style, exclude DEVICE_ID) */}
           {(() => {
             // Events hidden from SDK cards (comment out – do not remove):
-            // ACCELEROMETER_EVENTS, GYROSCOPE, INPUT_PATTERN_ANALYSIS, MOTION_EVENTS, PINCH_GESTURES, SWIPE_EVENTS, LONG_PRESS, KEYPRESS
+            // ACCELEROMETER_EVENTS, GYROSCOPE, INPUT_PATTERN_ANALYSIS, MOTION_EVENTS, PINCH_GESTURES, SWIPE_EVENTS, LONG_PRESS, KEYPRESS, CLIPBOARD, DEVICE_SCREEN_SIZE, TAP_EVENTS
             const excludedEventTypes = [
               "ACCELEROMETER_EVENTS",
               "GYROSCOPE",
@@ -1469,6 +1469,9 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
               "SWIPE_EVENTS",
               "LONG_PRESS",
               "KEYPRESS",
+              "CLIPBOARD",
+              "DEVICE_SCREEN_SIZE",
+              "TAP_EVENTS",
             ];
             const filtered = (sdkData || []).filter(
               (e) => e.type !== "DEVICE_ID" && !excludedEventTypes.includes(e.type)
@@ -1490,8 +1493,12 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
                   payload != null && typeof payload === "object" && !Array.isArray(payload)
                     ? Object.entries(payload)
                     : [];
+                const deviceLocationExcludedKeys = ["accuracy", "altitude", "altitudeAccuracy", "heading", "speed", "errorCode", "errorMessage"];
+                const filteredEntries = type === "DEVICE_LOCATION"
+                  ? entries.filter(([k]) => !deviceLocationExcludedKeys.includes(k))
+                  : entries;
                 const rows =
-                  entries.length > 0 ? entries : [["(empty)", "—"]];
+                  filteredEntries.length > 0 ? filteredEntries : [["(empty)", "—"]];
                 return (
                   <div key={type} className="content-card">
                     <h3 className="card-header">{type}</h3>
