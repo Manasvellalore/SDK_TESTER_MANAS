@@ -2,16 +2,10 @@ const path = require("path");
 const fs = require("fs");
 const envPath = path.join(__dirname, ".env");
 require("dotenv").config({ path: envPath });
-if (!process.env.MONGODB_URI && fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, "utf8");
-  const match = envContent.match(/^\s*MONGODB_URI\s*=\s*(.+?)\s*$/m);
-  if (match) process.env.MONGODB_URI = match[1].replace(/^["']|["']$/g, "").trim();
-}
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
 const mapRoutes = require("./routes/mapRoutes");
-const db = require("./db");
 
 const app = express();
 
@@ -731,9 +725,6 @@ app.post("/api/save-sdk-data", async (req, res) => {
 
     sessions[sessionId].sdkData = sdkData;
     sessions[sessionId].updatedAt = Date.now();
-
-    // Update case status to Completed in MongoDB
-    await db.updateCaseStatus(sessionId, "Completed");
 
     console.log(`✅ [SDK] Data saved. Total events: ${sdkData?.length || 0}`);
 
@@ -1574,13 +1565,6 @@ app.post("/api/save-agent-data", async (req, res) => {
     sessions[sessionId].updatedAt = Date.now();
     persistSessions();
 
-    // Persist case list to MongoDB (for live/deployed so cases survive restart)
-    const session = sessions[sessionId];
-    const leadNo = customerData.phone || customerData.phoneNumber || customerData.mobileNumber || "N/A";
-    const name = customerData.customerName || customerData.name || "Unknown";
-    const date = new Date(session.createdAt || Date.now()).toLocaleDateString("en-GB");
-    await db.upsertCase(sessionId, { leadNo, name, date, status: "Pending" });
-
     console.log(`✅ [AGENT] Customer data saved`);
 
     // Start Scoreplex when user clicks submit so data is ready when they open dashboard
@@ -1662,27 +1646,11 @@ app.get("/api/test-scoreplex/:sessionId", async (req, res) => {
 });
 
 // ==========================================
-// CASES MANAGER - LIST ALL CASES (from MongoDB when MONGODB_URI set, else in-memory)
+// CASES MANAGER - LIST ALL CASES (in-memory + file)
 // ==========================================
-app.get("/api/cases", async (req, res) => {
+app.get("/api/cases", (req, res) => {
   console.log("📋 [CASES] Fetching all cases");
-
-  const mongoCases = await db.getAllCases();
-  if (process.env.MONGODB_URI) {
-    const allCases = mongoCases.map((c, index) => ({
-      caseNumber: `CASE-${String(index + 1).padStart(6, "0")}`,
-      leadNo: c.leadNo || "N/A",
-      name: c.name || "Unknown",
-      date: c.date || "",
-      status: c.status || "Pending",
-      sessionId: c.sessionId,
-    }));
-    console.log(`📋 [CASES] Found ${allCases.length} cases (MongoDB)`);
-    return res.json({ success: true, cases: allCases, total: allCases.length });
-  }
-
-  // Fallback: in-memory sessions (e.g. when MONGODB_URI not set)
-  console.log("📋 [CASES] Total sessions (memory):", Object.keys(sessions).length);
+  console.log("📋 [CASES] Total sessions:", Object.keys(sessions).length);
   const allCases = Object.entries(sessions)
     .filter(([, session]) => session.agentData)
     .map(([sessionId, session], index) => ({
@@ -1704,19 +1672,12 @@ app.get("/api/cases", async (req, res) => {
 // ==========================================
 // START SERVER
 // ==========================================
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
   console.log("===========================================");
   console.log("🚀 Mappls Proxy Server Started!");
   console.log("===========================================");
   console.log(`📡 Server running on: http://localhost:${PORT}`);
   console.log(`✅ API key secured in environment variables`);
-  if (process.env.MONGODB_URI) {
-    const col = await db.getCollection();
-    if (col) console.log("✅ [MONGODB] Connected to database: bargad");
-    else console.log("⚠️ [MONGODB] Connection failed (check MONGODB_URI)");
-  } else {
-    console.log("⚠️ [MONGODB] MONGODB_URI not set; cases will not persist to Atlas.");
-  }
   console.log("===========================================");
   console.log("Available endpoints:");
   console.log(`  GET  http://localhost:${PORT}/api`);
