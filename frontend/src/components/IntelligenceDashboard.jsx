@@ -902,7 +902,6 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
                 </div>
                 <div className="data-row">
                   <span className="label">Risk Level</span>
-                  // ✅ NEW:
                   <span className="value-default">
                     {distanceData.riskAnalysis?.riskLevel || "N/A"}
                   </span>
@@ -917,8 +916,8 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
             </div>
           )}
 
-          {/* Device Location */}
-          {deviceLocation && (
+          {/* Device GPS Location – commented out (do not remove) */}
+          {false && deviceLocation && (
             <div className="content-card">
               <h3 className="card-header">📍 Device GPS Location</h3>
               <div className="card-rows">
@@ -1023,8 +1022,8 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
             </div>
           )}
 
-          {/* Device Fingerprint */}
-          {deviceId && (
+          {/* Device Fingerprint – commented out (do not remove) */}
+          {false && deviceId && (
             <div className="content-card">
               <h3 className="card-header">🆔 Device Fingerprint</h3>
               <div className="card-rows">
@@ -1080,6 +1079,266 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
                   <span className="label">Session Count</span>
                   <span className="value-count">
                     {deviceId.sessionCount || 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* DEVICE_ID: Device & Browser Profile */}
+          {deviceId?.fingerprint && (
+            <div className="content-card">
+              <h3 className="card-header">Device & Browser Profile</h3>
+              <div className="card-rows">
+                <div className="data-row">
+                  <span className="label">platform</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.platform ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">osVersion</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.osVersion ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">userAgent</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.userAgent ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">hardwareConcurrency</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.hardwareConcurrency ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">deviceMemory</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.deviceMemory ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">timezone</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.timezone ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">language</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.language ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">devicePixelRatio</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.devicePixelRatio ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">maxTouchPoints</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.maxTouchPoints ?? "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* DEVICE_ID: Network & IP Intelligence */}
+          {deviceId?.fingerprint && (
+            <div className="content-card">
+              <h3 className="card-header">Network & IP Intelligence</h3>
+              <div className="card-rows">
+                <div className="data-row">
+                  <span className="label">ipAddresses.globalIP</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.ipAddresses?.globalIP ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">ipAddresses.localIP</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.ipAddresses?.localIP ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">ipv4</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.ipAddresses?.ipv4 ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">ipv6</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.ipAddresses?.ipv6 ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">vpnDetected</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.ipAddresses?.vpnDetected === true
+                      ? "YES"
+                      : deviceId.fingerprint.ipAddresses?.vpnDetected === false
+                        ? "NO"
+                        : "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">connection.effectiveType</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.connection?.effectiveType ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">connection.rtt</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.connection?.rtt ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">wifiConnection.quality</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.wifiConnection?.quality ?? "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* DEVICE_ID: Risk & Security Signals */}
+          {deviceId && (
+            <div className="content-card">
+              <h3 className="card-header">Risk & Security Signals</h3>
+              <div className="card-rows">
+                <div className="data-row">
+                  <span className="label">suspicionFlags.deviceIDMismatch</span>
+                  <span className="value-default">
+                    {deviceId.suspicionFlags?.deviceIDMismatch === true
+                      ? "YES"
+                      : deviceId.suspicionFlags?.deviceIDMismatch === false
+                        ? "NO"
+                        : "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">suspicionFlags.languageTimezoneMismatch</span>
+                  <span className="value-default">
+                    {deviceId.suspicionFlags?.languageTimezoneMismatch === true
+                      ? "YES"
+                      : deviceId.suspicionFlags?.languageTimezoneMismatch === false
+                        ? "NO"
+                        : "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">suspicionFlags.privateMode</span>
+                  <span className="value-default">
+                    {deviceId.suspicionFlags?.privateMode === true
+                      ? "YES"
+                      : deviceId.suspicionFlags?.privateMode === false
+                        ? "NO"
+                        : "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">suspicionFlags.automationDetected</span>
+                  <span className="value-default">
+                    {deviceId.suspicionFlags?.automationDetected === true
+                      ? "YES"
+                      : deviceId.suspicionFlags?.automationDetected === false
+                        ? "NO"
+                        : "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">remoteAccess.isActive</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint?.remoteAccess?.isActive === true
+                      ? "YES"
+                      : deviceId.fingerprint?.remoteAccess?.isActive === false
+                        ? "NO"
+                        : "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">remoteAccess.confidence</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint?.remoteAccess?.confidence ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">emulatorDetection.isEmulator</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint?.emulatorDetection?.isEmulator === true
+                      ? "YES"
+                      : deviceId.fingerprint?.emulatorDetection?.isEmulator === false
+                        ? "NO"
+                        : "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">botDetection.isBot</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint?.botDetection?.isBot === true
+                      ? "YES"
+                      : deviceId.fingerprint?.botDetection?.isBot === false
+                        ? "NO"
+                        : "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">botDetection.botScore</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint?.botDetection?.botScore ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">rootedDevice.isRooted</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint?.rootedDevice?.isRooted === true
+                      ? "YES"
+                      : deviceId.fingerprint?.rootedDevice?.isRooted === false
+                        ? "NO"
+                        : "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* DEVICE_ID: Behavioral & Environment Signals */}
+          {deviceId?.fingerprint && (
+            <div className="content-card">
+              <h3 className="card-header">Behavioral & Environment Signals</h3>
+              <div className="card-rows">
+                <div className="data-row">
+                  <span className="label">batteryInfo.levelPercent</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.batteryInfo?.levelPercent ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">availableSensors</span>
+                  <span className="value-default">
+                    {Array.isArray(deviceId.fingerprint.availableSensors)
+                      ? deviceId.fingerprint.availableSensors.join(", ")
+                      : deviceId.fingerprint.availableSensors ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">domSettings.totalNodes</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.domSettings?.totalNodes ?? "N/A"}
+                  </span>
+                </div>
+                <div className="data-row">
+                  <span className="label">screenElements.interactiveElements.total</span>
+                  <span className="value-default">
+                    {deviceId.fingerprint.screenElements?.interactiveElements?.total ?? "N/A"}
                   </span>
                 </div>
               </div>
@@ -1196,6 +1455,60 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
               </div>
             </div>
           )}
+
+          {/* One card per SDK type (key-value style, exclude DEVICE_ID) */}
+          {(() => {
+            // Events hidden from SDK cards (comment out – do not remove):
+            // ACCELEROMETER_EVENTS, GYROSCOPE, INPUT_PATTERN_ANALYSIS, MOTION_EVENTS, PINCH_GESTURES, SWIPE_EVENTS, LONG_PRESS, KEYPRESS
+            const excludedEventTypes = [
+              "ACCELEROMETER_EVENTS",
+              "GYROSCOPE",
+              "INPUT_PATTERN_ANALYSIS",
+              "MOTION_EVENTS",
+              "PINCH_GESTURES",
+              "SWIPE_EVENTS",
+              "LONG_PRESS",
+              "KEYPRESS",
+            ];
+            const filtered = (sdkData || []).filter(
+              (e) => e.type !== "DEVICE_ID" && !excludedEventTypes.includes(e.type)
+            );
+            const typeToPayload = {};
+            filtered.forEach((e) => {
+              if (e.type != null) typeToPayload[e.type] = e.payload;
+            });
+            const formatPayloadValue = (v) => {
+              if (v === null || v === undefined) return "N/A";
+              if (typeof v === "boolean") return v ? "YES" : "NO";
+              if (typeof v === "object") return JSON.stringify(v);
+              return String(v);
+            };
+            return Object.entries(typeToPayload)
+              .sort((a, b) => a[0].localeCompare(b[0]))
+              .map(([type, payload]) => {
+                const entries =
+                  payload != null && typeof payload === "object" && !Array.isArray(payload)
+                    ? Object.entries(payload)
+                    : [];
+                const rows =
+                  entries.length > 0 ? entries : [["(empty)", "—"]];
+                return (
+                  <div key={type} className="content-card">
+                    <h3 className="card-header">{type}</h3>
+                    <div className="card-rows">
+                      {rows.map(([key, value]) => (
+                        <div key={key} className="data-row">
+                          <span className="label">{key}</span>
+                          <span className="value-default">
+                            {formatPayloadValue(value)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              });
+          })()}
 
           {/* Raw SDK Events - Expandable JSON Viewer */}
           <div className="content-card sdk-json-card">
