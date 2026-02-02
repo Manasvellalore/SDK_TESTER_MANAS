@@ -1553,14 +1553,6 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
                 );
               });
           })()}
-
-          {/* Raw SDK Events - Expandable JSON Viewer */}
-          <div className="content-card sdk-json-card">
-            <h3 className="card-header">📋 All SDK Events (JSON)</h3>
-            <div className="sdk-json-container">
-              <pre className="sdk-json">{JSON.stringify(sdkData, null, 2)}</pre>
-            </div>
-          </div>
         </div>
       </div>
     );
