@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/ThankYou.css';
 
 function ThankYouPage() {
+  const navigate = useNavigate();
   useEffect(() => {
     // Optional: Auto-close window after 10 seconds
     const timer = setTimeout(() => {
@@ -48,16 +50,26 @@ function ThankYouPage() {
           <p className="footer-text">
             You can now safely close this window.
           </p>
-          <button 
-            className="close-button" 
-            onClick={() => {
-              const casesUrl = `${window.location.origin}/cases`;
-              window.open(casesUrl, '_blank');
-              window.close();
-            }}
-          >
-            Close Window
-          </button>
+          <div className="thank-you-buttons">
+            <button
+              type="button"
+              className="back-to-form-button"
+              onClick={() => navigate('/agent')}
+            >
+              Back to form
+            </button>
+            <button
+              type="button"
+              className="close-button"
+              onClick={() => {
+                const casesUrl = `${window.location.origin}/cases`;
+                window.open(casesUrl, '_blank');
+                window.close();
+              }}
+            >
+              Close Window
+            </button>
+          </div>
         </div>
 
         <div className="powered-by">

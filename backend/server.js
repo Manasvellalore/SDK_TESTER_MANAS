@@ -157,6 +157,7 @@ app.get("/api", (req, res) => {
       "POST /api/geocode",
       "POST /api/nearby-search",
       "POST /api/calculate-distance",
+      "POST /api/distance-matrix",
       "POST /api/save-sdk-data",
       "GET /api/check-verification/:sessionId",
       "GET /api/dashboard-data/:sessionId",
@@ -434,6 +435,67 @@ app.post("/api/calculate-distance", async (req, res) => {
       success: false,
       error: "Server error",
       message: error.message,
+    });
+  }
+});
+
+// ==========================================
+// DISTANCE MATRIX: distance between two lat/lng (for Geocode A1-A2)
+// ==========================================
+app.post("/api/distance-matrix", async (req, res) => {
+  try {
+    const { lat1, lng1, lat2, lng2 } = req.body;
+
+    if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) {
+      return res.status(400).json({
+        success: false,
+        error: "lat1, lng1, lat2, lng2 are required",
+      });
+    }
+
+    const mapplsToken = process.env.MAPPLS_ACCESS_TOKEN;
+
+    if (mapplsToken) {
+      try {
+        const url = `https://apis.mappls.com/advancedmaps/v1/${mapplsToken}/distance_matrix/driving/${lng1},${lat1};${lng2},${lat2}?sources=0&destinations=1&rtype=0&region=ind`;
+        const apiRes = await axios.get(url);
+        const data = apiRes.data;
+
+        if (data.results?.distances?.[0]?.[1] != null) {
+          const distanceMeters = data.results.distances[0][1];
+          const distanceKm = parseFloat(distanceMeters) / 1000;
+          return res.json({
+            success: true,
+            distanceKm,
+            calculationMethod: "MAPPLS_DISTANCE_MATRIX_API",
+          });
+        }
+      } catch (apiErr) {
+        console.warn("⚠️ [DISTANCE-MATRIX] Mappls API failed:", apiErr.message);
+      }
+    }
+
+    // Fallback: Haversine straight-line distance
+    const R = 6371;
+    const toRad = (x) => (x * Math.PI) / 180;
+    const d =
+      R *
+      Math.acos(
+        Math.sin(toRad(lat1)) * Math.sin(toRad(lat2)) +
+          Math.cos(toRad(lat1)) *
+            Math.cos(toRad(lat2)) *
+            Math.cos(toRad(lng2 - lng1))
+      );
+    return res.json({
+      success: true,
+      distanceKm: d,
+      calculationMethod: "haversine_fallback",
+    });
+  } catch (err) {
+    console.error("❌ [DISTANCE-MATRIX]", err.message);
+    res.status(500).json({
+      success: false,
+      error: err.message,
     });
   }
 });

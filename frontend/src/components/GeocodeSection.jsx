@@ -11,6 +11,7 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
   const [formLatLng, setFormLatLng] = useState(null);
   const [deviceLatLng, setDeviceLatLng] = useState(null);
   const [ipLatLng, setIpLatLng] = useState(null);
+  const [distanceA1A2Km, setDistanceA1A2Km] = useState(null);
 
   // Extract user data
   const userName =
@@ -86,6 +87,40 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
       }
     };
   }, [deviceLat, deviceLng, ipLat, ipLng, formAddressRaw]);
+
+  // Fetch A1 ↔ A2 distance via Distance Matrix API when both coords available
+  useEffect(() => {
+    if (!deviceLatLng || !ipLatLng) return;
+    const abort = new AbortController();
+    (async () => {
+      try {
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/distance-matrix`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              lat1: deviceLatLng.lat,
+              lng1: deviceLatLng.lng,
+              lat2: ipLatLng.lat,
+              lng2: ipLatLng.lng,
+            }),
+            signal: abort.signal,
+          }
+        );
+        const data = await res.json();
+        if (data.success && data.distanceKm != null) {
+          setDistanceA1A2Km(data.distanceKm);
+        }
+      } catch (e) {
+        if (e.name !== "AbortError") {
+          const fallback = distanceKm(deviceLatLng, ipLatLng);
+          if (fallback != null) setDistanceA1A2Km(fallback);
+        }
+      }
+    })();
+    return () => abort.abort();
+  }, [deviceLatLng, ipLatLng]);
 
   const fetchAddresses = async (lat, lng) => {
     try {
@@ -394,10 +429,11 @@ const GeocodeSection = ({ customerData, intelligence, sessionInfo }) => {
           <div className="distance-column-item">
             <span className="distance-column-label">A1 ↔ A2</span>
             <span className="distance-column-value">
-              {(() => {
-                const d = distanceKm(deviceLatLng, ipLatLng);
-                return d != null ? `${d.toFixed(2)} km` : "—";
-              })()}
+              {distanceA1A2Km != null
+                ? `${distanceA1A2Km.toFixed(2)} km`
+                : deviceLatLng && ipLatLng
+                  ? "…"
+                  : "—"}
             </span>
           </div>
         </div>

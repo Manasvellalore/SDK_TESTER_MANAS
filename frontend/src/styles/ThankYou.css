@@ -162,6 +162,37 @@
   margin: 0 0 20px 0;
 }
 
+.thank-you-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.back-to-form-button {
+  background: rgba(40, 170, 80, 0.15);
+  color: #28aa50;
+  border: 1px solid rgba(40, 170, 80, 0.5);
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
+}
+
+.back-to-form-button:hover {
+  background: rgba(40, 170, 80, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(40, 170, 80, 0.25);
+}
+
+.back-to-form-button:active {
+  transform: translateY(0);
+}
+
 .close-button {
   background: linear-gradient(135deg, #28aa50 0%, #1e8a40 100%);
   color: #ffffff;
@@ -230,7 +261,12 @@
     padding: 20px;
   }
 
-  .close-button {
+  .thank-you-buttons {
+    flex-direction: column;
+  }
+
+  .close-button,
+  .back-to-form-button {
     width: 100%;
   }
 }

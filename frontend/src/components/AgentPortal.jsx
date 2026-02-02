@@ -334,7 +334,6 @@ const AgentPortal = () => {
 
       const timeDiffs = calculateTimeDiffs(updatedAttempts);
       const totalAttempts = updatedAttempts.length;
-      const fraudScore = calculateSubmitRisk(totalAttempts);
 
       const submissionEvent = {
         type: 'FORM_SUBMISSION',
@@ -344,11 +343,6 @@ const AgentPortal = () => {
           firstAttemptTimestamp: updatedAttempts[0].timestamp,
           lastAttemptTimestamp: attemptTimestamp,
           timeBetweenAttempts: timeDiffs,
-          fraudScore: {
-            score: fraudScore,
-            level: fraudScore > 70 ? 'HIGH_RISK' : fraudScore > 40 ? 'MEDIUM_RISK' : 'LOW_RISK',
-            confidence: 0.9,
-          },
           finalStatus: 'SUBMITTED',
         },
         timestamp: Date.now(),

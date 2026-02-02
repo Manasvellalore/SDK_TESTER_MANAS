@@ -32,6 +32,38 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
     return <span className="value-default">{value}</span>;
   };
 
+  // Convert epoch ms (or seconds) to human-readable date/time; add relative (sec/min ago) when recent
+  const formatTimestamp = (v) => {
+    if (v == null || typeof v !== "number" || !Number.isFinite(v)) return null;
+    const ms = v > 1e12 ? v : v * 1000;
+    const d = new Date(ms);
+    if (Number.isNaN(d.getTime())) return null;
+    const absolute = d.toLocaleString(undefined, {
+      dateStyle: "short",
+      timeStyle: "medium",
+      hour12: true,
+    });
+    const now = Date.now();
+    const diffMs = Math.abs(now - ms);
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffSec < 60) return `${absolute} (${diffSec} sec ago)`;
+    if (diffMin < 60) return `${absolute} (${diffMin} min ago)`;
+    return absolute;
+  };
+
+  // Sender Reputation Score: map int to label (only this logic; no other changes)
+  const getSenderReputationLabel = (score) => {
+    if (score === null || score === undefined) return "N/A";
+    const n = Number(score);
+    if (n === -1) return "invalid";
+    if (n === 0) return "mail server rejecting mail";
+    if (n === 1) return "temporary rejection error";
+    if (n === 2) return "catch all server";
+    if (n === 3) return "verified email";
+    return String(score);
+  };
+
   // Count statistics for top cards
   const getStatistics = () => {
     return {
@@ -51,11 +83,11 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
     { id: "email", label: "Email Intelligence", count: 32 },
     { id: "phone", label: "Phone Intelligence", count: 19 },
     { id: "ip", icon: "", label: "IP Intelligence", count: 22 },
-    { id: "darknet", label: "Darknet & Data Leaks", count: null },
+    // { id: "darknet", label: "Darknet & Data Leaks", count: null },
     { id: "geocode", label: "Geocode", count: null },
     // { id: 'social', icon: '🌐', label: 'Social Media', count: null }, // ✅ ADD THIS LINE
     { id: "sdk",  label: "SDK Data", count: null }, // NEW!
-    { id: "overview", icon: "📊", label: "Risk Overview", count: null },
+    // { id: "overview", icon: "📊", label: "Risk Overview", count: null },
   ];
 
   // Render content based on active tab
@@ -160,7 +192,11 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
           <div className="card-rows">
             <div className="data-row">
               <span className="label">Email - Domain Age</span>
-              {renderValue(intelligence.email.email_domain_age)}
+              <span className="value-default">
+                {intelligence.email.email_domain_age != null && intelligence.email.email_domain_age !== ""
+                  ? `${intelligence.email.email_domain_age} days`
+                  : "N/A"}
+              </span>
             </div>
             <div className="data-row">
               <span className="label">Email - Domain Activity</span>
@@ -174,7 +210,9 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
             </div>
             <div className="data-row">
               <span className="label">Email - Sender Reputation Score</span>
-              {renderValue(intelligence.email.email_smtp_score, "score")}
+              <span className="value-default">
+                {getSenderReputationLabel(intelligence.email.email_smtp_score)}
+              </span>
             </div>
             <div className="data-row">
               <span className="label">Email - Risky Extension</span>
@@ -861,7 +899,7 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
     const keypress = sdkData.find((e) => e.type === "KEYPRESS")?.payload;
 
     return (
-      <div className="content-section">
+      <div className="content-section sdk-data-section">
         <h2 className="content-title"> SDK Data & Behavior Analytics</h2>
 
         <div className="content-grid">
@@ -1209,42 +1247,12 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
             </div>
           )}
 
-          {/* DEVICE_ID: Risk & Security Signals */}
+          {/* DEVICE_ID: Risk & Security Signals (top 3 sub-variables removed) */}
           {deviceId && (
-            <div className="content-card">
+            <div className="content-card sdk-subvariable-card">
               <h3 className="card-header">Risk & Security Signals</h3>
               <div className="card-rows">
-                <div className="data-row">
-                  <span className="label">suspicionFlags.deviceIDMismatch</span>
-                  <span className="value-default">
-                    {deviceId.suspicionFlags?.deviceIDMismatch === true
-                      ? "YES"
-                      : deviceId.suspicionFlags?.deviceIDMismatch === false
-                        ? "NO"
-                        : "N/A"}
-                  </span>
-                </div>
-                <div className="data-row">
-                  <span className="label">suspicionFlags.languageTimezoneMismatch</span>
-                  <span className="value-default">
-                    {deviceId.suspicionFlags?.languageTimezoneMismatch === true
-                      ? "YES"
-                      : deviceId.suspicionFlags?.languageTimezoneMismatch === false
-                        ? "NO"
-                        : "N/A"}
-                  </span>
-                </div>
-                <div className="data-row">
-                  <span className="label">suspicionFlags.privateMode</span>
-                  <span className="value-default">
-                    {deviceId.suspicionFlags?.privateMode === true
-                      ? "YES"
-                      : deviceId.suspicionFlags?.privateMode === false
-                        ? "NO"
-                        : "N/A"}
-                  </span>
-                </div>
-                <div className="data-row">
+                <div className="data-row sdk-subvariable-row">
                   <span className="label">suspicionFlags.automationDetected</span>
                   <span className="value-default">
                     {deviceId.suspicionFlags?.automationDetected === true
@@ -1264,7 +1272,7 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
                         : "N/A"}
                   </span>
                 </div>
-                <div className="data-row">
+                <div className="data-row sdk-subvariable-row">
                   <span className="label">emulatorDetection.isEmulator</span>
                   <span className="value-default">
                     {deviceId.fingerprint?.emulatorDetection?.isEmulator === true
@@ -1274,7 +1282,7 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
                         : "N/A"}
                   </span>
                 </div>
-                <div className="data-row">
+                <div className="data-row sdk-subvariable-row">
                   <span className="label">botDetection.isBot</span>
                   <span className="value-default">
                     {deviceId.fingerprint?.botDetection?.isBot === true
@@ -1284,7 +1292,7 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
                         : "N/A"}
                   </span>
                 </div>
-                <div className="data-row">
+                <div className="data-row sdk-subvariable-row">
                   <span className="label">rootedDevice.isRooted</span>
                   <span className="value-default">
                     {deviceId.fingerprint?.rootedDevice?.isRooted === true
@@ -1484,7 +1492,29 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
               if (v === null || v === undefined) return "N/A";
               if (typeof v === "boolean") return v ? "YES" : "NO";
               if (typeof v === "object") return JSON.stringify(v);
+              if (typeof v === "number" && v >= 1e9 && v <= 1e14) {
+                const formatted = formatTimestamp(v);
+                if (formatted) return formatted;
+              }
               return String(v);
+            };
+            const formatAddressObject = (addr) => {
+              if (!addr || typeof addr !== "object") return "N/A";
+              const formatted = addr.formattedAddress || addr.formatted_address;
+              if (formatted) return formatted;
+              const parts = [
+                addr.street,
+                addr.sublocality || addr.subSubLocality,
+                addr.locality,
+                addr.village,
+                addr.subDistrict,
+                addr.city,
+                addr.district,
+                addr.state,
+                addr.pincode ? `Pin-${addr.pincode}` : "",
+                addr.area ? `(${addr.area})` : "",
+              ].filter(Boolean);
+              return parts.length > 0 ? parts.join(", ") : "N/A";
             };
             return Object.entries(typeToPayload)
               .sort((a, b) => a[0].localeCompare(b[0]))
@@ -1494,23 +1524,30 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
                     ? Object.entries(payload)
                     : [];
                 const deviceLocationExcludedKeys = ["accuracy", "altitude", "altitudeAccuracy", "heading", "speed", "errorCode", "errorMessage"];
-                const filteredEntries = type === "DEVICE_LOCATION"
+                let filteredEntries = type === "DEVICE_LOCATION"
                   ? entries.filter(([k]) => !deviceLocationExcludedKeys.includes(k))
                   : entries;
+                if (type === "FORM_SUBMISSION") {
+                  filteredEntries = filteredEntries.filter(([k]) => k !== "fraudScore");
+                }
                 const rows =
                   filteredEntries.length > 0 ? filteredEntries : [["(empty)", "—"]];
                 return (
                   <div key={type} className="content-card">
                     <h3 className="card-header">{type}</h3>
                     <div className="card-rows">
-                      {rows.map(([key, value]) => (
-                        <div key={key} className="data-row">
-                          <span className="label">{key}</span>
-                          <span className="value-default">
-                            {formatPayloadValue(value)}
-                          </span>
-                        </div>
-                      ))}
+                      {rows.map(([key, value]) => {
+                        const isDeviceLocationAddress = type === "DEVICE_LOCATION" && key === "address" && value != null && typeof value === "object";
+                        const displayValue = isDeviceLocationAddress ? formatAddressObject(value) : formatPayloadValue(value);
+                        return (
+                          <div key={key} className="data-row">
+                            <span className="label">{key}</span>
+                            <span className="value-default address-value">
+                              {displayValue}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 );

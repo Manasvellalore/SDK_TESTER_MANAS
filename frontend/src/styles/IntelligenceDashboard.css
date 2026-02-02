@@ -447,6 +447,31 @@
   word-break: break-word;
 }
 
+/* SDK Data: smaller sub-variable labels, no mid-word wrap */
+.sdk-data-section .data-row .label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  word-break: keep-all;
+  flex-shrink: 0;
+  max-width: none;
+}
+.sdk-data-section .data-row {
+  align-items: center;
+}
+.sdk-data-section .data-row .value-default {
+  font-size: 0.9rem;
+  word-break: break-word;
+  min-width: 0;
+}
+
+/* Device location address: readable multi-line */
+.sdk-data-section .data-row .value-default.address-value {
+  line-height: 1.4;
+  white-space: pre-line;
+  max-width: 100%;
+}
+
 /* =====================================
    BADGES & VALUES
    ===================================== */
