@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import '../styles/IntelligenceDashboard.css';
-import GeocodeSection from './GeocodeSection';
+import React, { useState } from "react";
+import "../styles/IntelligenceDashboard.css";
+import GeocodeSection from "./GeocodeSection";
 
 const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
-  const [activeTab, setActiveTab] = useState('email'); // Default tab
+  const [activeTab, setActiveTab] = useState("email"); // Default tab
 
   if (!intelligence) {
     return <div className="loading">Loading intelligence data...</div>;
@@ -18,90 +18,81 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
   };
 
   // Helper function to render boolean values
+  // ✅ REPLACE THE WHOLE THING WITH THIS:
   const renderBoolean = (value) => {
-    if (value === true) return <span className="badge badge-success">✓ Yes</span>;
-    if (value === false) return <span className="badge badge-danger">✗ No</span>;
-    return <span className="badge badge-neutral">N/A</span>;
+    if (value === true) return <span className="value-default">YES</span>;
+    if (value === false) return <span className="value-default">NO</span>;
+    return <span className="value-default">N/A</span>;
   };
 
-  // Helper function to render value with color coding
-  const renderValue = (value, type = 'default') => {
-    if (value === null || value === undefined || value === 'N/A') {
-      return <span className="value-na">N/A</span>;
+  const renderValue = (value, type = "default") => {
+    if (value === null || value === undefined || value === "N/A") {
+      return <span className="value-default">N/A</span>;
     }
-    
-    if (type === 'score') {
-      const score = parseInt(value);
-      let className = 'value-score ';
-      if (score >= 800) className += 'score-good';
-      else if (score >= 600) className += 'score-medium';
-      else if (score >= 400) className += 'score-low';
-      else className += 'score-critical';
-      return <span className={className}>{value}</span>;
-    }
-    
-    if (type === 'count') {
-      return <span className={`value-count ${value > 0 ? 'count-positive' : ''}`}>{value}</span>;
-    }
-    
     return <span className="value-default">{value}</span>;
   };
 
   // Count statistics for top cards
- const getStatistics = () => {
-  return {
-    accounts: intelligence.data_leaks?.sl_data?.accounts?.length || 0,
-    names: intelligence.data_leaks?.sl_data?.fullnames?.length || 0,  // ✅ Changed: full_names → fullnames
-    emails: intelligence.data_leaks?.sl_data?.emails?.length || 0,
-    phoneNumbers: intelligence.data_leaks?.sl_data?.phones?.length || 0,
-    locations: 0,
-    aliases: intelligence.data_leaks?.sl_data?.aliases?.length || 0
+  const getStatistics = () => {
+    return {
+      accounts: intelligence.data_leaks?.sl_data?.accounts?.length || 0,
+      names: intelligence.data_leaks?.sl_data?.fullnames?.length || 0, // ✅ Changed: full_names → fullnames
+      emails: intelligence.data_leaks?.sl_data?.emails?.length || 0,
+      phoneNumbers: intelligence.data_leaks?.sl_data?.phones?.length || 0,
+      locations: 0,
+      aliases: intelligence.data_leaks?.sl_data?.aliases?.length || 0,
+    };
   };
-};
 
   const stats = getStatistics();
 
   // Navigation items
   const navItems = [
-    { id: 'email', icon: '📧', label: 'Email Intelligence', count: 32 },
-    { id: 'phone', icon: '📱', label: 'Phone Intelligence', count: 19 },
-    { id: 'ip', icon: '🌐', label: 'IP Intelligence', count: 22 },
-    { id: 'darknet', icon: '🕵️', label: 'Darknet & Data Leaks', count: null },
-     { id: 'geocode', icon: '🗺️', label: 'Geocode', count: null },
+    { id: "email", label: "Email Intelligence", count: 32 },
+    { id: "phone", label: "Phone Intelligence", count: 19 },
+    { id: "ip", icon: "", label: "IP Intelligence", count: 22 },
+    { id: "darknet", label: "Darknet & Data Leaks", count: null },
+    { id: "geocode", label: "Geocode", count: null },
     // { id: 'social', icon: '🌐', label: 'Social Media', count: null }, // ✅ ADD THIS LINE
-    { id: 'sdk', icon: '📲', label: 'SDK Data', count: null }, // NEW!
-    { id: 'overview', icon: '📊', label: 'Risk Overview', count: null }
+    { id: "sdk",  label: "SDK Data", count: null }, // NEW!
+    { id: "overview", icon: "📊", label: "Risk Overview", count: null },
   ];
 
   // Render content based on active tab
-  const renderContent = () => { 
-  switch (activeTab) {
-    case 'overview':
-      return renderOverview();
-    case 'email':
-      return renderEmailIntelligence();
-    case 'phone':
-      return renderPhoneIntelligence();
-    case 'ip':
-      return renderIPIntelligence();
-    case 'darknet':
-      return renderDarknetIntelligence();
-       case 'geocode':  // ✅ ADD THIS CASE
-      return <GeocodeSection customerData={customerData} intelligence={intelligence} sessionInfo={sessionInfo} />;
-    case 'social':  // ✅ ADD THIS CASE
-      return renderSocialMedia();
-    case 'sdk':
-      return renderSDKData();
-    default:
-      return <div>Select a category</div>;
-  }
-};
+  const renderContent = () => {
+    switch (activeTab) {
+      case "overview":
+        return renderOverview();
+      case "email":
+        return renderEmailIntelligence();
+      case "phone":
+        return renderPhoneIntelligence();
+      case "ip":
+        return renderIPIntelligence();
+      case "darknet":
+        return renderDarknetIntelligence();
+      case "geocode": // ✅ ADD THIS CASE
+        return (
+          <GeocodeSection
+            customerData={customerData}
+            intelligence={intelligence}
+            sessionInfo={sessionInfo}
+          />
+        );
+      case "social": // ✅ ADD THIS CASE
+        return renderSocialMedia();
+      case "sdk":
+        return renderSDKData();
+      default:
+        return <div>Select a category</div>;
+    }
+  };
 
   // Email Intelligence Content
   const renderEmailIntelligence = () => (
     <div className="content-section">
-      <h2 className="content-title">📧 Email Intelligence</h2>
-      
+      <h2 className="content-title"> Email Intelligence</h2>
+
       <div className="content-grid">
         {/* Email Validation */}
         <div className="content-card">
@@ -113,8 +104,8 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
             </div>
             <div className="data-row">
               <span className="label">Email - Delivery Rate</span>
-              <span className={`badge ${intelligence.email.email_deliverability === 'high' ? 'badge-success' : 'badge-warning'}`}>
-                {intelligence.email.email_deliverability || 'N/A'}
+              <span className="value-default">
+                {intelligence.email.email_deliverability || "N/A"}
               </span>
             </div>
             <div className="data-row">
@@ -129,10 +120,10 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
               <span className="label">Email - Popular Domain</span>
               {renderBoolean(intelligence.email.email_common)}
             </div>
-            <div className="data-row">
+            {/* <div className="data-row">
               <span className="label">Email - Google Name Valid</span>
               {renderBoolean(intelligence.email.email_google_name_valid)}
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -146,7 +137,7 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
             </div>
             <div className="data-row">
               <span className="label">Email - Spam Trap Score</span>
-              {renderValue(intelligence.email.email_spam_trap_score, 'score')}
+              {renderValue(intelligence.email.email_spam_trap_score, "score")}
             </div>
             <div className="data-row">
               <span className="label">Email - Frequent Complaint History</span>
@@ -156,10 +147,10 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
               <span className="label">Email - Suspicious</span>
               {renderBoolean(intelligence.email.email_suspect)}
             </div>
-            <div className="data-row">
+            {/* <div className="data-row">
               <span className="label">Email - Activity</span>
               {renderValue(intelligence.email.email_user_activity)}
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -177,22 +168,22 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
             </div>
             <div className="data-row">
               <span className="label">Email - Domain Trust</span>
-              <span className={`badge ${intelligence.email.email_domain_trust === 'trusted' ? 'badge-success' : 'badge-neutral'}`}>
-                {intelligence.email.email_domain_trust || 'N/A'}
+              <span className="value-default">
+                {intelligence.email.email_domain_trust || "N/A"}
               </span>
             </div>
             <div className="data-row">
               <span className="label">Email - Sender Reputation Score</span>
-              {renderValue(intelligence.email.email_smtp_score, 'score')}
+              {renderValue(intelligence.email.email_smtp_score, "score")}
             </div>
             <div className="data-row">
               <span className="label">Email - Risky Extension</span>
               {renderBoolean(intelligence.email.email_risky_tld)}
             </div>
-            <div className="data-row">
+            {/* <div className="data-row">
               <span className="label">Email - Domain Corrected</span>
               {renderValue(intelligence.email.email_suggested_domain)}
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -201,15 +192,15 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
           <h3 className="card-header">Email Security Records</h3>
           <div className="card-rows">
             <div className="data-row">
-              <span className="label">Email - Allowed Senders List (SPF)</span>
+              <span className="label">Email - Allowed sender list</span>
               {renderBoolean(intelligence.email.email_spf_record)}
             </div>
             <div className="data-row">
-              <span className="label">Email - Spoof Protection (DMARC)</span>
+              <span className="label">Email - Spoof Protection</span>
               {renderBoolean(intelligence.email.email_dmarc_record)}
             </div>
             <div className="data-row">
-              <span className="label">Email - Mail Exchange Records (MX)</span>
+              <span className="label">Email - Mail Exchange Records</span>
               {renderBoolean(intelligence.email.email_mx_records)}
             </div>
           </div>
@@ -229,78 +220,83 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
             </div>
             <div className="data-row">
               <span className="label">Email - Username Length</span>
-              {renderValue(intelligence.email.email_account_length, 'count')}
+              {renderValue(intelligence.email.email_account_length, "count")}
             </div>
             <div className="data-row">
               <span className="label">Email - Vowels Counts</span>
-              {renderValue(intelligence.email.email_account_vowels_count, 'count')}
+              {renderValue(
+                intelligence.email.email_account_vowels_count,
+                "count",
+              )}
             </div>
             <div className="data-row">
               <span className="label">Email - Consonants Counts</span>
-              {renderValue(intelligence.email.email_account_consonants_count, 'count')}
+              {renderValue(
+                intelligence.email.email_account_consonants_count,
+                "count",
+              )}
             </div>
             <div className="data-row">
               <span className="label">Email - Digit Count</span>
-              {renderValue(intelligence.email.email_account_digit_count, 'count')}
+              {renderValue(
+                intelligence.email.email_account_digit_count,
+                "count",
+              )}
             </div>
           </div>
         </div>
 
         {/* Email Profile */}
         {/* Email Profile */}
-<div className="content-card">
-  <h3 className="card-header">Email Profile & Links</h3>
-  <div className="card-rows">
-    
-    {/* Email - User Name */}
-    <div className="data-row">
-      <span className="label">Email - User Name</span>
-      {renderValue(intelligence.email.email_first_name)}
-    </div>
-    
-    {/* Email - Social Profile Picture */}
-    <div className="data-row">
+        <div className="content-card">
+          <h3 className="card-header">Email Profile & Links</h3>
+          <div className="card-rows">
+            {/* Email - User Name */}
+            <div className="data-row">
+              <span className="label">Email - User Name</span>
+              {renderValue(intelligence.email.email_first_name)}
+            </div>
+
+            {/* Email - Social Profile Picture */}
+            {/* <div className="data-row">
       <span className="label">Email - Social Profile Picture</span>
       {renderBoolean(intelligence.email.email_social_has_profile_picture)}
-    </div>
-    
-    {/* Emails - Linked to this ID count */}
-    <div className="data-row">
-      <span className="label">Emails - Linked to this ID count</span>
-      {renderValue(intelligence.email.email_addresses_amount, 'count')}
-    </div>
-    
-    {/* Email Addresses - DATA ON RIGHT SIDE */}
-    {intelligence.email.email_addresses && intelligence.email.email_addresses.length > 0 && (
-      <div className="data-row">
-        <span className="label">Email Addresses</span>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '6px',
-          alignItems: 'flex-end',
-          flex: 1
-        }}>
-          {intelligence.email.email_addresses.map((email, index) => (
-            <span 
-              key={index} 
-              className="badge badge-neutral"
-              style={{
-                fontSize: '0.85em',
-                textAlign: 'right'
-              }}
-            >
-              {email}
-            </span>
-          ))}
+    </div> */}
+
+            {/* Emails - Linked to this ID count */}
+            <div className="data-row">
+              <span className="label">Emails - Linked to this ID count</span>
+              {renderValue(intelligence.email.email_addresses_amount, "count")}
+            </div>
+
+            {/* Email Addresses - DATA ON RIGHT SIDE */}
+            {intelligence.email.email_addresses &&
+              intelligence.email.email_addresses.length > 0 && (
+                <div className="data-row">
+                  <span className="label"> Email - List of Linked to this Email ID </span>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "6px",
+                      alignItems: "flex-end",
+                      flex: 1,
+                    }}
+                  >
+                    {intelligence.email.email_addresses.map((email, index) => (
+                      <span
+                        key={index}
+                        className="value-default"
+                        style={{ fontSize: "0.85em", textAlign: "right" }}
+                      >
+                        {email}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+          </div>
         </div>
-      </div>
-    )}
-    
-  </div>
-</div>
-
-
       </div>
     </div>
   );
@@ -308,8 +304,8 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
   // Phone Intelligence Content
   const renderPhoneIntelligence = () => (
     <div className="content-section">
-      <h2 className="content-title">📱 Phone Intelligence</h2>
-      
+      <h2 className="content-title"> Phone Intelligence</h2>
+
       <div className="content-grid">
         {/* Phone Validation */}
         <div className="content-card">
@@ -369,10 +365,10 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
               <span className="label">Phone No - Country</span>
               {renderValue(intelligence.phone.phone_country)}
             </div>
-            <div className="data-row">
+            {/* <div className="data-row">
               <span className="label">Phone No - Region</span>
               {renderValue(intelligence.phone.phone_region)}
-            </div>
+            </div> */}
             <div className="data-row">
               <span className="label">Phone No - City</span>
               {renderValue(intelligence.phone.phone_city)}
@@ -389,60 +385,60 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
         </div>
 
         {/* Phone Profile */}
-       {/* Phone Profile */}
-<div className="content-card">
-  <h3 className="card-header">Phone Profile</h3>
-  <div className="card-rows">
-    
-    {/* Phone No - User Name */}
-    <div className="data-row">
-      <span className="label">Phone No - User Name</span>
-      {renderValue(intelligence.phone.phone_name)}
-    </div>
-    
-    {/* Phone No - Social Media Profile Picture */}
-    <div className="data-row">
+        {/* Phone Profile */}
+        <div className="content-card">
+          <h3 className="card-header">Phone Profile</h3>
+          <div className="card-rows">
+            {/* Phone No - User Name */}
+            <div className="data-row">
+              <span className="label">Phone No - User Name</span>
+              {renderValue(intelligence.phone.phone_name)}
+            </div>
+
+            {/* Phone No - Social Media Profile Picture */}
+            {/* <div className="data-row">
       <span className="label">Phone No - Social Media Profile Picture</span>
       {renderBoolean(intelligence.phone.phone_social_has_profile_picture)}
-    </div>
-    
-    {/* Phone No - Linked To This Phone No Count */}
-    <div className="data-row">
-      <span className="label">Phone No - Linked To This Phone No Count</span>
-      {renderValue(intelligence.phone.phone_numbers_amount, 'count')}
-    </div>
-    
-    {/* Phone Numbers - DATA ON RIGHT SIDE */}
-    {intelligence.phone.phone_numbers_list && intelligence.phone.phone_numbers_list.length > 0 && (
-      <div className="data-row">
-        <span className="label">Phone Numbers</span>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '6px',
-          alignItems: 'flex-end',
-          flex: 1
-        }}>
-          {intelligence.phone.phone_numbers_list.map((phone, index) => (
-            <span 
-              key={index} 
-              className="badge badge-neutral"
-              style={{
-                fontSize: '0.85em',
-                textAlign: 'right'
-              }}
-            >
-              {phone}
-            </span>
-          ))}
+    </div> */}
+
+            {/* Phone No - Linked To This Phone No Count */}
+            <div className="data-row">
+              <span className="label">
+                Phone No - Linked To This Phone No Count
+              </span>
+              {renderValue(intelligence.phone.phone_numbers_amount, "count")}
+            </div>
+
+            {/* Phone Numbers - DATA ON RIGHT SIDE */}
+            {intelligence.phone.phone_numbers_list &&
+              intelligence.phone.phone_numbers_list.length > 0 && (
+                <div className="data-row">
+                  <span className="label">Phone No - List of Linked to this Phone Number</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "6px",
+                      alignItems: "flex-end",
+                      flex: 1,
+                    }}
+                  >
+                    {intelligence.phone.phone_numbers_list.map(
+                      (phone, index) => (
+                        <span
+                          key={index}
+                          className="value-default"
+                          style={{ fontSize: "0.85em", textAlign: "right" }}
+                        >
+                          {phone}
+                        </span>
+                      ),
+                    )}
+                  </div>
+                </div>
+              )}
+          </div>
         </div>
-      </div>
-    )}
-    
-  </div>
-</div>
-
-
       </div>
     </div>
   );
@@ -450,38 +446,48 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
   // IP Intelligence Content
   const renderIPIntelligence = () => (
     <div className="content-section">
-      <h2 className="content-title">🌐 IP Intelligence</h2>
-      
+      <h2 className="content-title"> IP Intelligence</h2>
+
       <div className="content-grid">
         {/* IP Location */}
         <div className="content-card">
           <h3 className="card-header">IP Location</h3>
           <div className="card-rows">
             <div className="data-row">
-  <span className="label">IP Address</span>
-  <span className="value-default">
-    {intelligence.ip.ip || 'N/A'}
-    {sessionInfo?.selectedIP && sessionInfo?.ipSource && (
-      <span style={{
-        marginLeft: '10px',
-        padding: '4px 8px',
-        borderRadius: '4px',
-        fontSize: '0.75em',
-        fontWeight: '600',
-        backgroundColor: sessionInfo.ipSource === 'global' ? 'rgba(16, 185, 129, 0.2)' : 
-                         sessionInfo.ipSource === 'ipv4' ? 'rgba(245, 158, 11, 0.2)' : 
-                         sessionInfo.ipSource === 'ipv6' ? 'rgba(59, 130, 246, 0.2)' : 
-                         'rgba(239, 68, 68, 0.2)',
-        color: sessionInfo.ipSource === 'global' ? '#10b981' : 
-               sessionInfo.ipSource === 'ipv4' ? '#f59e0b' : 
-               sessionInfo.ipSource === 'ipv6' ? '#3b82f6' : 
-               '#ef4444'
-      }}>
-        {sessionInfo.ipSource.toUpperCase()}
-      </span>
-    )}
-  </span>
-</div>
+              <span className="label">IP Address</span>
+              <span className="value-default">
+                {intelligence.ip.ip || "N/A"}
+                {sessionInfo?.selectedIP && sessionInfo?.ipSource && (
+                  <span
+                    style={{
+                      marginLeft: "10px",
+                      padding: "4px 8px",
+                      borderRadius: "4px",
+                      fontSize: "0.75em",
+                      fontWeight: "600",
+                      backgroundColor:
+                        sessionInfo.ipSource === "global"
+                          ? "rgba(16, 185, 129, 0.2)"
+                          : sessionInfo.ipSource === "ipv4"
+                            ? "rgba(245, 158, 11, 0.2)"
+                            : sessionInfo.ipSource === "ipv6"
+                              ? "rgba(59, 130, 246, 0.2)"
+                              : "rgba(239, 68, 68, 0.2)",
+                      color:
+                        sessionInfo.ipSource === "global"
+                          ? "#10b981"
+                          : sessionInfo.ipSource === "ipv4"
+                            ? "#f59e0b"
+                            : sessionInfo.ipSource === "ipv6"
+                              ? "#3b82f6"
+                              : "#ef4444",
+                    }}
+                  >
+                    {sessionInfo.ipSource.toUpperCase()}
+                  </span>
+                )}
+              </span>
+            </div>
 
             <div className="data-row">
               <span className="label">IP - Country</span>
@@ -518,10 +524,10 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
               <span className="label">IP - Internet Service Provider</span>
               {renderValue(intelligence.ip.ip_isp)}
             </div>
-            <div className="data-row">
+            {/* <div className="data-row">
               <span className="label">IP - Organization</span>
               {renderValue(intelligence.ip.ip_organization)}
-            </div>
+            </div> */}
             <div className="data-row">
               <span className="label">IP - ASN</span>
               {renderValue(intelligence.ip.ip_asn)}
@@ -590,28 +596,33 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
   // Darknet Intelligence Content
   const renderDarknetIntelligence = () => (
     <div className="content-section">
-      <h2 className="content-title">🕵️ Darknet & Data Leaks</h2>
-      
+      <h2 className="content-title">Darknet & Data Leaks</h2>
+
       <div className="content-grid">
         {/* Overall Data Leaks */}
         <div className="content-card">
           <h3 className="card-header">Data Leak Summary</h3>
           <div className="card-rows">
             <div className="data-row">
-  <span className="label">Data Leak – Number of Breaches</span>
-  <span className={`value-count ${intelligence.data_leaks?.report?.data_leaks_count > 0 ? 'count-danger' : ''}`}>
-    {intelligence.data_leaks?.report?.data_leaks_count || 0}
-  </span>
-</div>
-<div className="data-row">
-  <span className="label">Data Leak – First Seen Date</span>
-  {renderValue(intelligence.data_leaks?.report?.data_leaks_first_seen)}
-</div>
-<div className="data-row">
-  <span className="label">Data Leak – Last Seen Date</span>
-  {renderValue(intelligence.data_leaks?.report?.data_leaks_last_seen)}
-</div>
-
+              <span className="label">Data Leak – Number of Breaches</span>
+              <span
+                className={`value-count ${intelligence.data_leaks?.report?.data_leaks_count > 0 ? "count-danger" : ""}`}
+              >
+                {intelligence.data_leaks?.report?.data_leaks_count || 0}
+              </span>
+            </div>
+            <div className="data-row">
+              <span className="label">Data Leak – First Seen Date</span>
+              {renderValue(
+                intelligence.data_leaks?.report?.data_leaks_first_seen,
+              )}
+            </div>
+            <div className="data-row">
+              <span className="label">Data Leak – Last Seen Date</span>
+              {renderValue(
+                intelligence.data_leaks?.report?.data_leaks_last_seen,
+              )}
+            </div>
           </div>
         </div>
 
@@ -620,20 +631,25 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
           <h3 className="card-header">Email Data Leaks</h3>
           <div className="card-rows">
             <div className="data-row">
-  <span className="label">Email - Data Leaks Count</span>
-  <span className={`value-count ${intelligence.data_leaks?.report?.email_data_leaks_count > 0 ? 'count-danger' : ''}`}>
-    {intelligence.data_leaks?.report?.email_data_leaks_count || 0}
-  </span>
-</div>
-<div className="data-row">
-  <span className="label">Email - Leaks First Seen</span>
-  {renderValue(intelligence.data_leaks?.report?.email_data_leaks_first_seen)}
-</div>
-<div className="data-row">
-  <span className="label">Email - Leaks Last Seen</span>
-  {renderValue(intelligence.data_leaks?.report?.email_data_leaks_last_seen)}
-</div>
-
+              <span className="label">Email - Data Leaks Count</span>
+              <span
+                className={`value-count ${intelligence.data_leaks?.report?.email_data_leaks_count > 0 ? "count-danger" : ""}`}
+              >
+                {intelligence.data_leaks?.report?.email_data_leaks_count || 0}
+              </span>
+            </div>
+            <div className="data-row">
+              <span className="label">Email - Leaks First Seen</span>
+              {renderValue(
+                intelligence.data_leaks?.report?.email_data_leaks_first_seen,
+              )}
+            </div>
+            <div className="data-row">
+              <span className="label">Email - Leaks Last Seen</span>
+              {renderValue(
+                intelligence.data_leaks?.report?.email_data_leaks_last_seen,
+              )}
+            </div>
           </div>
         </div>
 
@@ -641,154 +657,184 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
         <div className="content-card">
           <h3 className="card-header">Phone Data Leaks</h3>
           <div className="card-rows">
-           <div className="data-row">
-  <span className="label">Phone No - Data Leaks Count</span>
-  <span className={`value-count ${intelligence.data_leaks?.report?.phone_data_leaks_count > 0 ? 'count-danger' : ''}`}>
-    {intelligence.data_leaks?.report?.phone_data_leaks_count || 0}
-  </span>
-</div>
-<div className="data-row">
-  <span className="label">Phone No - First Seen Data Leaks</span>
-  {renderValue(intelligence.data_leaks?.report?.phone_data_leaks_first_seen)}
-</div>
-<div className="data-row">
-  <span className="label">Phone No - Last Seen Data Leaks</span>
-  {renderValue(intelligence.data_leaks?.report?.phone_data_leaks_last_seen)}
-</div>
-
+            <div className="data-row">
+              <span className="label">Phone No - Data Leaks Count</span>
+              <span
+                className={`value-count ${intelligence.data_leaks?.report?.phone_data_leaks_count > 0 ? "count-danger" : ""}`}
+              >
+                {intelligence.data_leaks?.report?.phone_data_leaks_count || 0}
+              </span>
+            </div>
+            <div className="data-row">
+              <span className="label">Phone No - First Seen Data Leaks</span>
+              {renderValue(
+                intelligence.data_leaks?.report?.phone_data_leaks_first_seen,
+              )}
+            </div>
+            <div className="data-row">
+              <span className="label">Phone No - Last Seen Data Leaks</span>
+              {renderValue(
+                intelligence.data_leaks?.report?.phone_data_leaks_last_seen,
+              )}
+            </div>
           </div>
         </div>
 
         {/* Darknet Profile */}
-        <div className="content-card">
+        {/* <div className="content-card">
           <h3 className="card-header">Darknet Profile Information</h3>
           <div className="card-rows">
             <div className="data-row">
-  <span className="label">Darknet - Phone Numbers</span>
-  {renderValue(intelligence.data_leaks?.sl_data?.phones?.length || 0, 'count')}
-</div>
-<div className="data-row">
-  <span className="label">Darknet - Emails</span>
-  {renderValue(intelligence.data_leaks?.sl_data?.emails?.length || 0, 'count')}
-</div>
-<div className="data-row">
-  <span className="label">Darknet - Full Names</span>
-  {renderValue(intelligence.data_leaks?.sl_data?.fullnames?.length || 0, 'count')}
-</div>
-<div className="data-row">
-  <span className="label">Darknet - Aliases</span>
-  {renderValue(intelligence.data_leaks?.sl_data?.aliases?.length || 0, 'count')}
-</div>
-<div className="data-row">
-  <span className="label">Darknet - Accounts</span>
-  {renderValue(intelligence.data_leaks?.sl_data?.accounts?.length || 0, 'count')}
-</div>
-<div className="data-row">
-  <span className="label">Darknet - Addresses</span>
-  {renderValue(intelligence.data_leaks?.sl_data?.addresses?.length || 0, 'count')}
-</div>
-<div className="data-row">
-  <span className="label">Darknet - Gender</span>
-  {renderValue(intelligence.data_leaks?.sl_data?.genders)}
-</div>
-<div className="data-row">
-  <span className="label">Darknet - Date of Birth</span>
-  {renderValue(intelligence.data_leaks?.sl_data?.birthdays)}
-</div>
-
+              <span className="label">Darknet - Phone Numbers</span>
+              {renderValue(
+                intelligence.data_leaks?.sl_data?.phones?.length || 0,
+                "count",
+              )}
+            </div>
+            <div className="data-row">
+              <span className="label">Darknet - Emails</span>
+              {renderValue(
+                intelligence.data_leaks?.sl_data?.emails?.length || 0,
+                "count",
+              )}
+            </div>
+            <div className="data-row">
+              <span className="label">Darknet - Full Names</span>
+              {renderValue(
+                intelligence.data_leaks?.sl_data?.fullnames?.length || 0,
+                "count",
+              )}
+            </div>
+            <div className="data-row">
+              <span className="label">Darknet - Aliases</span>
+              {renderValue(
+                intelligence.data_leaks?.sl_data?.aliases?.length || 0,
+                "count",
+              )}
+            </div>
+            <div className="data-row">
+              <span className="label">Darknet - Accounts</span>
+              {renderValue(
+                intelligence.data_leaks?.sl_data?.accounts?.length || 0,
+                "count",
+              )}
+            </div>
+            <div className="data-row">
+              <span className="label">Darknet - Addresses</span>
+              {renderValue(
+                intelligence.data_leaks?.sl_data?.addresses?.length || 0,
+                "count",
+              )}
+            </div>
+            <div className="data-row">
+              <span className="label">Darknet - Gender</span>
+              {renderValue(intelligence.data_leaks?.sl_data?.genders)}
+            </div>
+            <div className="data-row">
+              <span className="label">Darknet - Date of Birth</span>
+              {renderValue(intelligence.data_leaks?.sl_data?.birthdays)}
+            </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
-
 
   // ✅✅✅ ADD SOCIAL MEDIA FUNCTION HERE ✅✅✅
-const renderSocialMedia = () => {
-  console.log('🚀 [SOCIAL] === FULL DEBUG MODE ===');
-  
-  const slData = intelligence?.data_leaks?.sl_data || {};
+  const renderSocialMedia = () => {
+    console.log("🚀 [SOCIAL] === FULL DEBUG MODE ===");
 
-  
-  // Show EVERYTHING in sl_data
-  console.log('🔍 [FULL sl_data]:', slData);
-  
-  // Check each key individually
-  Object.keys(slData).forEach(key => {
-    console.log(`📦 [sl_data.${key}]:`, slData[key]);
-    console.log(`   Type: ${Array.isArray(slData[key]) ? 'Array' : typeof slData[key]}`);
-    if (Array.isArray(slData[key])) {
-      console.log(`   Length: ${slData[key].length}`);
-      if (slData[key].length > 0) {
-        console.log(`   First item:`, slData[key][0]);
+    const slData = intelligence?.data_leaks?.sl_data || {};
+
+    // Show EVERYTHING in sl_data
+    console.log("🔍 [FULL sl_data]:", slData);
+
+    // Check each key individually
+    Object.keys(slData).forEach((key) => {
+      console.log(`📦 [sl_data.${key}]:`, slData[key]);
+      console.log(
+        `   Type: ${Array.isArray(slData[key]) ? "Array" : typeof slData[key]}`,
+      );
+      if (Array.isArray(slData[key])) {
+        console.log(`   Length: ${slData[key].length}`);
+        if (slData[key].length > 0) {
+          console.log(`   First item:`, slData[key][0]);
+        }
       }
-    }
-  });
-  
-  // Maybe social media is in accounts but with different structure?
-  const accounts = slData.accounts || [];
-  console.log('🔍 accounts:', accounts);
-  
-  // Check if ANY array has data that looks like social media
-  const possibleSocialArrays = ['accounts', 'aliases', 'full_names', 'phones', 'emails'];
-  possibleSocialArrays.forEach(arrayName => {
-    if (slData[arrayName] && Array.isArray(slData[arrayName]) && slData[arrayName].length > 0) {
-      console.log(`✅ ${arrayName} has data:`, slData[arrayName]);
-    }
-  });
-  
-  return (
-    <div className="content-section">
-      <h2 className="content-title">🌐 Social Media Profiles - FULL DEBUG</h2>
-      
-      <div className="content-card">
-        <h3 className="card-header">🐛 Raw Data Structure</h3>
-        <div className="card-rows">
-          {Object.keys(slData).map(key => (
-            <div key={key} className="data-row">
-              <span className="label">{key}</span>
-              <span className="value-default">
-                {Array.isArray(slData[key]) 
-                  ? `Array[${slData[key].length}]: ${JSON.stringify(slData[key]).substring(0, 100)}...`
-                  : typeof slData[key] === 'object'
-                  ? JSON.stringify(slData[key]).substring(0, 100) + '...'
-                  : String(slData[key])}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Show each array */}
-      {Object.keys(slData).map(key => {
-        if (!Array.isArray(slData[key]) || slData[key].length === 0) return null;
-        
-        return (
-          <div key={key} className="content-card">
-            <h3 className="card-header">
-              📋 {key} ({slData[key].length} items)
-            </h3>
-            <div className="card-rows">
-              {slData[key].slice(0, 3).map((item, idx) => (
-                <div key={idx} className="data-row">
-                  <span className="label">Item {idx + 1}</span>
-                  <span className="value-default">
-                    {typeof item === 'object' 
-                      ? JSON.stringify(item)
-                      : String(item)}
-                  </span>
-                </div>
-              ))}
-            </div>
+    });
+
+    // Maybe social media is in accounts but with different structure?
+    const accounts = slData.accounts || [];
+    console.log("🔍 accounts:", accounts);
+
+    // Check if ANY array has data that looks like social media
+    const possibleSocialArrays = [
+      "accounts",
+      "aliases",
+      "full_names",
+      "phones",
+      "emails",
+    ];
+    possibleSocialArrays.forEach((arrayName) => {
+      if (
+        slData[arrayName] &&
+        Array.isArray(slData[arrayName]) &&
+        slData[arrayName].length > 0
+      ) {
+        console.log(`✅ ${arrayName} has data:`, slData[arrayName]);
+      }
+    });
+
+    return (
+      <div className="content-section">
+        <h2 className="content-title">🌐 Social Media Profiles - FULL DEBUG</h2>
+
+        <div className="content-card">
+          <h3 className="card-header">🐛 Raw Data Structure</h3>
+          <div className="card-rows">
+            {Object.keys(slData).map((key) => (
+              <div key={key} className="data-row">
+                <span className="label">{key}</span>
+                <span className="value-default">
+                  {Array.isArray(slData[key])
+                    ? `Array[${slData[key].length}]: ${JSON.stringify(slData[key]).substring(0, 100)}...`
+                    : typeof slData[key] === "object"
+                      ? JSON.stringify(slData[key]).substring(0, 100) + "..."
+                      : String(slData[key])}
+                </span>
+              </div>
+            ))}
           </div>
-        );
-      })}
-    </div>
-  );
-};
+        </div>
 
+        {/* Show each array */}
+        {Object.keys(slData).map((key) => {
+          if (!Array.isArray(slData[key]) || slData[key].length === 0)
+            return null;
 
-
+          return (
+            <div key={key} className="content-card">
+              <h3 className="card-header">
+                📋 {key} ({slData[key].length} items)
+              </h3>
+              <div className="card-rows">
+                {slData[key].slice(0, 3).map((item, idx) => (
+                  <div key={idx} className="data-row">
+                    <span className="label">Item {idx + 1}</span>
+                    <span className="value-default">
+                      {typeof item === "object"
+                        ? JSON.stringify(item)
+                        : String(item)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   // ========================================
   // NEW: SDK DATA RENDER FUNCTION
@@ -798,18 +844,26 @@ const renderSocialMedia = () => {
     const sdkData = intelligence.sdkData || customerData?.sdkData || [];
 
     // Find specific event types
-    const deviceLocation = sdkData.find(e => e.type === 'DEVICE_LOCATION')?.payload;
-    const distanceData = sdkData.find(e => e.type === 'BANK_DISTANCE')?.payload;
-    const deviceId = sdkData.find(e => e.type === 'DEVICE_ID')?.payload;
-    const otpAttempt = sdkData.find(e => e.type === 'OTP_ATTEMPT')?.payload;
-    const displaySettings = sdkData.find(e => e.type === 'DISPLAY_SETTINGS')?.payload;
-    const touchBiometrics = sdkData.find(e => e.type === 'TOUCH_BIOMETRICS')?.payload;
-    const keypress = sdkData.find(e => e.type === 'KEYPRESS')?.payload;
+    const deviceLocation = sdkData.find(
+      (e) => e.type === "DEVICE_LOCATION",
+    )?.payload;
+    const distanceData = sdkData.find(
+      (e) => e.type === "BANK_DISTANCE",
+    )?.payload;
+    const deviceId = sdkData.find((e) => e.type === "DEVICE_ID")?.payload;
+    const otpAttempt = sdkData.find((e) => e.type === "OTP_ATTEMPT")?.payload;
+    const displaySettings = sdkData.find(
+      (e) => e.type === "DISPLAY_SETTINGS",
+    )?.payload;
+    const touchBiometrics = sdkData.find(
+      (e) => e.type === "TOUCH_BIOMETRICS",
+    )?.payload;
+    const keypress = sdkData.find((e) => e.type === "KEYPRESS")?.payload;
 
     return (
       <div className="content-section">
-        <h2 className="content-title">📲 SDK Data & Behavior Analytics</h2>
-        
+        <h2 className="content-title"> SDK Data & Behavior Analytics</h2>
+
         <div className="content-grid">
           {/* Distance Analysis */}
           {distanceData && (
@@ -818,37 +872,46 @@ const renderSocialMedia = () => {
               <div className="card-rows">
                 <div className="data-row">
                   <span className="label">User Location</span>
-                  <span className="value-default">{distanceData.userLocation?.address || 'N/A'}</span>
+                  <span className="value-default">
+                    {distanceData.userLocation?.address || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Agent Location</span>
-                  <span className="value-default">{distanceData.bankLocation?.address || 'N/A'}</span>
+                  <span className="value-default">
+                    {distanceData.bankLocation?.address || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Distance (KM)</span>
-                  <span className="value-count">{distanceData.distance?.km?.toFixed(2) || 'N/A'} km</span>
+                  <span className="value-count">
+                    {distanceData.distance?.km?.toFixed(2) || "N/A"} km
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Distance (Meters)</span>
-                  <span className="value-count">{distanceData.distance?.meters || 'N/A'} m</span>
+                  <span className="value-count">
+                    {distanceData.distance?.meters || "N/A"} m
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Estimated Travel Time</span>
-                  <span className="value-default">{distanceData.duration?.formatted || 'N/A'}</span>
+                  <span className="value-default">
+                    {distanceData.duration?.formatted || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Risk Level</span>
-                  <span className={`badge ${
-                    distanceData.riskAnalysis?.riskLevel === 'MINIMAL' ? 'badge-success' :
-                    distanceData.riskAnalysis?.riskLevel === 'LOW' ? 'badge-success' :
-                    distanceData.riskAnalysis?.riskLevel === 'MEDIUM' ? 'badge-warning' : 'badge-danger'
-                  }`}>
-                    {distanceData.riskAnalysis?.riskLevel || 'N/A'}
+                  // ✅ NEW:
+                  <span className="value-default">
+                    {distanceData.riskAnalysis?.riskLevel || "N/A"}
                   </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Recommendation</span>
-                  <span className="value-default">{distanceData.riskAnalysis?.recommendation || 'N/A'}</span>
+                  <span className="value-default">
+                    {distanceData.riskAnalysis?.recommendation || "N/A"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -861,31 +924,45 @@ const renderSocialMedia = () => {
               <div className="card-rows">
                 <div className="data-row">
                   <span className="label">Latitude</span>
-                  <span className="value-default">{deviceLocation.latitude || 'N/A'}</span>
+                  <span className="value-default">
+                    {deviceLocation.latitude || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Longitude</span>
-                  <span className="value-default">{deviceLocation.longitude || 'N/A'}</span>
+                  <span className="value-default">
+                    {deviceLocation.longitude || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Accuracy (meters)</span>
-                  <span className="value-count">{deviceLocation.accuracy || 'N/A'}</span>
+                  <span className="value-count">
+                    {deviceLocation.accuracy || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Full Address</span>
-                  <span className="value-default">{deviceLocation.address?.formattedAddress || 'N/A'}</span>
+                  <span className="value-default">
+                    {deviceLocation.address?.formattedAddress || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">City</span>
-                  <span className="value-default">{deviceLocation.address?.city || 'N/A'}</span>
+                  <span className="value-default">
+                    {deviceLocation.address?.city || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">State</span>
-                  <span className="value-default">{deviceLocation.address?.state || 'N/A'}</span>
+                  <span className="value-default">
+                    {deviceLocation.address?.state || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Pincode</span>
-                  <span className="value-default">{deviceLocation.address?.pincode || 'N/A'}</span>
+                  <span className="value-default">
+                    {deviceLocation.address?.pincode || "N/A"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -898,24 +975,33 @@ const renderSocialMedia = () => {
               <div className="card-rows">
                 <div className="data-row">
                   <span className="label">Total Attempts</span>
-                  <span className="value-count">{otpAttempt.verificationAttempts || 0}</span>
+                  <span className="value-count">
+                    {otpAttempt.verificationAttempts || 0}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Fraud Score</span>
-                  {renderValue(otpAttempt.fraudScore?.score, 'score')}
+                  {renderValue(otpAttempt.fraudScore?.score, "score")}
                 </div>
                 <div className="data-row">
                   <span className="label">Risk Level</span>
-                  <span className={`badge ${
-                    otpAttempt.fraudScore?.level === 'LOW_RISK' ? 'badge-success' :
-                    otpAttempt.fraudScore?.level === 'MEDIUM_RISK' ? 'badge-warning' : 'badge-danger'
-                  }`}>
-                    {otpAttempt.fraudScore?.level || 'N/A'}
+                  <span
+                    className={`badge ${
+                      otpAttempt.fraudScore?.level === "LOW_RISK"
+                        ? "badge-success"
+                        : otpAttempt.fraudScore?.level === "MEDIUM_RISK"
+                          ? "badge-warning"
+                          : "badge-danger"
+                    }`}
+                  >
+                    {otpAttempt.fraudScore?.level || "N/A"}
                   </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Typing Pattern</span>
-                  <span className="value-default">{otpAttempt.typingCadence?.cadenceType || 'N/A'}</span>
+                  <span className="value-default">
+                    {otpAttempt.typingCadence?.cadenceType || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Paste Detected</span>
@@ -923,11 +1009,15 @@ const renderSocialMedia = () => {
                 </div>
                 <div className="data-row">
                   <span className="label">Context Switches</span>
-                  <span className="value-count">{otpAttempt.contextSwitching?.focusLosses || 0}</span>
+                  <span className="value-count">
+                    {otpAttempt.contextSwitching?.focusLosses || 0}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Backspace Count</span>
-                  <span className="value-count">{otpAttempt.correctionBehavior?.totalBackspaces || 0}</span>
+                  <span className="value-count">
+                    {otpAttempt.correctionBehavior?.totalBackspaces || 0}
+                  </span>
                 </div>
               </div>
             </div>
@@ -940,40 +1030,57 @@ const renderSocialMedia = () => {
               <div className="card-rows">
                 <div className="data-row">
                   <span className="label">Device ID</span>
-                  <span className="value-default">{deviceId.deviceID || 'N/A'}</span>
+                  <span className="value-default">
+                    {deviceId.deviceID || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Session ID</span>
-                  <span className="value-default">{deviceId.sessionID || 'N/A'}</span>
+                  <span className="value-default">
+                    {deviceId.sessionID || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Risk Score</span>
-                  {renderValue(deviceId.riskScore, 'score')}
+                  {renderValue(deviceId.riskScore, "score")}
                 </div>
                 <div className="data-row">
                   <span className="label">Risk Level</span>
-                  <span className={`badge ${
-                    deviceId.riskLevel === 'LOW' ? 'badge-success' :
-                    deviceId.riskLevel === 'MEDIUM' ? 'badge-warning' : 'badge-danger'
-                  }`}>
-                    {deviceId.riskLevel || 'N/A'}
+                  <span
+                    className={`badge ${
+                      deviceId.riskLevel === "LOW"
+                        ? "badge-success"
+                        : deviceId.riskLevel === "MEDIUM"
+                          ? "badge-warning"
+                          : "badge-danger"
+                    }`}
+                  >
+                    {deviceId.riskLevel || "N/A"}
                   </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Device Category</span>
-                  <span className="value-default">{deviceId.deviceCategory || 'N/A'}</span>
+                  <span className="value-default">
+                    {deviceId.deviceCategory || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Platform Type</span>
-                  <span className="value-default">{deviceId.platformType || 'N/A'}</span>
+                  <span className="value-default">
+                    {deviceId.platformType || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Fingerprint Stability</span>
-                  <span className="value-count">{deviceId.fingerprintStability || 0}%</span>
+                  <span className="value-count">
+                    {deviceId.fingerprintStability || 0}%
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Session Count</span>
-                  <span className="value-count">{deviceId.sessionCount || 0}</span>
+                  <span className="value-count">
+                    {deviceId.sessionCount || 0}
+                  </span>
                 </div>
               </div>
             </div>
@@ -986,23 +1093,34 @@ const renderSocialMedia = () => {
               <div className="card-rows">
                 <div className="data-row">
                   <span className="label">Screen Resolution</span>
-                  <span className="value-default">{displaySettings.screenWidth} x {displaySettings.screenHeight}</span>
+                  <span className="value-default">
+                    {displaySettings.screenWidth} x{" "}
+                    {displaySettings.screenHeight}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Device Category</span>
-                  <span className="value-default">{displaySettings.deviceCategory || 'N/A'}</span>
+                  <span className="value-default">
+                    {displaySettings.deviceCategory || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Orientation</span>
-                  <span className="value-default">{displaySettings.orientationType || 'N/A'}</span>
+                  <span className="value-default">
+                    {displaySettings.orientationType || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Pixel Ratio</span>
-                  <span className="value-default">{displaySettings.devicePixelRatio || 'N/A'}</span>
+                  <span className="value-default">
+                    {displaySettings.devicePixelRatio || "N/A"}
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Screen Size (inches)</span>
-                  <span className="value-default">{displaySettings.estimatedScreenSizeInches || 'N/A'}"</span>
+                  <span className="value-default">
+                    {displaySettings.estimatedScreenSizeInches || "N/A"}"
+                  </span>
                 </div>
                 <div className="data-row">
                   <span className="label">Touch Support</span>
@@ -1025,15 +1143,21 @@ const renderSocialMedia = () => {
                   <>
                     <div className="data-row">
                       <span className="label">Total Taps</span>
-                      <span className="value-count">{touchBiometrics.totalTaps || 0}</span>
+                      <span className="value-count">
+                        {touchBiometrics.totalTaps || 0}
+                      </span>
                     </div>
                     <div className="data-row">
                       <span className="label">Total Swipes</span>
-                      <span className="value-count">{touchBiometrics.totalSwipes || 0}</span>
+                      <span className="value-count">
+                        {touchBiometrics.totalSwipes || 0}
+                      </span>
                     </div>
                     <div className="data-row">
                       <span className="label">Bot Probability</span>
-                      <span className="value-count">{touchBiometrics.botProbability || 0}%</span>
+                      <span className="value-count">
+                        {touchBiometrics.botProbability || 0}%
+                      </span>
                     </div>
                     <div className="data-row">
                       <span className="label">Human-like Behavior</span>
@@ -1045,19 +1169,27 @@ const renderSocialMedia = () => {
                   <>
                     <div className="data-row">
                       <span className="label">Total Keypresses</span>
-                      <span className="value-count">{keypress.totalKeypresses || 0}</span>
+                      <span className="value-count">
+                        {keypress.totalKeypresses || 0}
+                      </span>
                     </div>
                     <div className="data-row">
                       <span className="label">Backspace Count</span>
-                      <span className="value-count">{keypress.backspaceCount || 0}</span>
+                      <span className="value-count">
+                        {keypress.backspaceCount || 0}
+                      </span>
                     </div>
                     <div className="data-row">
                       <span className="label">Numeric Keys</span>
-                      <span className="value-count">{keypress.numericKeypressCount || 0}</span>
+                      <span className="value-count">
+                        {keypress.numericKeypressCount || 0}
+                      </span>
                     </div>
                     <div className="data-row">
                       <span className="label">Alphabetic Keys</span>
-                      <span className="value-count">{keypress.alphabeticKeypressCount || 0}</span>
+                      <span className="value-count">
+                        {keypress.alphabeticKeypressCount || 0}
+                      </span>
                     </div>
                   </>
                 )}
@@ -1069,9 +1201,7 @@ const renderSocialMedia = () => {
           <div className="content-card sdk-json-card">
             <h3 className="card-header">📋 All SDK Events (JSON)</h3>
             <div className="sdk-json-container">
-              <pre className="sdk-json">
-                {JSON.stringify(sdkData, null, 2)}
-              </pre>
+              <pre className="sdk-json">{JSON.stringify(sdkData, null, 2)}</pre>
             </div>
           </div>
         </div>
@@ -1083,20 +1213,20 @@ const renderSocialMedia = () => {
   const renderOverview = () => (
     <div className="content-section">
       <h2 className="content-title">📊 Risk Overview</h2>
-      
+
       <div className="overview-grid">
         <div className="overview-card score-card">
           <h3>Overall Score</h3>
           <div className="score-circle-large">
             <svg className="score-ring" width="150" height="150">
               <circle className="score-ring-bg" cx="75" cy="75" r="65" />
-              <circle 
-                className="score-ring-fill" 
-                cx="75" 
-                cy="75" 
+              <circle
+                className="score-ring-fill"
+                cx="75"
+                cy="75"
                 r="65"
                 style={{
-                  strokeDasharray: `${(intelligence.overallScore / 1000) * 408} 408`
+                  strokeDasharray: `${(intelligence.overallScore / 1000) * 408} 408`,
                 }}
               />
             </svg>
@@ -1113,30 +1243,58 @@ const renderSocialMedia = () => {
             <div className="score-item-overview">
               <span>Email Score</span>
               <div className="score-bar">
-                <div className="score-bar-fill" style={{ width: `${(intelligence.scoring?.email / 1000) * 100}%` }}></div>
+                <div
+                  className="score-bar-fill"
+                  style={{
+                    width: `${(intelligence.scoring?.email / 1000) * 100}%`,
+                  }}
+                ></div>
               </div>
-              <span className="score-value-overview">{intelligence.scoring?.email || 0}</span>
+              <span className="score-value-overview">
+                {intelligence.scoring?.email || 0}
+              </span>
             </div>
             <div className="score-item-overview">
               <span>Phone Score</span>
               <div className="score-bar">
-                <div className="score-bar-fill" style={{ width: `${(intelligence.scoring?.phone / 1000) * 100}%` }}></div>
+                <div
+                  className="score-bar-fill"
+                  style={{
+                    width: `${(intelligence.scoring?.phone / 1000) * 100}%`,
+                  }}
+                ></div>
               </div>
-              <span className="score-value-overview">{intelligence.scoring?.phone || 0}</span>
+              <span className="score-value-overview">
+                {intelligence.scoring?.phone || 0}
+              </span>
             </div>
             <div className="score-item-overview">
               <span>IP Score</span>
               <div className="score-bar">
-                <div className="score-bar-fill" style={{ width: `${(intelligence.scoring?.ip / 1000) * 100}%` }}></div>
+                <div
+                  className="score-bar-fill"
+                  style={{
+                    width: `${(intelligence.scoring?.ip / 1000) * 100}%`,
+                  }}
+                ></div>
               </div>
-              <span className="score-value-overview">{intelligence.scoring?.ip || 0}</span>
+              <span className="score-value-overview">
+                {intelligence.scoring?.ip || 0}
+              </span>
             </div>
             <div className="score-item-overview">
               <span>Name Score</span>
               <div className="score-bar">
-                <div className="score-bar-fill" style={{ width: `${(intelligence.scoring?.name / 1000) * 100}%` }}></div>
+                <div
+                  className="score-bar-fill"
+                  style={{
+                    width: `${(intelligence.scoring?.name / 1000) * 100}%`,
+                  }}
+                ></div>
               </div>
-              <span className="score-value-overview">{intelligence.scoring?.name || 0}</span>
+              <span className="score-value-overview">
+                {intelligence.scoring?.name || 0}
+              </span>
             </div>
           </div>
         </div>
@@ -1144,23 +1302,42 @@ const renderSocialMedia = () => {
         <div className="overview-card">
           <h3>Risk Indicators</h3>
           <div className="risk-indicators">
-            <div className={`risk-indicator ${intelligence.email.email_recent_abuse ? 'risk-high' : 'risk-safe'}`}>
-              <span className="risk-icon">{intelligence.email.email_recent_abuse ? '⚠️' : '✅'}</span>
+            <div
+              className={`risk-indicator ${intelligence.email.email_recent_abuse ? "risk-high" : "risk-safe"}`}
+            >
+              <span className="risk-icon">
+                {intelligence.email.email_recent_abuse ? "⚠️" : "✅"}
+              </span>
               <span>Email Abuse</span>
             </div>
-            <div className={`risk-indicator ${intelligence.phone.phone_risky ? 'risk-high' : 'risk-safe'}`}>
-              <span className="risk-icon">{intelligence.phone.phone_risky ? '⚠️' : '✅'}</span>
+            <div
+              className={`risk-indicator ${intelligence.phone.phone_risky ? "risk-high" : "risk-safe"}`}
+            >
+              <span className="risk-icon">
+                {intelligence.phone.phone_risky ? "⚠️" : "✅"}
+              </span>
               <span>Phone Risk</span>
             </div>
-            <div className={`risk-indicator ${intelligence.ip.ip_vpn || intelligence.ip.ip_proxy ? 'risk-medium' : 'risk-safe'}`}>
-              <span className="risk-icon">{intelligence.ip.ip_vpn || intelligence.ip.ip_proxy ? '⚠️' : '✅'}</span>
+            <div
+              className={`risk-indicator ${intelligence.ip.ip_vpn || intelligence.ip.ip_proxy ? "risk-medium" : "risk-safe"}`}
+            >
+              <span className="risk-icon">
+                {intelligence.ip.ip_vpn || intelligence.ip.ip_proxy
+                  ? "⚠️"
+                  : "✅"}
+              </span>
               <span>VPN/Proxy</span>
             </div>
-            <div className={`risk-indicator ${intelligence.data_leaks?.report?.data_leaks_count > 0 ? 'risk-high' : 'risk-safe'}`}>
-  <span className="risk-icon">{intelligence.data_leaks?.report?.data_leaks_count > 0 ? '⚠️' : '✅'}</span>
-  <span>Data Leaks</span>
-</div>
-
+            <div
+              className={`risk-indicator ${intelligence.data_leaks?.report?.data_leaks_count > 0 ? "risk-high" : "risk-safe"}`}
+            >
+              <span className="risk-icon">
+                {intelligence.data_leaks?.report?.data_leaks_count > 0
+                  ? "⚠️"
+                  : "✅"}
+              </span>
+              <span>Data Leaks</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1173,25 +1350,33 @@ const renderSocialMedia = () => {
       <div className="dashboard-top-section">
         <div className="profile-header">
           <div className="profile-avatar">
-            {customerData?.customerName?.charAt(0)?.toUpperCase() || 'U'}
+            {customerData?.customerName?.charAt(0)?.toUpperCase() || "U"}
           </div>
           <div className="profile-info">
-            <h1 className="profile-name">{customerData?.customerName || 'Customer Name'}</h1>
+            <h1 className="profile-name">
+              {customerData?.customerName || "Customer Name"}
+            </h1>
             <div className="profile-contact">
               <span className="contact-item">
                 <span className="contact-icon">📧</span>
-                {customerData?.email || customerData?.emailId || customerData?.contactEmailId || 'N/A'}
+                {customerData?.email ||
+                  customerData?.emailId ||
+                  customerData?.contactEmailId ||
+                  "N/A"}
               </span>
               <span className="contact-item">
                 <span className="contact-icon">📱</span>
-                {customerData?.phone || customerData?.phone_Number || customerData?.phoneNumber || customerData?.mobileNumber || 'N/A'}
+                {customerData?.phone ||
+                  customerData?.phone_Number ||
+                  customerData?.phoneNumber ||
+                  customerData?.mobileNumber ||
+                  "N/A"}
               </span>
             </div>
           </div>
         </div>
 
         {/* Stats Cards */}
-        
       </div>
 
       {/* Main Content Area */}
@@ -1205,7 +1390,7 @@ const renderSocialMedia = () => {
             {navItems.map((item) => (
               <button
                 key={item.id}
-                className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
+                className={`nav-item ${activeTab === item.id ? "active" : ""}`}
                 onClick={() => setActiveTab(item.id)}
               >
                 <span className="nav-icon">{item.icon}</span>
@@ -1217,9 +1402,7 @@ const renderSocialMedia = () => {
         </div>
 
         {/* Right Content Area */}
-        <div className="dashboard-content">
-          {renderContent()}
-        </div>
+        <div className="dashboard-content">{renderContent()}</div>
       </div>
     </div>
   );
