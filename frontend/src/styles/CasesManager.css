@@ -32,9 +32,11 @@
 }
 
 .cases-manager .logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+  height: 64px;
+  width: auto;
+  max-width: 360px;
+  object-fit: contain;
+  display: block;
   filter: drop-shadow(0 0 8px rgba(40, 170, 80, 0.4));
 }
 

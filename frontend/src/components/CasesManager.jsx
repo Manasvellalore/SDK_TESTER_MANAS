@@ -78,9 +78,7 @@ const CasesManager = () => {
     <div className="cases-manager">
       <header className="cases-header">
         <div className="header-left">
-          <img src="/logo.png" alt="Bargad.ai" className="logo" />
-          <span className="company-name">Bargad.ai</span>
-          <span className="tagline">Digital Identity Simplified</span>
+          <img src="/new-logo.png" alt="Bargad.ai" className="logo" />
         </div>
         <button className="logout-btn">Logout</button>
       </header>

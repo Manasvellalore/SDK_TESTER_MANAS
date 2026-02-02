@@ -13,3 +13,6 @@ npm-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
+
+# Temporary session persistence (optional: remove to track sessions in git)
+data/

@@ -2,6 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs");
 const mapRoutes = require("./routes/mapRoutes");
 require("dotenv").config();
 
@@ -15,8 +16,36 @@ app.use(express.json());
 
 app.use("/api/map", mapRoutes);
 
-// ✅ In-memory session storage
+// ✅ In-memory session storage (persisted to file so cases survive backend restart)
 const sessions = {};
+const SESSIONS_FILE = path.join(__dirname, "data", "sessions.json");
+
+function loadSessions() {
+  try {
+    if (fs.existsSync(SESSIONS_FILE)) {
+      const data = fs.readFileSync(SESSIONS_FILE, "utf8");
+      const parsed = JSON.parse(data);
+      if (parsed && typeof parsed === "object") {
+        Object.assign(sessions, parsed);
+        console.log(`✅ [SESSIONS] Loaded ${Object.keys(parsed).length} session(s) from disk`);
+      }
+    }
+  } catch (err) {
+    console.warn("⚠️ [SESSIONS] Load failed:", err.message);
+  }
+}
+
+function persistSessions() {
+  try {
+    const dir = path.dirname(SESSIONS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 0), "utf8");
+  } catch (err) {
+    console.warn("⚠️ [SESSIONS] Persist failed:", err.message);
+  }
+}
+
+loadSessions();
 
 // ==========================================
 // IP GEOLOCATION - Correct lat/long for selected IP (skip loopback)
@@ -92,6 +121,7 @@ async function createScoreplexTask(sessionId, agentData, ip = "") {
     );
     if (res.data && res.data.id) {
       sessions[sessionId].scoreplexTaskId = res.data.id;
+      persistSessions();
       console.log(`✅ [SCOREPLEX] Task started on submit: ${res.data.id}`);
       return res.data.id;
     }
@@ -905,6 +935,8 @@ else if (
       }
     }
 
+    persistSessions();
+
     res.json({
       success: true,
       message: "SDK data saved successfully",
@@ -1484,6 +1516,7 @@ app.post("/api/save-agent-data", async (req, res) => {
 
     sessions[sessionId].agentData = customerData;
     sessions[sessionId].updatedAt = Date.now();
+    persistSessions();
 
     console.log(`✅ [AGENT] Customer data saved`);
 

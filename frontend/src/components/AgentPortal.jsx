@@ -478,8 +478,8 @@ const AgentPortal = () => {
     <div className="kyc-container">
       <header className="kyc-header">
         <div className="header-left">
-          <img src="/Bargad_logo.jpeg" alt="KYC" className="kyc-logo" />
-          <span className="header-title">plus</span>
+          <img src="/new-logo.png" alt="Bargad.ai" className="kyc-logo" />
+          <span className="header-title"></span>
         </div>
         <div className="header-right">
           <div className="user-info">

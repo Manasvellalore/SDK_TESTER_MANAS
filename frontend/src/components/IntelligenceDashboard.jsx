@@ -9,6 +9,14 @@ const IntelligenceDashboard = ({ intelligence, customerData, sessionInfo }) => {
     return <div className="loading">Loading intelligence data...</div>;
   }
 
+  // Ensure email, phone, ip are always objects so dashboard sections render (defensive for missing/partial API data)
+  intelligence = {
+    ...intelligence,
+    email: intelligence.email ?? {},
+    phone: intelligence.phone ?? {},
+    ip: intelligence.ip ?? {},
+  };
+
   // Helper function to render boolean values
   const renderBoolean = (value) => {
     if (value === true) return <span className="badge badge-success">✓ Yes</span>;

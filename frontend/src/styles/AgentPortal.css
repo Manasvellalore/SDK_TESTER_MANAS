@@ -52,11 +52,11 @@ input, button, textarea, select, label {
 }
 
 .kyc-logo {
-  width: 45px !important;
-  height: 45px !important;
-  max-width: 45px !important;
-  max-height: 45px !important;
+  height: 64px;
+  width: auto;
+  max-width: 360px;
   object-fit: contain;
+  display: block;
   filter: drop-shadow(0 0 8px rgba(40, 170, 80, 0.6));
 }
 
