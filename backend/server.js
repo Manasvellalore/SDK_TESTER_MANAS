@@ -1194,7 +1194,6 @@ console.log('📊 [SCOREPLEX] Data Leaks Status:', scoreplexResponse.data.report
           // ==========================================
           const selectedIP = session.selectedIP || report.ip || "N/A";
           intelligence.ip = {
-            ip: selectedIP,
             ip: report.ip || session.selectedIP || "N/A",
             ip_hostname: report.ip_hostname || "N/A",
             ip_country: report.ip_country || "N/A",

@@ -1,58 +1,73 @@
+/* =================================================================
+   CASE MANAGER - CYBERSECURITY DARK THEME (matches AgentPortal)
+   ================================================================= */
+
 .cases-manager {
   min-height: 100vh;
-  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #000000;
+  background-image:
+    linear-gradient(rgba(40, 170, 80, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(40, 170, 80, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 50% 0%, #0f2e1b 0%, transparent 70%);
+  background-size: 40px 40px, 40px 40px, 100% 100%;
+  font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
+  color: #e0e0e0;
 }
 
-/* Header */
 .cases-header {
-  background: white;
+  background: rgba(10, 40, 20, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(40, 170, 80, 0.3);
   padding: 16px 32px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
-.header-left {
+.cases-manager .header-left {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.logo {
+.cases-manager .logo {
   width: 48px;
   height: 48px;
   border-radius: 50%;
+  filter: drop-shadow(0 0 8px rgba(40, 170, 80, 0.4));
 }
 
 .company-name {
   font-size: 20px;
   font-weight: 700;
-  color: #2d5945;
+  color: #28aa50;
+  text-shadow: 0 0 10px rgba(40, 170, 80, 0.3);
 }
 
 .tagline {
   font-size: 12px;
-  color: #666;
+  color: #88a090;
 }
 
 .logout-btn {
-  background: #2d5945;
-  color: white;
-  border: none;
+  background: linear-gradient(135deg, #28aa50 0%, #1e8a40 100%);
+  color: #ffffff;
+  border: 1px solid rgba(40, 170, 80, 0.5);
   padding: 10px 24px;
-  border-radius: 24px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.3s;
+  transition: all 0.3s ease;
+  font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
+  box-shadow: 0 2px 12px rgba(40, 170, 80, 0.25);
 }
 
 .logout-btn:hover {
-  background: #1e3d2e;
+  background: linear-gradient(135deg, #2ebb58 0%, #28aa50 100%);
+  box-shadow: 0 4px 16px rgba(40, 170, 80, 0.35);
 }
 
-/* Container */
 .cases-container {
   max-width: 1400px;
   margin: 40px auto;
@@ -60,7 +75,7 @@
 }
 
 .breadcrumb {
-  color: #666;
+  color: #88a090;
   font-size: 14px;
   margin-bottom: 16px;
 }
@@ -70,23 +85,25 @@
 }
 
 .breadcrumb .active {
-  color: #2d5945;
+  color: #28aa50;
   font-weight: 600;
 }
 
 .cases-title {
   font-size: 32px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #e0e0e0;
   margin-bottom: 32px;
+  text-shadow: 0 0 8px rgba(40, 170, 80, 0.2);
 }
 
-/* Table */
 .cases-table-wrapper {
-  background: white;
-  border-radius: 16px;
+  background: rgba(10, 30, 20, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(40, 170, 80, 0.25);
+  border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .cases-table {
@@ -95,71 +112,73 @@
 }
 
 .cases-table thead th {
-  background: #f5f5f5;
+  background: rgba(40, 170, 80, 0.12);
   padding: 16px;
   text-align: left;
   font-weight: 600;
-  color: #333;
-  border-bottom: 2px solid #e0e0e0;
+  color: #28aa50;
+  border-bottom: 2px solid rgba(40, 170, 80, 0.3);
   font-size: 14px;
 }
 
 .sort-icon {
   margin-left: 8px;
-  color: #999;
+  color: #88a090;
   font-size: 12px;
 }
 
 .cases-table tbody td {
   padding: 20px 16px;
-  border-bottom: 1px solid #f0f0f0;
-  color: #333;
+  border-bottom: 1px solid rgba(40, 170, 80, 0.1);
+  color: #e0e0e0;
   font-size: 14px;
 }
 
 .cases-table tbody tr:hover {
-  background: #fafafa;
+  background: rgba(40, 170, 80, 0.06);
 }
 
 .no-data {
   text-align: center;
-  color: #999;
+  color: #88a090;
   padding: 40px !important;
 }
 
 .status-badge {
-  background: #e8f5e9;
-  color: #2d5945;
+  background: rgba(40, 170, 80, 0.2);
+  color: #28aa50;
   padding: 6px 12px;
-  border-radius: 12px;
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
   margin-right: 12px;
+  border: 1px solid rgba(40, 170, 80, 0.3);
 }
 
 .view-btn {
   background: transparent;
-  color: #2d5945;
+  color: #28aa50;
   border: none;
   cursor: pointer;
   font-weight: 600;
   font-size: 14px;
   text-decoration: underline;
   transition: color 0.2s;
+  font-family: inherit;
 }
 
 .view-btn:hover {
-  color: #1e3d2e;
+  color: #2ebb58;
+  text-shadow: 0 0 8px rgba(40, 170, 80, 0.4);
 }
 
-/* Table Footer */
 .table-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 24px;
   padding-top: 16px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid rgba(40, 170, 80, 0.2);
 }
 
 .page-size-selector {
@@ -170,20 +189,23 @@
 
 .page-size-selector label {
   font-size: 14px;
-  color: #666;
+  color: #88a090;
 }
 
 .page-size-selector select {
   padding: 6px 12px;
-  border: 1px solid #ddd;
+  background: rgba(10, 30, 20, 0.8);
+  border: 1px solid rgba(40, 170, 80, 0.3);
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
+  color: #e0e0e0;
+  font-family: inherit;
 }
 
 .pagination-info {
   font-size: 14px;
-  color: #666;
+  color: #88a090;
 }
 
 .pagination-controls {
@@ -193,18 +215,21 @@
 }
 
 .page-btn {
-  background: white;
-  border: 1px solid #ddd;
+  background: rgba(40, 170, 80, 0.1);
+  border: 1px solid rgba(40, 170, 80, 0.3);
   padding: 8px 12px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s;
+  color: #e0e0e0;
+  font-family: inherit;
 }
 
 .page-btn:hover:not(:disabled) {
-  background: #f5f5f5;
-  border-color: #2d5945;
+  background: rgba(40, 170, 80, 0.2);
+  border-color: #28aa50;
+  color: #28aa50;
 }
 
 .page-btn:disabled {
@@ -214,29 +239,28 @@
 
 .page-number {
   font-size: 14px;
-  color: #333;
+  color: #e0e0e0;
   margin: 0 8px;
 }
 
-/* Footer */
 .cases-footer {
   text-align: center;
   padding: 24px;
-  color: #666;
+  color: #88a090;
   font-size: 13px;
   margin-top: 40px;
 }
 
-.powered-by {
+.cases-manager .powered-by {
   margin-top: 8px;
 }
 
 .brand {
-  color: #2d5945;
+  color: #28aa50;
   font-weight: 600;
+  text-shadow: 0 0 8px rgba(40, 170, 80, 0.3);
 }
 
-/* Loading & Error States */
 .loading-state,
 .error-state {
   display: flex;
@@ -244,14 +268,14 @@
   align-items: center;
   justify-content: center;
   min-height: 400px;
-  color: #666;
+  color: #88a090;
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f0f0f0;
-  border-top-color: #2d5945;
+  border: 4px solid rgba(40, 170, 80, 0.2);
+  border-top-color: #28aa50;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -264,9 +288,14 @@
 .error-state button {
   margin-top: 16px;
   padding: 10px 24px;
-  background: #2d5945;
-  color: white;
-  border: none;
+  background: linear-gradient(135deg, #28aa50 0%, #1e8a40 100%);
+  color: #ffffff;
+  border: 1px solid rgba(40, 170, 80, 0.5);
   border-radius: 8px;
   cursor: pointer;
+  font-family: inherit;
+}
+
+.error-state button:hover {
+  box-shadow: 0 4px 16px rgba(40, 170, 80, 0.3);
 }
