@@ -491,7 +491,6 @@ const AgentPortal = () => {
     <div className="kyc-container">
       <header className="kyc-header">
         <div className="header-left">
-          <img src="/new-logo.png" alt="Bargad.ai" className="kyc-logo" />
           <span className="header-title"></span>
         </div>
         <div className="header-right">

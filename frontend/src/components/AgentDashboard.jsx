@@ -133,10 +133,6 @@ function AgentDashboard({ userData }) {
     <div className="agent-dashboard">
       {/* Sidebar */}
       <div className="dashboard-sidebar">
-        <div className="sidebar-logo">
-          <div className="logo-icon">B</div>
-        </div>
-        
         <div className="sidebar-menu">
           <button 
             className={activeTab === 'overview' ? 'active' : ''} 

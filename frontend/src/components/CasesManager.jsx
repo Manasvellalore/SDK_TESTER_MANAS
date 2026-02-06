@@ -129,9 +129,7 @@ const CasesManager = () => {
   return (
     <div className="cases-manager">
       <header className="cases-header">
-        <div className="header-left">
-          <img src="/new-logo.png" alt="Bargad.ai" className="logo" />
-        </div>
+        <div className="header-left" />
         <button className="logout-btn">Logout</button>
       </header>
 
