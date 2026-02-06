@@ -71,11 +71,6 @@ function ThankYouPage() {
             </button>
           </div>
         </div>
-
-        <div className="powered-by">
-          <span>Secured by</span>
-          <strong>Bargad.ai</strong>
-        </div>
       </div>
     </div>
   );

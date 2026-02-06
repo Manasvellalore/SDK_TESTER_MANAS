@@ -508,7 +508,7 @@ const AgentPortal = () => {
       </header>
 
       <div className="kyc-banner">
-        CUSTOMER INTERACTION FRONTED (SVR-CPV-IPV-RE-KYC-)
+        CUSTOMER INTERACTION FRONTEND (SVR-CPV-IPV-RE-KYC-)
       </div>
 
       <div className="kyc-main">
@@ -595,7 +595,7 @@ const AgentPortal = () => {
                     <div className="info-value">Mumbai</div>
                   </div>
                   <div>
-                    <label>Customer Age</label>
+                    <label>PINCODE</label>
                     <div className="info-value">400610</div>
                   </div>
                   <div>

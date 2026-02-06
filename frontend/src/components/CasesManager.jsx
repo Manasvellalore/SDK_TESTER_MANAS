@@ -242,13 +242,6 @@ const CasesManager = () => {
           </div>
         </div>
       </div>
-
-      <footer className="cases-footer">
-        <p>© 2024 Bargad.ai. All rights reserved.</p>
-        <p className="powered-by">
-          Powered by <span className="brand">🌳 Bargad.ai</span>
-        </p>
-      </footer>
     </div>
   );
 };
